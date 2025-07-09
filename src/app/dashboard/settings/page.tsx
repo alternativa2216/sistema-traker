@@ -1,5 +1,5 @@
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Database, UserCircle, CreditCard, Bell, KeyRound } from "lucide-react";
+import { Database, UserCircle, Bell, KeyRound } from "lucide-react";
 import Link from "next/link";
 
 const settingsOptions = [
@@ -8,13 +8,6 @@ const settingsOptions = [
     icon: UserCircle,
     title: "Perfil",
     description: "Gerencie os detalhes do seu perfil e senha.",
-    enabled: true,
-  },
-  {
-    href: "/dashboard/billing",
-    icon: CreditCard,
-    title: "Faturamento",
-    description: "Veja seu plano, histórico e métodos de pagamento.",
     enabled: true,
   },
   {
@@ -36,7 +29,7 @@ const settingsOptions = [
     icon: KeyRound,
     title: "Chaves de API",
     description: "Gerencie chaves de API para integrações personalizadas.",
-    enabled: false, // Disabling this for now
+    enabled: true,
   }
 ];
 

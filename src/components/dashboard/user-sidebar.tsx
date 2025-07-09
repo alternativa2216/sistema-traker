@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Logo } from "@/components/shared/logo"
 import { usePathname } from 'next/navigation'
-import { BarChart, Bot, CreditCard, FileText, Globe, Home, LifeBuoy, Settings } from "lucide-react"
+import { BarChart, Bot, FileText, Globe, Home, LifeBuoy, Settings } from "lucide-react"
 import Link from "next/link"
 
 const menuGroups = [
@@ -31,7 +31,6 @@ const menuGroups = [
   },
   {
     items: [
-      { href: "/dashboard/billing", label: "Faturamento", icon: CreditCard },
       { href: "/dashboard/settings", label: "Configurações", icon: Settings },
       { href: "/dashboard/diagnostics", label: "Diagnósticos", icon: LifeBuoy },
     ]
