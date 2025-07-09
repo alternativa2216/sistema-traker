@@ -1,50 +1,167 @@
 'use client'
 
 import * as React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowDown, Filter, Users, Eye, ShoppingCart, CreditCard, TrendingUp, UserX, Route } from "lucide-react";
+import { ArrowDown, Filter, Users, Eye, ShoppingCart, CreditCard, TrendingUp, UserX, Route, PlusCircle, Trash2, GripVertical } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
 
-const funnelData = {
-  stages: [
-    { name: 'Visitantes Totais', count: '25,840', icon: Users },
-    { name: 'Visualizaram um Produto', count: '13,120', conversion: 50.8, icon: Eye },
-    { name: 'Adicionaram ao Carrinho', count: '6,480', conversion: 49.4, icon: ShoppingCart },
-    { name: 'Compra Concluída', count: '2,890', conversion: 44.6, icon: CreditCard },
-  ],
-  trendData: [
+
+// Mock data that would come from your analytics backend
+const analyticsData = {
+    '/': 25840,
+    '/produtos': 13120,
+    '/carrinho': 6480,
+    '/checkout': 2890
+};
+
+const trendData = [
     { name: 'Semana 1', conversion: 10.5 },
     { name: 'Semana 2', conversion: 11.2 },
     { name: 'Semana 3', conversion: 11.1 },
     { name: 'Semana 4', conversion: 11.8 },
-  ],
-  dropOffs: [
-    { session: 'xyz-123', lastStep: 'Visualizaram um Produto', lastPage: '/produto-a' },
+];
+
+const dropOffs = [
+    { session: 'xyz-123', lastStep: 'Visualizaram um Produto', lastPage: '/produtos' },
     { session: 'abc-456', lastStep: 'Adicionaram ao Carrinho', lastPage: '/carrinho' },
-    { session: 'def-789', lastStep: 'Visualizaram um Produto', lastPage: '/produto-b' },
-  ],
-};
+    { session: 'def-789', lastStep: 'Visualizaram um Produto', lastPage: '/produtos' },
+];
+
+interface FunnelStep {
+    id: number;
+    name: string;
+    url: string;
+}
+
+// Default funnel steps
+const initialSteps: FunnelStep[] = [
+    { id: 1, name: 'Visitantes da Home', url: '/' },
+    { id: 2, name: 'Visualizaram Produtos', url: '/produtos' },
+    { id: 3, name: 'Adicionaram ao Carrinho', url: '/carrinho' },
+    { id: 4, name: 'Compra Concluída', url: '/checkout' },
+];
+
+const stepIcons = [Users, Eye, ShoppingCart, CreditCard, TrendingUp];
 
 
 export default function FunnelPage() {
+    const { toast } = useToast();
+    const [funnelSteps, setFunnelSteps] = React.useState<FunnelStep[]>(initialSteps);
+
+    const handleStepChange = (index: number, field: 'name' | 'url', value: string) => {
+        const newSteps = [...funnelSteps];
+        newSteps[index][field] = value;
+        setFunnelSteps(newSteps);
+    };
+
+    const addStep = () => {
+        setFunnelSteps([...funnelSteps, { id: Date.now(), name: '', url: '' }]);
+    };
+
+    const removeStep = (index: number) => {
+        const newSteps = funnelSteps.filter((_, i) => i !== index);
+        setFunnelSteps(newSteps);
+    };
+
+    const saveFunnel = () => {
+        // In a real app, you would send `funnelSteps` to your backend to save in the database.
+        toast({
+            title: "Funil Salvo!",
+            description: "A configuração do seu funil foi salva com sucesso.",
+        });
+    };
+
+    // Generate funnel data for visualization based on the builder
+    const funnelDataForVisualization = {
+        stages: funnelSteps.map((step, index, arr) => {
+            // @ts-ignore
+            const count = analyticsData[step.url] || 0;
+            let conversion = 0;
+            if (index > 0) {
+                 // @ts-ignore
+                const prevCount = analyticsData[arr[index - 1].url] || 0;
+                conversion = prevCount > 0 ? parseFloat(((count / prevCount) * 100).toFixed(1)) : 0;
+            }
+            return {
+                name: step.name,
+                count: count.toLocaleString('pt-BR'),
+                // @ts-ignore
+                conversion: conversion,
+                icon: stepIcons[index] || Route, // Assign icons sequentially
+            };
+        }),
+    };
+
   return (
     <div className="space-y-8">
         <Card>
             <CardHeader>
-                <CardTitle className="font-headline">Análise do Funil de Conversão</CardTitle>
-                <CardDescription>Visualize a jornada do seu usuário e identifique gargalos de conversão.</CardDescription>
+                <CardTitle className="font-headline">Construtor de Funil</CardTitle>
+                <CardDescription>
+                    Defina as etapas do seu funil de conversão aqui. Dê um nome para cada etapa e especifique a URL correspondente. Os dados serão salvos no seu banco de dados.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="space-y-4">
+                    {funnelSteps.map((step, index) => (
+                        <div key={step.id} className="flex items-center gap-2 p-2 border rounded-lg bg-muted/50">
+                            <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+                                <div className="space-y-1">
+                                    <Label htmlFor={`step-name-${index}`}>Nome da Etapa</Label>
+                                    <Input
+                                        id={`step-name-${index}`}
+                                        placeholder="Ex: Visualizou Produto"
+                                        value={step.name}
+                                        onChange={(e) => handleStepChange(index, 'name', e.target.value)}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor={`step-url-${index}`}>URL da Página</Label>
+                                    <Input
+                                        id={`step-url-${index}`}
+                                        placeholder="Ex: /produto/item-a"
+                                        value={step.url}
+                                        onChange={(e) => handleStepChange(index, 'url', e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                            <Button variant="ghost" size="icon" onClick={() => removeStep(index)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                        </div>
+                    ))}
+                </div>
+                 <div className="flex items-center gap-4 mt-4">
+                    <Button variant="outline" onClick={addStep}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Adicionar Etapa
+                    </Button>
+                </div>
+            </CardContent>
+            <CardFooter>
+                 <Button onClick={saveFunnel}>Salvar Funil</Button>
+            </CardFooter>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline">Pré-visualização da Análise do Funil</CardTitle>
+                <CardDescription>Visualize a jornada do seu usuário com base nas etapas que você definiu acima.</CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="max-w-2xl mx-auto">
                     <div className="relative flex flex-col items-center">
-                        {funnelData.stages.map((stage, index) => {
+                        {funnelDataForVisualization.stages.map((stage, index) => {
                             const Icon = stage.icon;
-                            const isLastStage = index === funnelData.stages.length - 1;
+                            const isLastStage = index === funnelDataForVisualization.stages.length - 1;
                             
                             const baseWidth = 100;
                             const widthDecrement = 15;
@@ -74,7 +191,7 @@ export default function FunnelPage() {
                                         >
                                             <ArrowDown className="h-6 w-6 text-muted-foreground" />
                                             <Badge variant="secondary" className="mt-2 text-base">
-                                                {funnelData.stages[index + 1].conversion}%
+                                                {funnelDataForVisualization.stages[index + 1].conversion}%
                                             </Badge>
                                             <p className="text-xs text-muted-foreground mt-1">Conversão</p>
                                         </div>
@@ -157,7 +274,7 @@ export default function FunnelPage() {
                     <CardContent>
                         <div className="h-[250px]">
                             <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={funnelData.trendData}>
+                                <LineChart data={trendData}>
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="name" />
                                     <YAxis unit="%" />
@@ -187,7 +304,7 @@ export default function FunnelPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {funnelData.dropOffs.map(item => (
+                                {dropOffs.map(item => (
                                     <TableRow key={item.session}>
                                         <TableCell className="font-mono">{item.session}</TableCell>
                                         <TableCell>{item.lastStep}</TableCell>
