@@ -6,6 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from '@/components/ui/separator';
 
 const CloakerOption = ({ id, label, description, children }: { id: string, label: string, description: string, children?: React.ReactNode }) => (
     <div className="flex items-start sm:items-center justify-between rounded-lg border p-4 flex-col sm:flex-row gap-4">
@@ -19,10 +22,19 @@ const CloakerOption = ({ id, label, description, children }: { id: string, label
     </div>
 );
 
+const osOptions = [
+    { id: 'windows', label: 'Windows' },
+    { id: 'macos', label: 'macOS' },
+    { id: 'linux', label: 'Linux' },
+    { id: 'android', label: 'Android' },
+    { id: 'ios', label: 'iOS' },
+];
 
 export default function CloakerPage() {
   const [desktopRedirectEnabled, setDesktopRedirectEnabled] = React.useState(false);
   const [mobileRedirectEnabled, setMobileRedirectEnabled] = React.useState(false);
+  const [geoFilterEnabled, setGeoFilterEnabled] = React.useState(false);
+  const [osFilterEnabled, setOsFilterEnabled] = React.useState(false);
 
   return (
     <div className="space-y-6">
@@ -128,40 +140,124 @@ export default function CloakerPage() {
             <CardHeader>
                 <CardTitle className="font-headline">Filtros de Tráfego</CardTitle>
                 <CardDescription>
-                    Controle quem pode ver seu site com base em vários critérios.
+                    Controle quem pode ver seu site com base em vários critérios. As configurações salvas aqui serão aplicadas a este site.
                 </CardDescription>
             </CardHeader>
-             <CardContent className="grid md:grid-cols-2 gap-4">
-                <CloakerOption 
-                    id="bot-filter"
-                    label="Filtro Anti-Bot"
-                    description="Bloqueia bots conhecidos e tráfego automatizado."
-                />
-                <CloakerOption 
-                    id="spy-filter"
-                    label="Filtro Anti-Spy"
-                    description="Protege contra ferramentas de espionagem de anúncios e concorrentes."
-                />
-                <CloakerOption 
-                    id="vpn-proxy-filter"
-                    label="Filtro de VPNs e Proxies"
-                    description="Bloqueia visitantes que usam VPNs ou proxies para ocultar a localização."
-                />
-                <CloakerOption 
-                    id="device-filter"
-                    label="Filtro por Dispositivo"
-                    description="Permite ou bloqueia tráfego de dispositivos específicos (Desktop, Mobile)."
-                />
-                 <CloakerOption 
-                    id="os-filter"
-                    label="Filtro por Sistema Operacional"
-                    description="Filtra visitantes com base no sistema operacional (Windows, macOS, etc.)."
-                />
-                 <CloakerOption 
-                    id="geo-filter"
-                    label="Filtro por Geolocalização"
-                    description="Restringe o acesso com base no país, região ou cidade do visitante."
-                />
+            <CardContent className="space-y-6">
+                 {/* Simple Filters */}
+                <div className="grid md:grid-cols-2 gap-4">
+                    <CloakerOption
+                        id="bot-filter"
+                        label="Filtro Anti-Bot"
+                        description="Bloqueia bots conhecidos e tráfego automatizado."
+                    />
+                    <CloakerOption
+                        id="spy-filter"
+                        label="Filtro Anti-Spy"
+                        description="Protege contra ferramentas de espionagem de anúncios e concorrentes."
+                    />
+                    <CloakerOption
+                        id="vpn-proxy-filter"
+                        label="Filtro de VPNs e Proxies"
+                        description="Bloqueia visitantes que usam VPNs ou proxies."
+                    />
+                     <CloakerOption 
+                        id="device-filter"
+                        label="Filtro por Dispositivo"
+                        description="Permite ou bloqueia tráfego de dispositivos específicos."
+                    />
+                </div>
+                
+                <Separator />
+
+                {/* Geo Filter Section */}
+                <div className="space-y-4 rounded-lg border p-4">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                            <Label htmlFor="geo-filter-switch" className="text-base">
+                                Filtro por Geolocalização
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                                Restrinja o acesso com base no país ou cidade do visitante.
+                            </p>
+                        </div>
+                        <Switch
+                            id="geo-filter-switch"
+                            checked={geoFilterEnabled}
+                            onCheckedChange={setGeoFilterEnabled}
+                        />
+                    </div>
+                    {geoFilterEnabled && (
+                        <div className="grid sm:grid-cols-3 gap-4 pt-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="geo-action">Ação</Label>
+                                <Select defaultValue="block">
+                                    <SelectTrigger id="geo-action">
+                                        <SelectValue placeholder="Selecione a ação" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="block">Bloquear Locais</SelectItem>
+                                        <SelectItem value="allow">Permitir Apenas</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2 sm:col-span-2">
+                                <Label htmlFor="geo-locations">Lista de Países ou Cidades</Label>
+                                <Input
+                                    id="geo-locations"
+                                    placeholder="Ex: Brasil, Lisboa, Estados Unidos"
+                                />
+                                 <p className="text-xs text-muted-foreground">Use a vírgula para separar os locais.</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* OS Filter Section */}
+                <div className="space-y-4 rounded-lg border p-4">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                            <Label htmlFor="os-filter-switch" className="text-base">
+                                Filtro por Sistema Operacional
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                                Filtre visitantes com base no sistema operacional.
+                            </p>
+                        </div>
+                        <Switch
+                            id="os-filter-switch"
+                            checked={osFilterEnabled}
+                            onCheckedChange={setOsFilterEnabled}
+                        />
+                    </div>
+                    {osFilterEnabled && (
+                        <div className="space-y-4 pt-2">
+                            <div className="w-full max-w-xs space-y-2">
+                                <Label htmlFor="os-action">Ação</Label>
+                                <Select defaultValue="block">
+                                    <SelectTrigger id="os-action">
+                                        <SelectValue placeholder="Selecione a ação" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="block">Bloquear Selecionados</SelectItem>
+                                        <SelectItem value="allow">Permitir Apenas</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <Label>Selecione os Sistemas Operacionais</Label>
+                                <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 pt-2">
+                                    {osOptions.map((os) => (
+                                        <div key={os.id} className="flex items-center space-x-2">
+                                            <Checkbox id={`os-${os.id}`} />
+                                            <Label htmlFor={`os-${os.id}`} className="font-normal">{os.label}</Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </CardContent>
         </Card>
 
