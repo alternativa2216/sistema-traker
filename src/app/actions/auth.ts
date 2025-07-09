@@ -32,17 +32,16 @@ export async function signUpUser(formData: unknown) {
   }
   
   const { name, email, password } = validation.data;
-  // NOTE: We are not hashing the password in this mock implementation.
-  // In a real production environment, ALWAYS hash passwords before storing.
+  // NOTE: In a real production environment, ALWAYS hash passwords before storing.
   const userId = email; // Use email as mock UID
 
   let connection;
   try {
     connection = await getDbConnection();
-    // We are not storing the password, just creating the user record.
+    // Storing password directly. Hashing should be implemented for production.
     await connection.execute(
-      'INSERT INTO users (id, name, email) VALUES (?, ?, ?)',
-      [userId, name, email]
+      'INSERT INTO users (id, name, email, password) VALUES (?, ?, ?, ?)',
+      [userId, name, email, password]
     );
   } catch (error: any) {
     if (error.code === 'ER_DUP_ENTRY') {
@@ -69,16 +68,19 @@ export async function loginUser(formData: unknown) {
     let userFromDb: any;
     try {
         connection = await getDbConnection();
-        // NOTE: We are NOT checking the password in this mock implementation.
-        const [rows] = await connection.execute('SELECT id, name, email FROM users WHERE email = ?', [email]);
+        // NOTE: Comparing plain text passwords. Hashing should be implemented for production.
+        const [rows] = await connection.execute('SELECT id, name, email, password FROM users WHERE email = ?', [email]);
         if (Array.isArray(rows) && rows.length > 0) {
             userFromDb = rows[0];
+            if (userFromDb.password !== password) {
+                throw new Error("Usuário não encontrado ou senha inválida.");
+            }
         } else {
             throw new Error("Usuário não encontrado ou senha inválida.");
         }
     } catch (error: any) {
          console.error("Database lookup failed:", error);
-         throw new Error("Erro ao acessar o banco de dados.");
+         throw new Error(error.message || "Erro ao acessar o banco de dados.");
     } finally {
         if (connection) await connection.end();
     }

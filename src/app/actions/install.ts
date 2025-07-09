@@ -21,7 +21,10 @@ CREATE TABLE IF NOT EXISTS users (
   id VARCHAR(255) PRIMARY KEY,
   name VARCHAR(255),
   email VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
   plan VARCHAR(50) DEFAULT 'free',
+  role VARCHAR(50) DEFAULT 'user',
+  custom_alert TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 `;
@@ -32,6 +35,7 @@ CREATE TABLE IF NOT EXISTS projects (
   user_id VARCHAR(255) NOT NULL,
   name VARCHAR(255) NOT NULL,
   url VARCHAR(255) NOT NULL,
+  fb_pixel_id VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -43,6 +47,98 @@ CREATE TABLE IF NOT EXISTS settings (
   setting_value TEXT
 );
 `;
+
+const createSubscriptionsTableQuery = `
+CREATE TABLE IF NOT EXISTS subscriptions (
+  id VARCHAR(255) PRIMARY KEY,
+  user_id VARCHAR(255) NOT NULL,
+  plan VARCHAR(50) NOT NULL,
+  status VARCHAR(50) NOT NULL,
+  start_date TIMESTAMP,
+  end_date TIMESTAMP,
+  gateway_id VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+`;
+
+const createFunnelStepsTableQuery = `
+CREATE TABLE IF NOT EXISTS funnel_steps (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  project_id VARCHAR(255) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  url_path VARCHAR(2048) NOT NULL,
+  step_order INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
+`;
+
+const createCloakerRulesTableQuery = `
+CREATE TABLE IF NOT EXISTS cloaker_rules (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  project_id VARCHAR(255) NOT NULL,
+  conditions TEXT NOT NULL,
+  redirect_url VARCHAR(2048) NOT NULL,
+  priority INT DEFAULT 0,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
+`;
+
+const createSecurityLogsTableQuery = `
+CREATE TABLE IF NOT EXISTS security_logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  project_id VARCHAR(255) NOT NULL,
+  ip_address VARCHAR(45),
+  country VARCHAR(100),
+  user_agent TEXT,
+  reason VARCHAR(255),
+  is_critical BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
+`;
+
+const createNotificationsTableQuery = `
+CREATE TABLE IF NOT EXISTS notifications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id VARCHAR(255),
+  type VARCHAR(50) NOT NULL,
+  message TEXT NOT NULL,
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+`;
+
+const createProjectSettingsTableQuery = `
+CREATE TABLE IF NOT EXISTS project_settings (
+  project_id VARCHAR(255) PRIMARY KEY,
+  cloaker_config TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+);
+`;
+
+const createAnalyticsVisitsTableQuery = `
+CREATE TABLE IF NOT EXISTS analytics_visits (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  project_id VARCHAR(255) NOT NULL,
+  session_id VARCHAR(255) NOT NULL,
+  path VARCHAR(2048) NOT NULL,
+  referrer VARCHAR(2048),
+  user_agent TEXT,
+  country VARCHAR(100),
+  device_type VARCHAR(50),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  KEY project_id_idx (project_id),
+  KEY session_id_idx (session_id)
+);
+`;
+
 
 async function handleConnectionError(error: any, connection: any) {
     if (connection) {
@@ -139,15 +235,24 @@ export async function installDatabaseAction(data: unknown) {
     let connection;
     try {
         connection = await getDbConnection(credentials);
+        
+        // Execute all table creation queries
         await connection.query(createUsersTableQuery);
         await connection.query(createProjectsTableQuery);
         await connection.query(createSettingsTableQuery);
+        await connection.query(createSubscriptionsTableQuery);
+        await connection.query(createFunnelStepsTableQuery);
+        await connection.query(createCloakerRulesTableQuery);
+        await connection.query(createSecurityLogsTableQuery);
+        await connection.query(createNotificationsTableQuery);
+        await connection.query(createProjectSettingsTableQuery);
+        await connection.query(createAnalyticsVisitsTableQuery);
         
         await connection.end();
         
         return {
             success: true,
-            message: "Banco de dados instalado com sucesso! As tabelas 'users', 'projects' e 'settings' foram criadas.",
+            message: "Banco de dados e todas as tabelas foram instalados com sucesso!",
         };
     } catch (error: any) {
         console.error("Falha na instalação do banco de dados:", error);
