@@ -7,7 +7,7 @@ import Link from "next/link";
 const tiers = [
   {
     name: "Grátis",
-    price: "$0",
+    price: "R$0",
     description: "Para projetos pessoais e para começar.",
     features: [
       "1 Projeto",
@@ -20,14 +20,14 @@ const tiers = [
   },
   {
     name: "Pro",
-    price: "$29",
+    price: "R$29",
     description: "Para profissionais e pequenas empresas.",
     features: [
       "10 Projetos",
       "200.000 visualizações de página mensais",
-      "Análise Avançada",
-      "Análise SWOT e Relatórios de IA",
-      "Diagnóstico de Erros",
+      "Suíte de Segurança e Cloaker",
+      "Todas as Ferramentas de IA",
+      "Análise de Funil e Tempo Real",
       "Retenção de dados por 1 ano",
     ],
     cta: "Começar com Pro",
@@ -41,7 +41,6 @@ const tiers = [
     features: [
       "Projetos Ilimitados",
       "Limites de visualização de página personalizados",
-      "Chatbot de IA",
       "Acesso à API",
       "Suporte Dedicado",
       "Retenção de dados ilimitada",
