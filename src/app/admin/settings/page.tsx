@@ -1,15 +1,8 @@
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { SlidersHorizontal, Mail, CreditCard, Palette } from "lucide-react";
+import { Mail, CreditCard, Palette, Database } from "lucide-react";
 import Link from "next/link";
 
 const settingsOptions = [
-  {
-    href: "/admin/settings/general",
-    icon: SlidersHorizontal,
-    title: "Configurações Gerais",
-    description: "Configure chaves de API, integrações e outros ajustes globais.",
-    enabled: false,
-  },
   {
     href: "/admin/settings/email",
     icon: Mail,
@@ -22,6 +15,13 @@ const settingsOptions = [
     icon: CreditCard,
     title: "Faturamento e Planos",
     description: "Gerencie os preços dos seus planos e a integração com o gateway de pagamento.",
+    enabled: true,
+  },
+  {
+    href: "/admin/settings/database",
+    icon: Database,
+    title: "Banco de Dados",
+    description: "Conecte e gerencie a conexão com seu banco de dados.",
     enabled: true,
   },
   {

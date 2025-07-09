@@ -28,7 +28,7 @@ export default function AdminLogsPage() {
         return levelMatch && termMatch;
     });
 
-    const levelVariant: { [key: string]: "default" | "secondary" | "destructive" } = {
+    const levelVariant: { [key: string]: "default" | "secondary" | "destructive" | "outline" } = {
         INFO: 'secondary',
         WARN: 'default',
         ERROR: 'destructive',

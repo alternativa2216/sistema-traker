@@ -24,7 +24,7 @@ export default function AdminSubscriptionsPage() {
                sub.userEmail.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const getStatusVariant = (status: string) => {
+    const getStatusVariant = (status: string): "secondary" | "default" | "destructive" | "outline" => {
         switch (status) {
             case 'Ativa': return 'secondary';
             case 'Pendente': return 'default';
@@ -50,7 +50,7 @@ export default function AdminSubscriptionsPage() {
                        </div>
                         <Input 
                             placeholder="Buscar por nome ou email..." 
-                            className="w-full sm:w-auto"
+                            className="w-full sm:w-auto max-w-xs"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
