@@ -45,7 +45,9 @@ export async function clearSessionCookie() {
 
 // Firebase functionality is disabled for diagnostics.
 export async function sendPasswordResetEmailAction(email: string) {
-    console.log(`sendPasswordResetEmailAction called for ${email}, but Firebase is disabled.`);
+    console.log(`Password reset for ${email} requested. To send emails, configure SMTP variables in your .env file and implement the email sending logic.`);
+    // This is now a mock action. In a real scenario, you would use a service like nodemailer
+    // to send a password reset link. The UI for this is on the /forgot-password page.
     return;
 }
 
