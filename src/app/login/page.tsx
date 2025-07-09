@@ -35,6 +35,17 @@ export default function LoginPage() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
+
+    if (!auth) {
+      toast({
+        title: 'Erro de Configuração',
+        description: 'A autenticação está desativada. Por favor, configure suas chaves de API do Firebase no ambiente.',
+        variant: 'destructive',
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
       const idToken = await userCredential.user.getIdToken();

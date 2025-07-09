@@ -33,7 +33,9 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
   const params = useParams() as { siteId?: string };
 
   const handleSignOut = async () => {
-    await signOut(auth);
+    if (auth) {
+      await signOut(auth);
+    }
     await clearSessionCookie();
     router.push('/');
   }
