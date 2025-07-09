@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { FileText, Lightbulb, Loader2, Search, Sparkles } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { generateAbTestHypothesisAction } from '@/app/actions/ai';
-import type { GenerateAbTestHypothesisOutput } from '@/ai/flows/generate-ab-test-hypothesis';
+import type { GenerateAbTestHypothesisOutput } from '@/ai/schemas';
 
 const AbTestGenerator = () => {
     const [pageUrl, setPageUrl] = React.useState('');

@@ -1,11 +1,20 @@
 'use server';
 
-import { generateSwotAnalysis, GenerateSwotAnalysisInput, GenerateSwotAnalysisOutput } from "@/ai/flows/generate-swot-analysis";
-import { analyzeProjectData, AnalyzeProjectDataInput, AnalyzeProjectDataOutput } from "@/ai/flows/analyze-project-data";
-import { generateAdCopy, GenerateAdCopyInput, GenerateAdCopyOutput } from "@/ai/flows/generate-ad-copy";
-import { suggestAdAudience, SuggestAdAudienceInput, SuggestAdAudienceOutput } from "@/ai/flows/suggest-ad-audience";
-import { analyzeAdCreative, AnalyzeAdCreativeInput, AnalyzeAdCreativeOutput } from "@/ai/flows/analyze-ad-creative";
-import { generateAbTestHypothesis, GenerateAbTestHypothesisInput, GenerateAbTestHypothesisOutput } from "@/ai/flows/generate-ab-test-hypothesis";
+import { generateSwotAnalysis } from "@/ai/flows/generate-swot-analysis";
+import { analyzeProjectData } from "@/ai/flows/analyze-project-data";
+import { generateAdCopy } from "@/ai/flows/generate-ad-copy";
+import { suggestAdAudience } from "@/ai/flows/suggest-ad-audience";
+import { analyzeAdCreative } from "@/ai/flows/analyze-ad-creative";
+import { generateAbTestHypothesis } from "@/ai/flows/generate-ab-test-hypothesis";
+
+import type {
+  GenerateSwotAnalysisInput, GenerateSwotAnalysisOutput,
+  AnalyzeProjectDataInput, AnalyzeProjectDataOutput,
+  GenerateAdCopyInput, GenerateAdCopyOutput,
+  SuggestAdAudienceInput, SuggestAdAudienceOutput,
+  AnalyzeAdCreativeInput, AnalyzeAdCreativeOutput,
+  GenerateAbTestHypothesisInput, GenerateAbTestHypothesisOutput
+} from "@/ai/schemas";
 
 export async function generateSwotAnalysisAction(
   input: GenerateSwotAnalysisInput

@@ -4,24 +4,15 @@
  * @fileOverview Implementa um chatbot de IA para analisar dados de projetos com base nas consultas do usuário.
  *
  * - analyzeProjectData - Uma função que aceita uma solicitação de análise de dados do projeto e retorna uma análise gerada por IA.
- * - AnalyzeProjectDataInput - O tipo de entrada para a função analyzeProjectData.
- * - AnalyzeProjectDataOutput - O tipo de retorno para a função analyzeProjectData.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const AnalyzeProjectDataInputSchema = z.object({
-  projectId: z.string().describe('O ID do projeto a ser analisado.'),
-  query: z.string().describe('A pergunta específica ou solicitação de análise do usuário.'),
-  data: z.string().optional().describe('Os dados JSON relacionados ao projeto'),
-});
-export type AnalyzeProjectDataInput = z.infer<typeof AnalyzeProjectDataInputSchema>;
-
-const AnalyzeProjectDataOutputSchema = z.object({
-  analysis: z.string().describe('A análise gerada por IA dos dados do projeto com base na consulta do usuário.'),
-});
-export type AnalyzeProjectDataOutput = z.infer<typeof AnalyzeProjectDataOutputSchema>;
+import {
+    AnalyzeProjectDataInputSchema,
+    AnalyzeProjectDataOutputSchema,
+    type AnalyzeProjectDataInput,
+    type AnalyzeProjectDataOutput
+} from '@/ai/schemas';
 
 export async function analyzeProjectData(input: AnalyzeProjectDataInput): Promise<AnalyzeProjectDataOutput> {
   return analyzeProjectDataFlow(input);

@@ -12,9 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { generateAdCopyAction, suggestAdAudienceAction, analyzeAdCreativeAction } from '@/app/actions/ai';
-import type { GenerateAdCopyOutput } from '@/ai/flows/generate-ad-copy';
-import type { SuggestAdAudienceOutput } from '@/ai/flows/suggest-ad-audience';
-import type { AnalyzeAdCreativeOutput } from '@/ai/flows/analyze-ad-creative';
+import type { GenerateAdCopyOutput, SuggestAdAudienceOutput, AnalyzeAdCreativeOutput } from '@/ai/schemas';
 import Image from 'next/image';
 import { CampaignPerformanceChart } from '@/components/dashboard/facebook/campaign-performance-chart';
 import { cn } from '@/lib/utils';

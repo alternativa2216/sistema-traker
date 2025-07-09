@@ -3,28 +3,15 @@
  * @fileOverview Gera hipóteses de testes A/B para otimização de conversão.
  *
  * - generateAbTestHypothesis - Gera hipóteses de teste A/B.
- * - GenerateAbTestHypothesisInput - O tipo de entrada para a função.
- * - GenerateAbTestHypothesisOutput - O tipo de retorno para a função.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const GenerateAbTestHypothesisInputSchema = z.object({
-  pageUrl: z.string().describe('A URL ou caminho da página a ser otimizada (ex: /precos).'),
-  optimizationGoal: z.string().describe('O objetivo principal da otimização (ex: Aumentar cliques no botão de compra, reduzir a taxa de rejeição).'),
-});
-export type GenerateAbTestHypothesisInput = z.infer<typeof GenerateAbTestHypothesisInputSchema>;
-
-const HypothesisSchema = z.object({
-    hypothesis: z.string().describe("A hipótese do teste. Ex: 'Alterar o texto do botão de 'Começar' para 'Começar Gratuitamente' irá aumentar a taxa de cliques.'"),
-    suggestion: z.string().describe("A sugestão de implementação. Ex: 'Variante A: 'Começar'. Variante B: 'Começar Gratuitamente'.'"),
-});
-
-const GenerateAbTestHypothesisOutputSchema = z.object({
-  hypotheses: z.array(HypothesisSchema).describe('Uma lista de 3 a 5 hipóteses de teste A/B acionáveis.'),
-});
-export type GenerateAbTestHypothesisOutput = z.infer<typeof GenerateAbTestHypothesisOutputSchema>;
+import {
+    GenerateAbTestHypothesisInputSchema,
+    GenerateAbTestHypothesisOutputSchema,
+    type GenerateAbTestHypothesisInput,
+    type GenerateAbTestHypothesisOutput
+} from '@/ai/schemas';
 
 export async function generateAbTestHypothesis(input: GenerateAbTestHypothesisInput): Promise<GenerateAbTestHypothesisOutput> {
   return generateAbTestHypothesisFlow(input);

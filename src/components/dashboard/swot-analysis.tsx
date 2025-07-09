@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import {
   Card,
   CardContent,
@@ -23,14 +22,12 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { generateSwotAnalysisAction } from '@/app/actions/ai'
-import type { GenerateSwotAnalysisOutput } from '@/ai/flows/generate-swot-analysis'
 import { Loader2 } from 'lucide-react'
+import type { GenerateSwotAnalysisOutput } from '@/ai/schemas'
+import { GenerateSwotAnalysisInputSchema } from '@/ai/schemas'
+import type { z } from 'zod'
 
-const formSchema = z.object({
-  projectData: z.string().min(50, {
-    message: "Forneça pelo menos 50 caracteres de dados do projeto para uma análise eficaz.",
-  }),
-})
+const formSchema = GenerateSwotAnalysisInputSchema;
 
 export function SwotAnalysis() {
   const [analysis, setAnalysis] = useState<GenerateSwotAnalysisOutput | null>(null)

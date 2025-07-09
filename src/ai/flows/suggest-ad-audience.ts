@@ -3,24 +3,16 @@
  * @fileOverview Sugere públicos-alvo para campanhas do Facebook Ads.
  *
  * - suggestAdAudience - Sugere um público-alvo.
- * - SuggestAdAudienceInput - O tipo de entrada para a função suggestAdAudience.
- * - SuggestAdAudienceOutput - O tipo de retorno para a função suggestAdAudience.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {
+    SuggestAdAudienceInputSchema,
+    SuggestAdAudienceOutputSchema,
+    type SuggestAdAudienceInput,
+    type SuggestAdAudienceOutput
+} from '@/ai/schemas';
 
-const SuggestAdAudienceInputSchema = z.object({
-  customerProfile: z.string().describe('Uma descrição do cliente ideal, incluindo seus desejos, dores e dados demográficos.'),
-});
-export type SuggestAdAudienceInput = z.infer<typeof SuggestAdAudienceInputSchema>;
-
-const SuggestAdAudienceOutputSchema = z.object({
-  interests: z.array(z.string()).describe('Uma lista de interesses detalhados que este público provavelmente tem no Facebook.'),
-  behaviors: z.array(z.string()).describe('Uma lista de comportamentos de compra ou online que podem ser usados para segmentação.'),
-  demographics: z.string().describe('Um resumo dos dados demográficos do público (idade, gênero, localização, etc.).'),
-});
-export type SuggestAdAudienceOutput = z.infer<typeof SuggestAdAudienceOutputSchema>;
 
 export async function suggestAdAudience(input: SuggestAdAudienceInput): Promise<SuggestAdAudienceOutput> {
   return suggestAdAudienceFlow(input);
