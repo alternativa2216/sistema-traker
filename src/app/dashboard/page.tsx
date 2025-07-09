@@ -6,11 +6,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { ArrowUpRight, Eye, MousePointerClick, PlusCircle, Sparkles, LogOut, Loader2, Target, Users, Network } from "lucide-react";
+import { ArrowUpRight, Eye, MousePointerClick, PlusCircle, Sparkles, LogOut, Loader2, Target, Users, Network, AlertTriangle, Lightbulb, TrendingUp, Copy } from "lucide-react";
 import Link from "next/link";
 import { analyzeProjectDataAction } from "../actions/ai";
 import { useToast } from "@/hooks/use-toast";
 import { OverviewChart } from "@/components/dashboard/overview-chart";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 
 // --- Mock Data ---
@@ -139,6 +150,13 @@ export default function DashboardPage() {
     const [isAiLoading, setIsAiLoading] = useState(false);
     const { toast } = useToast();
 
+    // State for Add Site Dialog
+    const [isAddSiteDialogOpen, setIsAddSiteDialogOpen] = useState(false);
+    const [dialogStep, setDialogStep] = useState('form'); // 'form' or 'success'
+    const [newSiteName, setNewSiteName] = useState('');
+    const [newSiteUrl, setNewSiteUrl] = useState('');
+    const [generatedScript, setGeneratedScript] = useState('');
+
     useEffect(() => {
         // @ts-ignore
         const data = MOCK_DATA[selectedSiteId] || MOCK_DATA.all;
@@ -173,6 +191,45 @@ export default function DashboardPage() {
             setIsAiLoading(false);
         }
     };
+
+    const handleAddSiteSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newSiteName.trim() || !newSiteUrl.trim()) {
+            toast({
+                title: "Campos obrigatórios",
+                description: "Por favor, preencha o nome e a URL do site.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        // In a real app, you would save this to the DB and get a real ID.
+        const pseudoId = newSiteName.toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 15) || `site-${Date.now()}`;
+        const script = `<script async src="https://tracklytics.ai/track.js?id=${pseudoId}"></script>`;
+        setGeneratedScript(script);
+        setDialogStep('success');
+    };
+
+    const copyScriptToClipboard = () => {
+        navigator.clipboard.writeText(generatedScript);
+        toast({
+            title: "Copiado!",
+            description: "O script de rastreamento foi copiado para sua área de transferência.",
+        });
+    };
+
+    useEffect(() => {
+        if (!isAddSiteDialogOpen) {
+            // Reset dialog state after it closes
+            setTimeout(() => {
+                setDialogStep('form');
+                setNewSiteName('');
+                setNewSiteUrl('');
+                setGeneratedScript('');
+            }, 300); 
+        }
+    }, [isAddSiteDialogOpen]);
+
 
     const TopPagesCard = ({ title, data, icon, unit }: { title: string, data: { path: string, [key: string]: string }[], icon: React.ElementType, unit: string }) => {
         const Icon = icon;
@@ -230,10 +287,59 @@ export default function DashboardPage() {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Button>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Adicionar Site
-                    </Button>
+                    <Dialog open={isAddSiteDialogOpen} onOpenChange={setIsAddSiteDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button>
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Adicionar Site
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            {dialogStep === 'form' ? (
+                                <>
+                                    <DialogHeader>
+                                        <DialogTitle className="font-headline">Adicionar Novo Site</DialogTitle>
+                                        <DialogDescription>
+                                            Insira os detalhes do seu novo site para começar o rastreamento.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <form id="add-site-form" onSubmit={handleAddSiteSubmit}>
+                                        <div className="grid gap-4 py-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="site-name">Nome do Site</Label>
+                                                <Input id="site-name" value={newSiteName} onChange={(e) => setNewSiteName(e.target.value)} placeholder="Meu Novo Projeto" required />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="site-url">URL do Site</Label>
+                                                <Input id="site-url" value={newSiteUrl} onChange={(e) => setNewSiteUrl(e.target.value)} placeholder="https://meuprojeto.com" required />
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <DialogFooter>
+                                        <Button type="submit" form="add-site-form">Adicionar e Gerar Script</Button>
+                                    </DialogFooter>
+                                </>
+                            ) : (
+                                <>
+                                    <DialogHeader>
+                                        <DialogTitle className="font-headline">Site Adicionado com Sucesso!</DialogTitle>
+                                        <DialogDescription>
+                                           Copie e cole este script na tag <code>&lt;head&gt;</code> do seu site para começar.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="bg-muted p-4 rounded-md font-mono text-sm text-foreground break-all">
+                                        {generatedScript}
+                                    </div>
+                                    <DialogFooter>
+                                        <Button onClick={copyScriptToClipboard} className="w-full">
+                                            <Copy className="mr-2 h-4 w-4" />
+                                            Copiar Script
+                                        </Button>
+                                    </DialogFooter>
+                                </>
+                            )}
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </div>
 
@@ -283,6 +389,39 @@ export default function DashboardPage() {
                     </CardContent>
                 </Card>
             </div>
+            
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                        <CardTitle className="font-headline text-lg">Alertas e Oportunidades da IA</CardTitle>
+                    </div>
+                    <CardDescription>Insights proativos para guiar suas próximas ações e otimizar resultados.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-transparent hover:border-border transition-colors">
+                        <AlertTriangle className="h-4 w-4 text-destructive mt-1 flex-shrink-0" />
+                        <div>
+                            <p className="font-semibold text-foreground">Alerta de Desempenho</p>
+                            <p className="text-sm text-muted-foreground">A taxa de rejeição na página <code className="text-xs bg-background p-1 rounded">/precos</code> aumentou 28% na última semana.</p>
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-transparent hover:border-border transition-colors">
+                        <TrendingUp className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
+                        <div>
+                            <p className="font-semibold text-foreground">Oportunidade de Crescimento</p>
+                            <p className="text-sm text-muted-foreground">O tráfego da fonte <code className="text-xs bg-background p-1 rounded">ProductHunt</code> converte 50% a mais que a média. Considere investir mais nesse canal.</p>
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-transparent hover:border-border transition-colors">
+                        <Lightbulb className="h-4 w-4 text-yellow-500 mt-1 flex-shrink-0" />
+                        <div>
+                            <p className="font-semibold text-foreground">Insight de Otimização</p>
+                            <p className="text-sm text-muted-foreground">Usuários mobile estão abandonando o carrinho 40% mais que usuários de desktop. Verifique a usabilidade da versão móvel.</p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 <TopPagesCard title="Top 5 Páginas Visitadas" data={displayData.topVisitedPages} icon={MousePointerClick} unit="Visitas" />
