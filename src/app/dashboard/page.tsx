@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect } from "react";
@@ -7,10 +6,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { ArrowUpRight, Eye, MousePointerClick, PlusCircle, Sparkles, LogOut, Loader2, Target, Users } from "lucide-react";
+import { ArrowUpRight, Eye, MousePointerClick, PlusCircle, Sparkles, LogOut, Loader2, Target, Users, Network } from "lucide-react";
 import Link from "next/link";
 import { analyzeProjectDataAction } from "../actions/ai";
 import { useToast } from "@/hooks/use-toast";
+import { OverviewChart } from "@/components/dashboard/overview-chart";
 
 
 // --- Mock Data ---
@@ -41,6 +41,13 @@ const MOCK_DATA = {
             { path: "/suporte", exits: "1,987" },
             { path: "/pricing", exits: "1,234" },
         ],
+        trafficSources: [
+            { source: "Google", visits: "18,234" },
+            { source: "Direct", visits: "11,987" },
+            { source: "Facebook", visits: "7,543" },
+            { source: "ProductHunt", visits: "4,321" },
+            { source: "Outros", visits: "2,022" },
+        ]
     },
     "site-1": {
         totalVisits: "12,402",
@@ -61,6 +68,12 @@ const MOCK_DATA = {
             { path: "/login", exits: "543" },
             { path: "/promocoes", exits: "321" },
         ],
+        trafficSources: [
+            { source: "Google", visits: "6,234" },
+            { source: "Facebook", visits: "3,543" },
+            { source: "Direct", visits: "1,987" },
+            { source: "Outros", visits: "638" },
+        ]
     },
     "site-2": {
         totalVisits: "8,923",
@@ -81,6 +94,12 @@ const MOCK_DATA = {
             { path: "/sobre", exits: "650" },
             { path: "/projetos", exits: "320" },
         ],
+         trafficSources: [
+            { source: "Direct", visits: "4,234" },
+            { source: "Google", visits: "3,987" },
+            { source: "Twitter", visits: "543" },
+            { source: "Outros", visits: "159" },
+        ]
     },
     "site-3": {
         totalVisits: "21,832",
@@ -101,7 +120,13 @@ const MOCK_DATA = {
                 { path: "/portfolio", exits: "1,200" },
                 { path: "/home", exits: "950" },
                 { path: "/blog", exits: "780" },
-            ]
+            ],
+        trafficSources: [
+            { source: "ProductHunt", visits: "10,234" },
+            { source: "Google", visits: "7,543" },
+            { source: "Direct", visits: "3,123" },
+            { source: "Outros", visits: "932" },
+        ]
     }
 }
 // --- End Mock Data ---
@@ -132,7 +157,7 @@ export default function DashboardPage() {
         try {
             const response = await analyzeProjectDataAction({
                 projectId,
-                query: "O que posso melhorar no meu site para converter mais?",
+                query: "O que posso melhorar no meu site para converter mais? Dê sugestões práticas e acionáveis.",
                 data: JSON.stringify(projectData, null, 2),
             });
             setAiAnalysis(response.analysis);
@@ -212,6 +237,10 @@ export default function DashboardPage() {
                 </div>
             </div>
 
+            {selectedSiteId === 'all' && (
+                <OverviewChart />
+            )}
+
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -255,9 +284,35 @@ export default function DashboardPage() {
                 </Card>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <TopPagesCard title="Top 5 Páginas Mais Visitadas" data={displayData.topVisitedPages} icon={MousePointerClick} unit="Visitas" />
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                <TopPagesCard title="Top 5 Páginas Visitadas" data={displayData.topVisitedPages} icon={MousePointerClick} unit="Visitas" />
                 <TopPagesCard title="Top 5 Páginas de Saída" data={displayData.topExitPages} icon={LogOut} unit="Saídas" />
+                 <Card>
+                    <CardHeader>
+                        <div className="flex items-center gap-2">
+                            <Network className="h-5 w-5 text-primary" />
+                            <CardTitle className="font-headline text-lg">Fontes de Tráfego</CardTitle>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Fonte</TableHead>
+                                    <TableHead className="text-right">Visitas</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {displayData.trafficSources.map((source) => (
+                                    <TableRow key={source.source}>
+                                        <TableCell className="font-medium">{source.source}</TableCell>
+                                        <TableCell className="text-right">{source.visits}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
             </div>
 
             {selectedSiteId !== 'all' && (
