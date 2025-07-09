@@ -21,14 +21,18 @@ const nextConfig: NextConfig = {
     config.experiments = { ...config.experiments, asyncWebAssembly: true };
     
     if (!isServer) {
-      // Polyfill 'process' for the browser environment
       config.plugins.push(
         new (require('webpack').ProvidePlugin)({
           process: 'process/browser',
         })
       );
+
+      config.resolve.alias = {
+        ...(config.resolve.alias || {}),
+        'node:process': 'process/browser',
+        'process': 'process/browser',
+      };
       
-      // Also provide fallbacks for other Node.js modules that shouldn't be in the browser
       config.resolve.fallback = {
         ...(config.resolve.fallback || {}),
         fs: false,
