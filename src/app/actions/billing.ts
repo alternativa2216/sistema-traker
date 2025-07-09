@@ -48,9 +48,9 @@ export async function createPaymentTransaction(input: z.infer<typeof CreateTrans
     }
 
     const { userName, userEmail, userCpf, userPhone, amountInCents, description } = validation.data;
-    const auth = getNovaEraAuth();
-
+    
     try {
+        const auth = getNovaEraAuth();
         const transactionPayload = {
             amount: amountInCents,
             paymentMethod: "pix",
@@ -146,9 +146,9 @@ export async function checkPaymentStatus(input: z.infer<typeof CheckTransactionI
         throw new Error('ID da transação inválido.');
     }
     const { transactionId } = validation.data;
-    const auth = getNovaEraAuth();
     
     try {
+        const auth = getNovaEraAuth();
         const response = await fetch(`https://api.novaera-pagamentos.com/api/v1/transactions/${transactionId}`, {
             method: 'GET',
             headers: {
