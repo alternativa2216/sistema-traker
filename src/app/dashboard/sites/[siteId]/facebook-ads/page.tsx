@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bot, CheckCircle, DollarSign, Image as ImageIcon, LayoutDashboard, Loader2, MousePointerClick, PenSquare, Target, Upload, Users } from "lucide-react";
+import { Bot, CheckCircle, Copy, DollarSign, Image as ImageIcon, LayoutDashboard, Loader2, MousePointerClick, PenSquare, Target, Upload, Users } from "lucide-react";
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
@@ -59,6 +59,11 @@ const AdGenerator = () => {
         }
     };
 
+    const copyToClipboard = (text: string, fieldName: string) => {
+        navigator.clipboard.writeText(text);
+        toast({ title: "Copiado!", description: `${fieldName} copiado para a área de transferência.` });
+    };
+
     return (
         <Card>
             <CardHeader>
@@ -91,15 +96,30 @@ const AdGenerator = () => {
                         <h4 className="font-semibold">Resultado Gerado:</h4>
                         <div className="space-y-1">
                             <Label>Título</Label>
-                            <p className="text-sm text-foreground">{result.headline}</p>
+                            <div className="flex items-center justify-between group">
+                                <p className="text-sm text-foreground pr-4">{result.headline}</p>
+                                <Button variant="ghost" size="icon" className="opacity-50 group-hover:opacity-100 transition-opacity" onClick={() => copyToClipboard(result.headline, 'Título')}>
+                                    <Copy className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                         <div className="space-y-1">
                             <Label>Texto Principal</Label>
-                            <p className="text-sm text-foreground">{result.primaryText}</p>
+                             <div className="flex items-center justify-between group">
+                                <p className="text-sm text-foreground pr-4">{result.primaryText}</p>
+                                <Button variant="ghost" size="icon" className="opacity-50 group-hover:opacity-100 transition-opacity" onClick={() => copyToClipboard(result.primaryText, 'Texto Principal')}>
+                                    <Copy className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                         <div className="space-y-1">
                             <Label>Chamada para Ação (CTA)</Label>
-                            <p className="text-sm text-foreground">{result.cta}</p>
+                             <div className="flex items-center justify-between group">
+                                <p className="text-sm text-foreground pr-4">{result.cta}</p>
+                                <Button variant="ghost" size="icon" className="opacity-50 group-hover:opacity-100 transition-opacity" onClick={() => copyToClipboard(result.cta, 'CTA')}>
+                                    <Copy className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </CardContent>
@@ -127,6 +147,11 @@ const AudienceBuilder = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const copyToClipboard = (text: string, type: string) => {
+        navigator.clipboard.writeText(text);
+        toast({ title: "Copiado!", description: `${type} '${text}' copiado para a área de transferência.` });
     };
     
     return (
@@ -166,13 +191,31 @@ const AudienceBuilder = () => {
                         <div className="space-y-2">
                             <Label>Interesses</Label>
                             <div className="flex flex-wrap gap-2">
-                                {result.interests.map(item => <Badge key={item} variant="secondary">{item}</Badge>)}
+                                {result.interests.map(item => (
+                                    <Badge 
+                                        key={item} 
+                                        variant="secondary" 
+                                        className="cursor-pointer hover:bg-secondary/80"
+                                        onClick={() => copyToClipboard(item, 'Interesse')}
+                                    >
+                                        {item}
+                                    </Badge>
+                                ))}
                             </div>
                         </div>
                          <div className="space-y-2">
                             <Label>Comportamentos</Label>
                             <div className="flex flex-wrap gap-2">
-                                {result.behaviors.map(item => <Badge key={item} variant="secondary">{item}</Badge>)}
+                                {result.behaviors.map(item => (
+                                     <Badge 
+                                        key={item} 
+                                        variant="secondary" 
+                                        className="cursor-pointer hover:bg-secondary/80"
+                                        onClick={() => copyToClipboard(item, 'Comportamento')}
+                                    >
+                                        {item}
+                                    </Badge>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -181,6 +224,48 @@ const AudienceBuilder = () => {
         </Card>
     );
 };
+
+const ScoreCircle = ({ score }: { score: number }) => {
+    const size = 100;
+    const strokeWidth = 10;
+    const radius = (size - strokeWidth) / 2;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (score / 100) * circumference;
+
+    return (
+        <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+            <svg className="absolute transform -rotate-90" width={size} height={size}>
+                <circle
+                    className="text-muted"
+                    strokeWidth={strokeWidth}
+                    stroke="currentColor"
+                    fill="transparent"
+                    r={radius}
+                    cx={size / 2}
+                    cy={size / 2}
+                />
+                <circle
+                    className="text-primary"
+                    strokeWidth={strokeWidth}
+                    stroke="currentColor"
+                    fill="transparent"
+                    r={radius}
+                    cx={size / 2}
+                    cy={size / 2}
+                    strokeDasharray={circumference}
+                    strokeDashoffset={offset}
+                    strokeLinecap="round"
+                    style={{
+                        transition: 'stroke-dashoffset 0.8s ease-out'
+                    }}
+                />
+            </svg>
+            <span className="text-3xl font-bold font-headline text-foreground">{score}</span>
+             <span className="absolute bottom-1 text-xs text-muted-foreground">/ 100</span>
+        </div>
+    );
+};
+
 
 const CreativeAnalyzer = () => {
     const [isLoading, setIsLoading] = React.useState(false);
@@ -231,21 +316,20 @@ const CreativeAnalyzer = () => {
                     </Button>
                 </div>
                 {imagePreview && (
-                    <div className="flex flex-col md:flex-row gap-4">
-                        <div className="w-full md:w-1/3">
-                            <Image src={imagePreview} alt="Preview do criativo" width={300} height={300} className="rounded-lg object-contain border" />
-                        </div>
-                        <div className="w-full md:w-2/3 space-y-4">
-                           <Button onClick={handleAnalyze} disabled={isLoading}>
+                    <div className="flex flex-col md:flex-row gap-6">
+                        <div className="w-full md:w-1/3 space-y-4">
+                            <Image src={imagePreview} alt="Preview do criativo" width={300} height={300} className="rounded-lg object-contain border aspect-square" />
+                            <Button onClick={handleAnalyze} disabled={isLoading} className="w-full">
                                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
                                 Analisar Criativo
                             </Button>
+                        </div>
+                        <div className="w-full md:w-2/3 space-y-4">
                             {result && (
-                                <div className="space-y-4 rounded-lg border bg-muted/50 p-4">
+                                <div className="space-y-4 rounded-lg border bg-muted/50 p-4 h-full">
                                      <h4 className="font-semibold">Análise da IA:</h4>
-                                     <div className="flex items-baseline gap-2">
-                                         <span className="text-2xl font-bold">{result.score}</span>
-                                         <span className="text-sm text-muted-foreground">/ 100</span>
+                                     <div className="flex items-center justify-center py-4">
+                                        <ScoreCircle score={result.score} />
                                      </div>
                                      <div className="space-y-1">
                                          <Label>Feedback</Label>
