@@ -10,12 +10,12 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const GenerateAdCopyInputSchema = z.object({
+const GenerateAdCopyInputSchema = z.object({
   productDescription: z.string().describe('Uma descrição detalhada do produto ou serviço a ser anunciado.'),
 });
 export type GenerateAdCopyInput = z.infer<typeof GenerateAdCopyInputSchema>;
 
-export const GenerateAdCopyOutputSchema = z.object({
+const GenerateAdCopyOutputSchema = z.object({
   headline: z.string().describe('Um título curto e impactante para o anúncio (máximo 40 caracteres).'),
   primaryText: z.string().describe('O corpo principal do anúncio, persuasivo e informativo (máximo 125 caracteres).'),
   cta: z.string().describe('Uma chamada para ação clara e concisa (ex: "Compre Agora", "Saiba Mais").'),

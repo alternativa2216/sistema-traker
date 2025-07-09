@@ -10,12 +10,12 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const SuggestAdAudienceInputSchema = z.object({
+const SuggestAdAudienceInputSchema = z.object({
   customerProfile: z.string().describe('Uma descrição do cliente ideal, incluindo seus desejos, dores e dados demográficos.'),
 });
 export type SuggestAdAudienceInput = z.infer<typeof SuggestAdAudienceInputSchema>;
 
-export const SuggestAdAudienceOutputSchema = z.object({
+const SuggestAdAudienceOutputSchema = z.object({
   interests: z.array(z.string()).describe('Uma lista de interesses detalhados que este público provavelmente tem no Facebook.'),
   behaviors: z.array(z.string()).describe('Uma lista de comportamentos de compra ou online que podem ser usados para segmentação.'),
   demographics: z.string().describe('Um resumo dos dados demográficos do público (idade, gênero, localização, etc.).'),

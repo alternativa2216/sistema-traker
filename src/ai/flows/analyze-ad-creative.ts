@@ -10,12 +10,12 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const AnalyzeAdCreativeInputSchema = z.object({
+const AnalyzeAdCreativeInputSchema = z.object({
   imageDataUri: z.string().describe("A imagem do anúncio, como um data URI que deve incluir um MIME type e usar Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."),
 });
 export type AnalyzeAdCreativeInput = z.infer<typeof AnalyzeAdCreativeInputSchema>;
 
-export const AnalyzeAdCreativeOutputSchema = z.object({
+const AnalyzeAdCreativeOutputSchema = z.object({
   score: z.number().min(0).max(100).describe('Uma pontuação de 0 a 100 para a eficácia geral do criativo.'),
   feedback: z.string().describe('Um feedback geral sobre os pontos fortes e fracos da imagem.'),
   suggestions: z.array(z.string()).describe('Uma lista de sugestões acionáveis para melhorar o criativo.'),
