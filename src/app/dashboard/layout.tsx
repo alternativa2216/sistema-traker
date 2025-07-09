@@ -6,7 +6,7 @@ import {
 import { UserSidebar } from '@/components/dashboard/user-sidebar'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertTriangle, Sparkles } from 'lucide-react'
+import { AlertTriangle, Sparkles, Megaphone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
@@ -15,9 +15,11 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const isPaymentDue = true; // Em um app real, isso viria do seu banco de dados
-  const isProTrialActive = true; // Simula um usuário em teste
-  const trialDaysLeft = 7; // Simula os dias restantes
+  // In a real app, these values would come from your database based on the logged-in user.
+  const isPaymentDue = true; 
+  const isProTrialActive = true; 
+  const trialDaysLeft = 7; 
+  const customUserAlert = 'Sua fatura de Julho está pendente. Por favor, regularize.'; // This simulates the custom alert set by the admin.
 
   return (
     <SidebarProvider>
@@ -25,6 +27,18 @@ export default function DashboardLayout({
         <SidebarInset>
             <DashboardHeader />
             <main className="p-4 sm:p-6 lg:p-8">
+                {customUserAlert && (
+                     <Alert className="mb-6 border-yellow-500/50">
+                       <Megaphone className="h-4 w-4 text-yellow-500" />
+                       <div className="ml-4 flex-grow">
+                         <AlertTitle className="font-headline text-yellow-400">Aviso do Administrador</AlertTitle>
+                         <AlertDescription>
+                           {customUserAlert}
+                         </AlertDescription>
+                       </div>
+                    </Alert>
+                )}
+
                 {isProTrialActive && (
                     <Alert className="mb-6 border-primary/50">
                        <Sparkles className="h-4 w-4 text-primary" />
@@ -36,6 +50,7 @@ export default function DashboardLayout({
                        </div>
                     </Alert>
                 )}
+                
                 {isPaymentDue && (
                     <Alert variant="destructive" className="mb-6 flex items-center justify-between">
                        <div className="flex items-center">

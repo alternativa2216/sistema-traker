@@ -1,21 +1,53 @@
+'use client'
+
+import * as React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { MoreHorizontal, UserCog, Ban, LogIn } from "lucide-react";
+import { useToast } from '@/hooks/use-toast';
 
 // Mock data for users
-const mockUsers = [
-  { id: 'usr_1', name: 'Ana Silva', email: 'ana.silva@example.com', plan: 'Pro', joined: '2024-07-15' },
-  { id: 'usr_2', name: 'Carlos Martins', email: 'carlos.martins@example.com', plan: 'Pro', joined: '2024-07-10' },
-  { id: 'usr_3', name: 'Beatriz Costa', email: 'beatriz.costa@example.com', plan: 'Grátis', joined: '2024-07-05' },
-  { id: 'usr_4', name: 'Diogo Almeida', email: 'diogo.almeida@example.com', plan: 'Pro', joined: '2024-06-28' },
-  { id: 'usr_5', name: 'Eliane Faria', email: 'eliane.faria@example.com', plan: 'Grátis', joined: '2024-06-25' },
+const initialUsers = [
+  { id: 'usr_1', name: 'Ana Silva', email: 'ana.silva@example.com', plan: 'Pro', joined: '2024-07-15', customAlert: '' },
+  { id: 'usr_2', name: 'Carlos Martins', email: 'carlos.martins@example.com', plan: 'Pro', joined: '2024-07-10', customAlert: 'Sua fatura de Julho está pendente. Por favor, regularize.' },
+  { id: 'usr_3', name: 'Beatriz Costa', email: 'beatriz.costa@example.com', plan: 'Grátis', joined: '2024-07-05', customAlert: '' },
+  { id: 'usr_4', name: 'Diogo Almeida', email: 'diogo.almeida@example.com', plan: 'Pro', joined: '2024-06-28', customAlert: '' },
+  { id: 'usr_5', name: 'Eliane Faria', email: 'eliane.faria@example.com', plan: 'Grátis', joined: '2024-06-25', customAlert: '' },
 ];
 
+type User = typeof initialUsers[0];
 
 export default function AdminUsersPage() {
+  const { toast } = useToast();
+  const [users, setUsers] = React.useState<User[]>(initialUsers);
+  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+  const [editingUser, setEditingUser] = React.useState<User | null>(null);
+
+  const handleOpenEditDialog = (user: User) => {
+    setEditingUser({ ...user }); // Create a copy to edit
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveChanges = () => {
+    if (!editingUser) return;
+    
+    setUsers(users.map(u => u.id === editingUser.id ? editingUser : u));
+    toast({
+        title: "Usuário Atualizado!",
+        description: `As informações de ${editingUser.name} foram salvas.`
+    })
+    setIsEditDialogOpen(false);
+    setEditingUser(null);
+  };
+
   return (
     <div>
       <div className="mb-8">
@@ -27,7 +59,7 @@ export default function AdminUsersPage() {
         <CardHeader>
           <CardTitle>Todos os Usuários</CardTitle>
           <CardDescription>
-            Encontramos {mockUsers.length} usuários na sua plataforma.
+            Encontramos {users.length} usuários na sua plataforma.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -38,11 +70,12 @@ export default function AdminUsersPage() {
                     <TableHead>Usuário</TableHead>
                     <TableHead>Plano</TableHead>
                     <TableHead>Data de Cadastro</TableHead>
+                    <TableHead>Alerta Personalizado</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockUsers.map((user) => (
+                  {users.map((user) => (
                     <TableRow key={user.id}>
                       <TableCell>
                         <div className="font-medium">{user.name}</div>
@@ -56,6 +89,13 @@ export default function AdminUsersPage() {
                       <TableCell>
                         {new Date(user.joined).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
                       </TableCell>
+                      <TableCell>
+                        {user.customAlert ? (
+                          <span className="text-xs text-yellow-400 italic">Sim</span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Não</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -64,7 +104,9 @@ export default function AdminUsersPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem disabled><UserCog className="mr-2 h-4 w-4" /> Editar Usuário</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleOpenEditDialog(user)}>
+                                <UserCog className="mr-2 h-4 w-4" /> Editar Usuário
+                            </DropdownMenuItem>
                             <DropdownMenuItem disabled><LogIn className="mr-2 h-4 w-4" /> Personificar</DropdownMenuItem>
                             <DropdownMenuItem disabled className="text-destructive focus:bg-destructive/10 focus:text-destructive">
                                <Ban className="mr-2 h-4 w-4" /> Suspender
@@ -79,6 +121,58 @@ export default function AdminUsersPage() {
             </div>
         </CardContent>
       </Card>
+      
+      {editingUser && (
+         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Editar Usuário</DialogTitle>
+                    <DialogDescription>
+                       Modifique o plano ou adicione um alerta no painel para {editingUser.name}.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="name" className="text-right">Nome</Label>
+                        <Input id="name" value={editingUser.name} className="col-span-3" disabled />
+                    </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="email" className="text-right">Email</Label>
+                        <Input id="email" value={editingUser.email} className="col-span-3" disabled />
+                    </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="plan" className="text-right">Plano</Label>
+                        <Select
+                            value={editingUser.plan}
+                            onValueChange={(value) => setEditingUser(prev => prev ? {...prev, plan: value} : null)}
+                        >
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Selecione um plano" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Grátis">Grátis</SelectItem>
+                                <SelectItem value="Pro">Pro</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="grid grid-cols-4 items-start gap-4">
+                        <Label htmlFor="alert" className="text-right pt-2">Alerta</Label>
+                        <Textarea
+                            id="alert"
+                            placeholder="Deixe em branco para não exibir nenhum alerta."
+                            className="col-span-3"
+                            value={editingUser.customAlert}
+                            onChange={(e) => setEditingUser(prev => prev ? {...prev, customAlert: e.target.value} : null)}
+                        />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancelar</Button>
+                    <Button onClick={handleSaveChanges}>Salvar Alterações</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
