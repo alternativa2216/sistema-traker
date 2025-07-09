@@ -38,9 +38,6 @@ export async function signUpUser(formData: z.infer<typeof SignUpSchema>) {
     if (error.code === 'auth/email-already-exists') {
       throw new Error('Este e-mail já está em uso.');
     }
-    if (error.code === 'auth/invalid-password') {
-        throw new Error('A senha deve ter pelo menos 6 caracteres.');
-    }
     console.error("Firebase SignUp Error:", error);
     throw new Error('Falha ao criar a conta. Por favor, tente novamente.');
   }
