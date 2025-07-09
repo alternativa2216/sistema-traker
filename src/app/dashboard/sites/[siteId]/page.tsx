@@ -87,21 +87,17 @@ export default function SiteAnalyticsPage({ params }: { params: { siteId: string
                             Ver Script de Rastreamento
                         </Button>
                     </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Script de Rastreamento</DialogTitle>
+                    <DialogContent className="sm:max-w-xl">
+                        <DialogHeader className="text-center space-y-4">
+                            <DialogTitle className="font-headline text-2xl">Script de Rastreamento</DialogTitle>
                             <DialogDescription>
-                                Copie e cole este script no final da tag `&lt;head&gt;` de todas as páginas que você deseja rastrear.
+                                Copie e cole este script no final da tag <code>&lt;head&gt;</code> de todas as páginas que você deseja rastrear.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="bg-muted p-4 rounded-md">
-                            <pre className="text-sm text-muted-foreground break-all">
-                                <code>
-                                    {trackingScript}
-                                </code>
-                            </pre>
+                        <div className="bg-muted p-4 rounded-md font-mono text-sm text-foreground break-all text-center">
+                            {trackingScript}
                         </div>
-                        <Button onClick={copyToClipboard}>
+                        <Button onClick={copyToClipboard} className="w-full">
                             <Copy className="mr-2 h-4 w-4" />
                             Copiar Script
                         </Button>
