@@ -21,6 +21,8 @@ const CloakerOption = ({ id, label, description, children }: { id: string, label
 
 
 export default function CloakerPage() {
+  const [deviceRedirectEnabled, setDeviceRedirectEnabled] = React.useState(false);
+
   return (
     <div className="space-y-6">
         <Card>
@@ -51,6 +53,37 @@ export default function CloakerPage() {
                     <Input id="redirect-url" placeholder="https://google.com" className="w-full sm:max-w-xs" />
                 </div>
             </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">Redirecionamento por Dispositivo</CardTitle>
+            <CardDescription>
+              Envie visitantes de desktop e mobile para URLs diferentes. Se desativado, o tráfego não será redirecionado.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <Label htmlFor="device-redirect-switch" className="text-base">
+                  Ativar redirecionamento por dispositivo
+                </Label>
+              </div>
+              <Switch 
+                id="device-redirect-switch"
+                checked={deviceRedirectEnabled}
+                onCheckedChange={setDeviceRedirectEnabled}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="desktop-url" className={!deviceRedirectEnabled ? 'text-muted-foreground' : ''}>URL para Desktop</Label>
+              <Input id="desktop-url" placeholder="https://seusite.com/desktop" disabled={!deviceRedirectEnabled} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="mobile-url" className={!deviceRedirectEnabled ? 'text-muted-foreground' : ''}>URL para Mobile</Label>
+              <Input id="mobile-url" placeholder="https://seusite.com/mobile" disabled={!deviceRedirectEnabled} />
+            </div>
+          </CardContent>
         </Card>
         
         <Card>
