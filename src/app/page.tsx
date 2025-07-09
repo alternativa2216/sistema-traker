@@ -14,6 +14,7 @@ import {
   Activity,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getSettingsAction } from "./actions/settings";
 
 const features = [
   {
@@ -112,7 +113,24 @@ const testimonials = [
   }
 ]
 
-export default function Home() {
+const defaultContent = {
+    homeHeadline: 'Analytics que Transforma Dados em Decisões de Alto Impacto',
+    homeSubheadline: 'O Tracklytics é a única plataforma de web analytics que combina rastreamento completo, insights proativos com IA, uma suíte de segurança avançada e ferramentas visuais para você dominar sua estratégia digital.',
+    dashboardImageUrl: 'https://placehold.co/1200x600.png',
+};
+
+
+export default async function Home() {
+  const contentKeys = ['homeHeadline', 'homeSubheadline', 'dashboardImageUrl'];
+  let settings = {};
+  try {
+    settings = await getSettingsAction(contentKeys);
+  } catch (e) {
+      console.error("Database not ready, using default content for home page.");
+  }
+  
+  const content = { ...defaultContent, ...settings };
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
@@ -147,12 +165,11 @@ export default function Home() {
 
       <main className="flex-1">
         <section className="container mx-auto px-4 lg:px-6 pt-16 pb-20 md:pt-24 md:pb-28 text-center flex flex-col items-center">
-          <h1 className="text-4xl md:text-6xl font-bold font-headline tracking-tighter mb-4">
-            Analytics que <span className="text-primary">Transforma Dados</span> em<br />
-            Decisões de Alto Impacto
+          <h1 className="text-4xl md:text-6xl font-bold font-headline tracking-tighter mb-4 whitespace-pre-line">
+            {content.homeHeadline.replace('Transforma Dados', '<span class="text-primary">Transforma Dados</span>').replace(/Decisões de Alto Impacto/g, '<span class="text-primary">Decisões de Alto Impacto</span>')}
           </h1>
           <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8">
-            O Tracklytics é a única plataforma de web analytics que combina rastreamento completo, insights proativos com IA, uma suíte de segurança avançada e ferramentas visuais para você dominar sua estratégia digital.
+            {content.homeSubheadline}
           </p>
           <div className="flex justify-center gap-4">
             <Button size="lg" asChild>
@@ -164,7 +181,7 @@ export default function Home() {
         <section className="container mx-auto px-4 lg:px-6 -mt-12">
             <Card className="p-2 shadow-2xl shadow-primary/10 border-border/50 bg-card/50 backdrop-blur-sm">
                 <Image
-                    src="https://placehold.co/1200x600.png"
+                    src={content.dashboardImageUrl}
                     width={1200}
                     height={600}
                     alt="Dashboard preview"

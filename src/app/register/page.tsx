@@ -12,16 +12,20 @@ import Image from "next/image";
 import { Check, Loader2 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { signUpUser } from '../actions/auth';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { getSettingsAction } from '../actions/settings';
 
-const benefits = [
-    "Análise de Funil Visual para identificar gargalos",
-    "Insights e Alertas Proativos com Inteligência Artificial",
-    "Suíte de Segurança completa com Cloaker e Filtros",
-    "Analytics em Tempo Real e Ferramentas para Ads",
-];
+const defaultContent = {
+    imageUrl: "https://placehold.co/1200x1800.png",
+    benefits: [
+        "Análise de Funil Visual para identificar gargalos",
+        "Insights e Alertas Proativos com Inteligência Artificial",
+        "Suíte de Segurança completa com Cloaker e Filtros",
+        "Analytics em Tempo Real e Ferramentas para Ads",
+    ],
+};
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
@@ -33,6 +37,22 @@ export default function RegisterPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [content, setContent] = useState(defaultContent);
+  
+  useEffect(() => {
+      const fetchContent = async () => {
+          try {
+              const settings = await getSettingsAction(['registerImageUrl', 'registerBenefits']);
+              const imageUrl = settings.registerImageUrl || defaultContent.imageUrl;
+              const benefitsText = settings.registerBenefits || defaultContent.benefits.join('\n');
+              const benefits = benefitsText.split('\n').filter((b: string) => b.trim() !== '');
+              setContent({ imageUrl, benefits });
+          } catch (error) {
+              console.error("Failed to load register page content, using defaults.", error);
+          }
+      }
+      fetchContent();
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -63,7 +83,7 @@ export default function RegisterPage() {
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
       <div className="hidden lg:flex lg:flex-col items-center justify-center bg-muted p-8 text-center relative">
         <Image
-          src="https://placehold.co/1200x1800.png"
+          src={content.imageUrl}
           alt="Abstract background"
           layout="fill"
           objectFit="cover"
@@ -81,7 +101,7 @@ export default function RegisterPage() {
               Junte-se a centenas de profissionais que confiam no Tracklytics para otimizar suas estratégias digitais.
             </p>
             <ul className="space-y-4 text-left">
-                {benefits.map((benefit, index) => (
+                {content.benefits.map((benefit, index) => (
                     <li key={index} className="flex items-start gap-3">
                         <div className="flex-shrink-0 bg-primary text-primary-foreground rounded-full h-6 w-6 flex items-center justify-center">
                             <Check className="h-4 w-4" />
