@@ -1,49 +1,68 @@
 'use server';
 
-// A funcionalidade de IA foi temporariamente desativada para diagnóstico.
-// Todas as importações e tipos foram removidos para isolar a causa
-// de um erro de compilação persistente.
-
-const aiDisabledError = "A funcionalidade de IA está temporariamente desativada para diagnóstico.";
+import {
+  generateSwotAnalysis,
+  type GenerateSwotAnalysisInput,
+  type GenerateSwotAnalysisOutput,
+} from '@/ai/flows/generate-swot-analysis';
+import {
+  analyzeProjectData,
+  type AnalyzeProjectDataInput,
+  type AnalyzeProjectDataOutput,
+} from '@/ai/flows/analyze-project-data';
+import {
+  generateAdCopy,
+  type GenerateAdCopyInput,
+  type GenerateAdCopyOutput,
+} from '@/ai/flows/generate-ad-copy';
+import {
+  suggestAdAudience,
+  type SuggestAdAudienceInput,
+  type SuggestAdAudienceOutput,
+} from '@/ai/flows/suggest-ad-audience';
+import {
+  analyzeAdCreative,
+  type AnalyzeAdCreativeInput,
+  type AnalyzeAdCreativeOutput,
+} from '@/ai/flows/analyze-ad-creative';
+import {
+  generateAbTestHypothesis,
+  type GenerateAbTestHypothesisInput,
+  type GenerateAbTestHypothesisOutput,
+} from '@/ai/flows/generate-ab-test-hypothesis';
 
 export async function generateSwotAnalysisAction(
-  input: any
-): Promise<any> {
-  console.log("generateSwotAnalysisAction called but is disabled for diagnostics");
-  throw new Error(aiDisabledError);
+  input: GenerateSwotAnalysisInput
+): Promise<GenerateSwotAnalysisOutput> {
+  return await generateSwotAnalysis(input);
 }
 
 export async function analyzeProjectDataAction(
-  input: any
-): Promise<any> {
-  console.log("analyzeProjectDataAction called but is disabled for diagnostics");
-  throw new Error(aiDisabledError);
+  input: AnalyzeProjectDataInput
+): Promise<AnalyzeProjectDataOutput> {
+  return await analyzeProjectData(input);
 }
 
 export async function generateAdCopyAction(
-  input: any
-): Promise<any> {
-  console.log("generateAdCopyAction called but is disabled for diagnostics");
-  throw new Error(aiDisabledError);
+  input: GenerateAdCopyInput
+): Promise<GenerateAdCopyOutput> {
+  return await generateAdCopy(input);
 }
 
 export async function suggestAdAudienceAction(
-  input: any
-): Promise<any> {
-  console.log("suggestAdAudienceAction called but is disabled for diagnostics");
-  throw new Error(aiDisabledError);
+  input: SuggestAdAudienceInput
+): Promise<SuggestAdAudienceOutput> {
+  return await suggestAdAudience(input);
 }
 
 export async function analyzeAdCreativeAction(
-  input: any
-): Promise<any> {
-  console.log("analyzeAdCreativeAction called but is disabled for diagnostics");
-  throw new Error(aiDisabledError);
+  input: AnalyzeAdCreativeInput
+): Promise<AnalyzeAdCreativeOutput> {
+  return await analyzeAdCreative(input);
 }
 
 export async function generateAbTestHypothesisAction(
-  input: any
-): Promise<any> {
-  console.log("generateAbTestHypothesisAction called but is disabled for diagnostics");
-  throw new Error(aiDisabledError);
+  input: GenerateAbTestHypothesisInput
+): Promise<GenerateAbTestHypothesisOutput> {
+  return await generateAbTestHypothesis(input);
 }
