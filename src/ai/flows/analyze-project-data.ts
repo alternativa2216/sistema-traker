@@ -32,14 +32,13 @@ const prompt = ai.definePrompt({
   name: 'analyzeProjectDataPrompt',
   input: {schema: AnalyzeProjectDataInputSchema},
   output: {schema: AnalyzeProjectDataOutputSchema},
-  prompt: `Você é um chatbot de IA especializado em analisar dados de web analytics para projetos.
+  prompt: `Você é um especialista em Otimização da Taxa de Conversão (CRO).
+Analise os dados do projeto fornecidos. Com base nos dados, forneça insights acionáveis e sugestões concretas sobre como melhorar o site para aumentar as conversões.
+Concentre-se na experiência do usuário, chamadas para ação e melhorias no funil de vendas.
 
-  Um usuário fez a seguinte pergunta sobre os dados do projeto: {{{query}}}
-  
-  Aqui estão os dados do projeto: {{{data}}}
-
-  Forneça uma análise concisa e perspicaz dos dados, abordando diretamente a consulta do usuário. Concentre-se em insights e recomendações acionáveis.
-  `,
+Consulta do usuário: {{{query}}}
+Dados do projeto: {{{data}}}
+`,
 });
 
 const analyzeProjectDataFlow = ai.defineFlow(
