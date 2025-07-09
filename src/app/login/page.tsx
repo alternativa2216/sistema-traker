@@ -13,8 +13,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+// Firebase is disabled for diagnostics
+// import { signInWithEmailAndPassword } from 'firebase/auth';
+// import { auth } from '@/lib/firebase';
 import { createSessionCookie } from '../actions/auth';
 
 const formSchema = z.object({
@@ -35,37 +36,20 @@ export default function LoginPage() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
-
-    if (!auth) {
-      toast({
-        title: 'Erro de Configuração',
-        description: 'A autenticação está desativada. Por favor, configure suas chaves de API do Firebase no ambiente.',
-        variant: 'destructive',
-      });
-      setIsLoading(false);
-      return;
-    }
-
+    
+    // Mock login logic since Firebase is disabled for diagnostics
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-      const idToken = await userCredential.user.getIdToken();
-      
-      await createSessionCookie(idToken);
-      
+      // We set a mock cookie to satisfy the middleware.
+      await createSessionCookie("mock-id-token");
       router.push('/dashboard');
     } catch (error: any) {
-      console.error(error);
-      let message = 'Ocorreu um erro. Verifique suas credenciais.';
-      if (error.code === 'auth/invalid-credential') {
-        message = 'E-mail ou senha inválidos. Por favor, tente novamente.'
-      }
-      toast({
-        title: 'Erro de Login',
-        description: message,
+       toast({
+        title: 'Erro de Login Simulado',
+        description: 'Ocorreu um erro na simulação de login.',
         variant: 'destructive',
       });
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
 

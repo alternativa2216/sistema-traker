@@ -17,8 +17,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Home, Settings, User, Bell, LogOutIcon, Sparkles, Megaphone, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useParams, useRouter } from 'next/navigation'
-import { auth } from "@/lib/firebase"
-import { signOut } from "firebase/auth"
+// Firebase is disabled for diagnostics
+// import { auth } from "@/lib/firebase"
+// import { signOut } from "firebase/auth"
 import { clearSessionCookie } from "@/app/actions/auth"
 import type { DecodedIdToken } from "firebase-admin/auth"
 import { cn } from "@/lib/utils"
@@ -70,9 +71,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
   const pathSegments = pathname.split('/').filter(Boolean)
 
   const handleSignOut = async () => {
-    if (auth) {
-      await signOut(auth);
-    }
+    // Firebase is disabled for diagnostics
     await clearSessionCookie();
     router.push('/');
   }

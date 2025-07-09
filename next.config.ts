@@ -46,7 +46,6 @@ const nextConfig: NextConfig = {
   serverComponentsExternalPackages: [
     'mysql2',
     'nodemailer',
-    'firebase-admin',
     '@genkit-ai/googleai',
     'genkit',
     '@genkit-ai/next',
