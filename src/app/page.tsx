@@ -1,61 +1,41 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
 import Image from "next/image";
 import {
-  Activity,
-  Filter,
-  Shield,
-  Sparkles,
-  MousePointerClick,
-  Megaphone,
   ArrowRight
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const features = [
+const solutions = [
   {
-    icon: Filter,
-    title: "Análise de Funil Visual",
-    description: "Construa e visualize funis de conversão para entender exatamente onde seus usuários estão desistindo e otimizar a jornada do cliente.",
-    imageSrc: "https://placehold.co/500x300.png",
-    imageHint: "funnel chart"
+    title: "Para Marketing & Anúncios",
+    description: "Otimize suas campanhas com uma suíte de IA completa. Gere textos de anúncio (copy) persuasivos, sugira públicos-alvo detalhados para o Facebook Ads e analise a eficácia de seus criativos com uma nota e feedback acionável. Transforme ideias em campanhas de alta performance em minutos.",
+    imageSrc: "https://placehold.co/600x338.png",
+    imageHint: "marketing team",
+    overlay: "Análise de Criativo",
   },
   {
-    icon: Sparkles,
-    title: "Insights Proativos com IA",
-    description: "Receba alertas e oportunidades gerados por IA diretamente no seu painel. Deixe de analisar e comece a agir.",
-    imageSrc: "https://placehold.co/500x300.png",
-    imageHint: "AI dashboard"
+    title: "Para Otimização de Conversão (CRO)",
+    description: "Entenda a jornada do seu cliente como nunca. Construa funis de conversão visuais para identificar exatamente onde os usuários desistem. Acompanhe tendências de abandono e receba sugestões automáticas de páginas fora do funil para adicionar à sua análise. Otimize cada etapa para maximizar as vendas.",
+    imageSrc: "https://placehold.co/600x338.png",
+    imageHint: "funnel chart",
+    overlay: "Funil de Vendas",
   },
   {
-    icon: Shield,
-    title: "Segurança e Cloaker Avançado",
-    description: "Proteja seu conteúdo com filtros anti-bot, anti-spy, bloqueio geográfico e regras de redirecionamento para garantir que apenas seu público veja suas ofertas.",
-    imageSrc: "https://placehold.co/500x300.png",
-    imageHint: "security shield"
+    title: "Para Segurança e Proteção",
+    description: "Proteja seus ativos digitais com nosso Cloaker avançado. Bloqueie o clique direito e a inspeção de código (F12). Ative filtros anti-bot, anti-spy e anti-clonagem. Use o filtro geográfico ou por IP para restringir o acesso e crie regras de redirecionamento avançadas para garantir que apenas o público certo veja suas ofertas.",
+    imageSrc: "https://placehold.co/600x338.png",
+    imageHint: "security shield",
+    overlay: "Logs de Segurança",
   },
   {
-    icon: Megaphone,
-    title: "Ferramentas para Facebook Ads",
-    description: "Gere textos de anúncio, sugira públicos e analise criativos com o poder da IA, otimizando suas campanhas para o máximo retorno.",
-    imageSrc: "https://placehold.co/500x300.png",
-    imageHint: "social media"
-  },
-  {
-    icon: Activity,
-    title: "Analytics em Tempo Real",
-    description: "Observe os visitantes navegando em seu site em tempo real. Veja de onde eles vêm, quais páginas acessam e entenda o comportamento ao vivo.",
-    imageSrc: "https://placehold.co/500x300.png",
-    imageHint: "live data"
-  },
-  {
-    icon: MousePointerClick,
-    title: "Rastreamento Completo",
-    description: "Capture todas as visualizações de página e, em breve, eventos personalizados como cliques em botões e envios de formulário para uma visão 360° do engajamento.",
-    imageSrc: "https://placehold.co/500x300.png",
-    imageHint: "mouse cursor"
+    title: "Para Estratégia de Negócio com IA",
+    description: "Vá além dos dados brutos. Converse com seus dados através de um chat analítico para obter respostas instantâneas. Receba alertas e oportunidades proativas diretamente no seu painel. Gere análises SWOT completas para descobrir forças, fraquezas e oportunidades estratégicas.",
+    imageSrc: "https://placehold.co/600x338.png",
+    imageHint: "business strategy",
+    overlay: "Análise SWOT",
   },
 ];
 
@@ -84,8 +64,8 @@ export default function Home() {
             <div className="flex items-center gap-8">
                 <Logo />
                 <nav className="hidden lg:flex gap-6 items-center">
-                    <Link href="#features" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                        Funcionalidades
+                    <Link href="#solutions" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                        Soluções
                     </Link>
                     <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                         Preços
@@ -143,43 +123,40 @@ export default function Home() {
             </Card>
         </section>
 
-        <section id="features" className="container mx-auto px-4 lg:px-6 py-20 md:py-28">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline tracking-tighter">
-              Uma Suíte Completa de Ferramentas de Crescimento
-            </h2>
-            <p className="max-w-xl mx-auto text-lg text-muted-foreground mt-4">
-              Do rastreamento à otimização, temos tudo o que você precisa para tomar decisões mais inteligentes.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature) => {
-              const Icon = feature.icon;
-              return (
-                <Card key={feature.title} className="flex flex-col overflow-hidden hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300">
-                   <div className="bg-muted/50 border-b">
-                     <Image
-                        src={feature.imageSrc}
-                        width={500}
-                        height={300}
-                        alt={feature.title}
-                        className="object-cover w-full h-48"
-                        data-ai-hint={feature.imageHint}
-                      />
-                   </div>
-                  <CardHeader className="flex flex-row items-center gap-4">
-                      <div className="bg-primary/10 p-3 rounded-lg">
-                        <Icon className="h-6 w-6 text-primary" />
-                      </div>
-                      <CardTitle className="font-headline text-xl">{feature.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex-1">
-                    <p className="text-muted-foreground">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+        <section id="solutions" className="container mx-auto px-4 lg:px-6 py-20 md:py-28">
+            <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-5xl font-bold font-headline tracking-tighter">
+                    Soluções criadas para impulsionar o <span className="text-primary">crescimento</span> de cada time
+                </h2>
+                <p className="max-w-3xl mx-auto text-lg text-muted-foreground mt-4">
+                    Do marketing à segurança, o Tracklytics oferece as ferramentas certas para cada desafio, transformando dados em resultados.
+                </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {solutions.map((solution) => (
+                    <Card key={solution.title} className="bg-card/50 border-border/50 flex flex-col p-2 hover:border-primary/50 transition-colors">
+                        <CardHeader>
+                            <CardTitle className="font-headline text-2xl">{solution.title}</CardTitle>
+                            <CardDescription className="pt-2 text-base">{solution.description}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex-1 mt-auto">
+                            <div className="relative">
+                                <Image
+                                    src={solution.imageSrc}
+                                    width={600}
+                                    height={338}
+                                    alt={solution.title}
+                                    className="rounded-md object-cover w-full"
+                                    data-ai-hint={solution.imageHint}
+                                />
+                                 <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm border border-border/50 rounded-lg px-3 py-1.5 shadow-lg">
+                                    <p className="font-semibold text-sm text-foreground">{solution.overlay}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
         </section>
 
         <section id="testimonials" className="bg-muted/50 py-20 md:py-28">
