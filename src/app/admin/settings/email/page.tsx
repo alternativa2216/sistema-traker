@@ -146,7 +146,7 @@ export default function EmailSettingsPage() {
                 <Code className="h-4 w-4" />
                 <AlertTitle>Placeholders Disponíveis</AlertTitle>
                 <AlertDescription>
-                    Use placeholders como <code>{{placeholder}}</code> para inserir dados dinâmicos no corpo do e-mail.
+                    Use placeholders como <code>{'{{placeholder}}'}</code> para inserir dados dinâmicos no corpo do e-mail.
                 </AlertDescription>
             </Alert>
             <Tabs defaultValue="recovery" className="mt-6">
@@ -164,7 +164,7 @@ export default function EmailSettingsPage() {
                             onChange={(e) => setRecoveryTemplate(e.target.value)}
                             rows={8}
                         />
-                        <p className="text-xs text-muted-foreground">Placeholders disponíveis: <code>{{userName}}</code>, <code>{{resetLink}}</code></p>
+                        <p className="text-xs text-muted-foreground">Placeholders disponíveis: <code>{'{{userName}}'}</code>, <code>{'{{resetLink}}'}</code></p>
                     </div>
                 </TabsContent>
                 <TabsContent value="invoice" className="mt-4">
@@ -176,7 +176,7 @@ export default function EmailSettingsPage() {
                             onChange={(e) => setInvoiceTemplate(e.target.value)}
                             rows={8}
                         />
-                        <p className="text-xs text-muted-foreground">Placeholders disponíveis: <code>{{userName}}</code>, <code>{{invoiceLink}}</code>, <code>{{month}}</code></p>
+                        <p className="text-xs text-muted-foreground">Placeholders disponíveis: <code>{'{{userName}}'}</code>, <code>{'{{invoiceLink}}'}</code>, <code>{'{{month}}'}</code></p>
                     </div>
                 </TabsContent>
             </Tabs>
