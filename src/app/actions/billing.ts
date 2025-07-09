@@ -62,7 +62,7 @@ export async function createPaymentTransaction(input: z.infer<typeof CreateTrans
                     type: "cpf"
                 },
                 phone: userPhone,
-                externalRef: `ref-${userCpf}` // Match the working PHP implementation
+                externalRef: `ref-${userCpf}`
             },
             pix: {
                 expiresInDays: 1
@@ -84,20 +84,31 @@ export async function createPaymentTransaction(input: z.infer<typeof CreateTrans
             },
             body: JSON.stringify(transactionPayload)
         });
-
-        if (!response.ok) {
-            const errorBody = await response.text();
-            console.error('Erro da API Nova Era:', response.status, errorBody);
-            try {
-                const errorJson = JSON.parse(errorBody);
-                const message = errorJson.errors?.[0]?.message || errorJson.message || `Erro da API: ${response.status}`;
-                throw new Error(message);
-            } catch (e) {
-                throw new Error(`Falha ao criar transação PIX. Status: ${response.status}`);
-            }
+        
+        const responseBody = await response.text();
+        let rawData;
+        try {
+            rawData = JSON.parse(responseBody);
+        } catch (e) {
+            console.error('A resposta da API não é um JSON válido:', response.status, responseBody);
+            throw new Error(`Erro inesperado da API de pagamento. Status: ${response.status}`);
         }
 
-        const rawData = await response.json();
+        // Handle business logic errors returned by the API (even with a 200 OK status)
+        if (rawData.errors && Array.isArray(rawData.errors) && rawData.errors.length > 0) {
+            const errorMessage = rawData.errors[0]?.message || 'Erro desconhecido da API de pagamento.';
+            console.error('Erro de negócio retornado pela API Nova Era:', errorMessage, rawData.errors);
+            throw new Error(errorMessage);
+        }
+
+        // Handle non-OK HTTP statuses that were not caught above
+        if (!response.ok) {
+            console.error('Erro HTTP da API Nova Era:', response.status, rawData);
+            throw new Error(`Falha ao criar transação PIX. Status: ${response.status}`);
+        }
+
+        // If we get here, the response is OK and doesn't contain a business logic error.
+        // Now, we can safely validate the expected success structure.
         const validationResult = NovaEraTransactionResponseSchema.safeParse(rawData.data);
 
         if (!validationResult.success) {
@@ -124,6 +135,7 @@ export async function createPaymentTransaction(input: z.infer<typeof CreateTrans
 
     } catch (error: any) {
         console.error('Erro ao criar transação PIX:', error);
+        // Re-throw the original error message from the API or our custom messages
         throw new Error(error.message || 'Não foi possível gerar o pagamento PIX. Tente novamente mais tarde.');
     }
 }
