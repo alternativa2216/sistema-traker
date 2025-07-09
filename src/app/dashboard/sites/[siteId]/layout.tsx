@@ -41,7 +41,7 @@ export default function SiteIdLayout({
       </div>
 
       {/* Navigation Tabs */}
-      <div className="border-b overflow-x-auto">
+      <div className="border-b overflow-x-auto scrollbar-hide">
         <nav className="-mb-px flex space-x-6" aria-label="Tabs">
           {navItems.map((item) => {
             const fullPath = `${basePath}${item.href || ''}`;

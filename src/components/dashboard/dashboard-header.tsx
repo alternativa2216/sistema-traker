@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Home, Settings, User, Bell, ShieldAlert } from "lucide-react"
+import { Home, Settings, User, Bell, ShieldAlert, Bot } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useParams } from 'next/navigation'
 
@@ -78,6 +78,22 @@ export function DashboardHeader() {
                   <p className="font-semibold text-destructive">Ameaça Crítica Bloqueada</p>
                   <p className="text-xs text-muted-foreground">
                     Um IP foi bloqueado automaticamente após uma tentativa de invasão no site '{params.siteId || 'meu-ecommerce.com'}'.
+                  </p>
+                </div>
+              </Link>
+            </DropdownMenuItem>
+             <DropdownMenuItem asChild className="cursor-pointer">
+              <Link
+                href={`/dashboard/sites/${params.siteId || 'site-1'}/ai-analysis`}
+                className="flex items-start gap-3 p-2"
+              >
+                <div className="mt-1">
+                  <Bot className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex-1 whitespace-normal">
+                  <p className="font-semibold">Nova Oportunidade de Otimização</p>
+                  <p className="text-xs text-muted-foreground">
+                    A IA identificou que a taxa de rejeição da sua página de preços é alta. Veja a análise.
                   </p>
                 </div>
               </Link>
