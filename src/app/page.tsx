@@ -5,7 +5,6 @@ import { Logo } from "@/components/shared/logo";
 import Image from "next/image";
 import {
   Activity,
-  Bot,
   Filter,
   Shield,
   Sparkles,
