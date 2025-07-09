@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react';
+import { useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
@@ -53,7 +54,8 @@ const MetricCard = ({ title, value, change, changeType }: { title: string, value
     </Card>
 );
 
-export default function SiteAnalyticsPage({ params }: { params: { siteId: string } }) {
+export default function SiteAnalyticsPage() {
+    const params = useParams() as { siteId: string };
     const [timeRange, setTimeRange] = useState('7d');
     const { toast } = useToast();
     // @ts-ignore

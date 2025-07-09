@@ -13,14 +13,12 @@ const MOCK_SITE_DETAILS = {
 
 export default function SiteIdLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: { siteId: string };
 }) {
   const pathname = usePathname();
-  const routeParams = useParams() as { siteId: string };
-  const basePath = `/dashboard/sites/${routeParams.siteId}`;
+  const params = useParams() as { siteId: string };
+  const basePath = `/dashboard/sites/${params.siteId}`;
 
   const navItems = [
     { href: '', label: 'Analytics', icon: BarChart2 },
