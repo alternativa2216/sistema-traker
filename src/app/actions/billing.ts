@@ -67,7 +67,7 @@ export async function createPaymentTransaction(input: z.infer<typeof CreateTrans
                     email: userEmail,
                     document: { number: userCpf, type: "cpf" },
                     phone: userPhone,
-                    externalRef: `tracklytics-user-${userCpf}`
+                    externalRef: `ref-${userCpf}` // Ajustado para corresponder ao exemplo funcional
                 },
                 pix: { expiresInDays: 1 },
                 items: [{
@@ -81,8 +81,16 @@ export async function createPaymentTransaction(input: z.infer<typeof CreateTrans
 
         if (!response.ok) {
             const errorBody = await response.text();
-            console.error('Erro da API Nova Era:', errorBody);
-            throw new Error(`Falha ao criar transação PIX. Status: ${response.status}`);
+            console.error('Erro da API Nova Era:', response.status, errorBody);
+            try {
+                const errorJson = JSON.parse(errorBody);
+                // Tenta extrair a mensagem de erro específica, se houver.
+                const message = errorJson.errors?.[0]?.message || errorJson.message || `Erro da API: ${response.status}`;
+                throw new Error(message);
+            } catch (e) {
+                // Se o corpo do erro não for JSON válido
+                throw new Error(`Falha ao criar transação PIX. Status: ${response.status}`);
+            }
         }
 
         const rawData = await response.json();
@@ -113,9 +121,9 @@ export async function createPaymentTransaction(input: z.infer<typeof CreateTrans
             pixQrCodeImage: transactionData.pix.qrcode_image || '' // Retornar string vazia se não estiver presente
         };
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Erro ao criar transação PIX:', error);
-        throw new Error('Não foi possível gerar o pagamento PIX. Tente novamente mais tarde.');
+        throw new Error(error.message || 'Não foi possível gerar o pagamento PIX. Tente novamente mais tarde.');
     }
 }
 
