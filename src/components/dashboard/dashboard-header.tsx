@@ -14,13 +14,13 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Home, Settings, User, Bell, LogOutIcon, Sparkles, Megaphone, AlertTriangle } from "lucide-react"
+import { Home, Settings, User, Bell, LogOutIcon, Sparkles, Megaphone, AlertTriangle, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from 'next/navigation'
 import { clearSessionCookie, type MockUser } from "@/app/actions/auth"
 import { cn } from "@/lib/utils"
-
-const userAlerts: any[] = [];
+import { getNotificationsForUserAction } from "@/app/actions/projects"
+import { useToast } from "@/hooks/use-toast"
 
 const alertConfig = {
     info: { icon: Megaphone, iconClassName: 'text-yellow-400' },
@@ -35,12 +35,29 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ user }: DashboardHeaderProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const pathSegments = pathname.split('/').filter(Boolean)
+  const pathSegments = pathname.split('/').filter(Boolean);
+  const { toast } = useToast();
+  
+  const [notifications, setNotifications] = React.useState<any[]>([]);
+  const [isNotifLoading, setIsNotifLoading] = React.useState(false);
 
   const handleSignOut = async () => {
     await clearSessionCookie();
     router.push('/login');
   }
+  
+  const fetchNotifications = async () => {
+      setIsNotifLoading(true);
+      try {
+          const result = await getNotificationsForUserAction();
+          setNotifications(result);
+      } catch (error: any) {
+          toast({ title: 'Erro', description: 'Não foi possível carregar as notificações.' });
+      } finally {
+          setIsNotifLoading(false);
+      }
+  }
+
 
   const getInitials = (name?: string | null) => {
     if (!name) return 'UA';
@@ -78,20 +95,18 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <DropdownMenu>
+        <DropdownMenu onOpenChange={(open) => { if (open) fetchNotifications()}}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full relative">
               <Bell className="h-5 w-5" />
-              {userAlerts.length > 0 && (
-                <span className="absolute top-2 right-2 block h-2 w-2 rounded-full bg-destructive ring-2 ring-background" />
-              )}
               <span className="sr-only">Alternar notificações</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80 sm:w-96">
             <DropdownMenuLabel>Notificações</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {userAlerts.length > 0 ? userAlerts.map(alert => {
+            {isNotifLoading ? <div className="flex justify-center p-4"><Loader2 className="h-5 w-5 animate-spin"/></div> :
+            notifications.length > 0 ? notifications.map(alert => {
               const config = alertConfig[alert.type as keyof typeof alertConfig] || alertConfig.info;
               const Icon = config.icon;
 

@@ -214,3 +214,57 @@ export async function saveFunnelStepsAction(data: { projectId: string, steps: an
         if (connection) await connection.end();
     }
 }
+
+export async function getSecurityLogsForProjectAction(projectId: string) {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Usuário não autenticado.');
+
+    let connection;
+    try {
+        connection = await getDbConnection();
+        // Check ownership
+        const [projectRows] = await connection.execute('SELECT id FROM projects WHERE id = ? AND user_id = ?', [projectId, user.uid]);
+        if ((projectRows as any[]).length === 0) throw new Error('Acesso negado.');
+
+        const [logs] = await connection.execute(
+            'SELECT * FROM security_logs WHERE project_id = ? ORDER BY created_at DESC LIMIT 50',
+            [projectId]
+        );
+        return logs as any[];
+    } catch (error: any) {
+        console.error('Falha ao buscar logs de segurança:', error);
+        throw new Error('Não foi possível buscar os logs de segurança.');
+    } finally {
+        if (connection) await connection.end();
+    }
+}
+
+
+export async function getNotificationsForUserAction() {
+    const user = await getCurrentUser();
+    if (!user) return [];
+
+    let connection;
+    try {
+        connection = await getDbConnection();
+        const [rows] = await connection.execute(
+            'SELECT id, type, message, cta_text, cta_href FROM notifications WHERE user_id = ? AND is_read = false ORDER BY created_at DESC',
+            [user.uid]
+        );
+        
+        // Map to a more friendly structure for the frontend
+        return (rows as any[]).map(row => ({
+            id: row.id,
+            type: row.type,
+            title: row.type.charAt(0).toUpperCase() + row.type.slice(1), // e.g. "info" -> "Info"
+            description: row.message,
+            cta: row.cta_href ? { text: row.cta_text, href: row.cta_href } : undefined
+        }));
+
+    } catch (error) {
+        console.error('Falha ao buscar notificações:', error);
+        return [];
+    } finally {
+        if (connection) await connection.end();
+    }
+}

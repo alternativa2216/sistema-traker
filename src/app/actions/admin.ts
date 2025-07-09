@@ -128,3 +128,72 @@ export async function getAdminDashboardStatsAction() {
         if (connection) await connection.end();
     }
 }
+
+const sendNotificationSchema = z.object({
+    target: z.string(), // 'all' or specific user email
+    specificUser: z.string().optional(),
+    notificationType: z.string(),
+    message: z.string().min(1, "A mensagem não pode estar vazia."),
+});
+
+export async function sendNotificationAction(data: unknown) {
+    await verifyAdmin();
+    const validation = sendNotificationSchema.safeParse(data);
+    if (!validation.success) {
+        throw new Error(validation.error.errors.map(e => e.message).join(', '));
+    }
+    const { target, specificUser, notificationType, message } = validation.data;
+    
+    let connection;
+    try {
+        connection = await getDbConnection();
+        if (target === 'all') {
+            const [users] = await connection.execute('SELECT id FROM users');
+            for (const user of users as any[]) {
+                 await connection.execute(
+                    'INSERT INTO notifications (user_id, type, message) VALUES (?, ?, ?)',
+                    [user.id, notificationType, message]
+                );
+            }
+        } else if (target === 'specific' && specificUser) {
+            const [[user]] = await connection.execute('SELECT id FROM users WHERE email = ?', [specificUser]);
+            if (!user) {
+                throw new Error("Usuário específico não encontrado.");
+            }
+            await connection.execute(
+                'INSERT INTO notifications (user_id, type, message) VALUES (?, ?, ?)',
+                [(user as any).id, notificationType, message]
+            );
+        } else {
+             throw new Error("Destinatário da notificação inválido.");
+        }
+        return { success: true, message: 'Notificação enviada com sucesso!' };
+    } catch (error: any) {
+        console.error("Falha ao enviar notificação:", error);
+        throw new Error(error.message || "Não foi possível enviar a notificação.");
+    } finally {
+        if (connection) await connection.end();
+    }
+}
+
+export async function getSentNotificationsAction() {
+    await verifyAdmin();
+    let connection;
+    try {
+        connection = await getDbConnection();
+        // This is a simplified view. A real implementation might be more complex.
+        const [rows] = await connection.execute(`
+            SELECT n.id, n.message, n.type, n.created_at, u.email as target
+            FROM notifications n
+            JOIN users u ON n.user_id = u.id
+            ORDER BY n.created_at DESC
+            LIMIT 10
+        `);
+        return rows as any[];
+    } catch (error: any) {
+        console.error("Falha ao buscar notificações enviadas:", error);
+        throw new Error("Não foi possível buscar as notificações.");
+    } finally {
+        if (connection) await connection.end();
+    }
+}

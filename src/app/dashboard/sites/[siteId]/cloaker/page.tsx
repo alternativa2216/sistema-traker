@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { ListFilter, ServerOff, ArrowLeftRight, Fingerprint, WifiOff, Clock, ShieldAlert, Link2, Plus, Pencil, Trash2, Globe, Laptop, MonitorSmartphone } from 'lucide-react';
+import { ListFilter, ServerOff, ArrowLeftRight, Fingerprint, WifiOff, Clock, ShieldAlert, Link2, Plus, Pencil, Trash2, Globe, Laptop, MonitorSmartphone, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -36,23 +36,7 @@ const dayOptions = [
   { id: 'sat', label: 'Sábado' },
 ];
 
-const mockThreats = [
-  {
-    userAgent: "sqlmap/1.5.8",
-    reason: "Ameaça Crítica: Tentativa de injeção de SQL bloqueada.",
-    type: "Invasão",
-  },
-  {
-    userAgent: "Mozilla/5.0 (compatible; AhrefsBot/7.0; +http://ahrefs.com/robot/)",
-    reason: "Bot de SEO conhecido. O acesso foi bloqueado pelo filtro Anti-Bot.",
-    type: "Bot de SEO",
-  },
-  {
-    userAgent: "HTTrack/3.x",
-    reason: "Ferramenta de clonagem de site detectada. Acesso bloqueado.",
-    type: "Clonagem de Site",
-  }
-];
+const mockThreats: any[] = [];
 
 interface RuleCondition {
   type: 'País' | 'Dispositivo' | 'S.O.';
@@ -65,24 +49,7 @@ interface Rule {
   redirectUrl: string;
 }
 
-const initialRules: Rule[] = [
-  {
-    id: '1',
-    conditions: [
-      { type: 'País', value: 'Brasil' },
-      { type: 'Dispositivo', value: 'Mobile' },
-    ],
-    redirectUrl: '/lp/oferta-br-mobile',
-  },
-  {
-    id: '2',
-    conditions: [
-      { type: 'País', value: 'Portugal' },
-      { type: 'S.O.', value: 'Windows' },
-    ],
-    redirectUrl: '/lp/oferta-pt-desktop',
-  },
-];
+const initialRules: Rule[] = [];
 
 
 export default function CloakerPage() {
@@ -241,17 +208,9 @@ export default function CloakerPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                {mockThreats.map((threat, index) => (
-                     <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border border-destructive/20 bg-destructive/5 p-3 gap-3">
-                        <div className="space-y-1">
-                            <p className="text-sm font-medium">{threat.userAgent}</p>
-                            <p className="text-xs text-muted-foreground">{threat.reason}</p>
-                        </div>
-                        <Button variant="secondary" size="sm" asChild>
-                           <Link href={`/dashboard/sites/${params.siteId}/security-logs`}>Ver no Log</Link>
-                        </Button>
-                    </div>
-                ))}
+                <div className="text-center text-muted-foreground p-8">
+                  Nenhuma ameaça ativa detectada. Vá para os <Link href={`/dashboard/sites/${params.siteId}/security-logs`} className="text-primary hover:underline">Logs de Segurança</Link> para ver o histórico.
+                </div>
             </CardContent>
         </Card>
         
@@ -363,7 +322,7 @@ export default function CloakerPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {paginatedRules.map(rule => (
+                            {paginatedRules.length > 0 ? paginatedRules.map(rule => (
                                 <TableRow key={rule.id}>
                                     <TableCell>
                                         <div className="flex flex-wrap gap-1">
@@ -378,7 +337,11 @@ export default function CloakerPage() {
                                         <Button variant="ghost" size="icon" onClick={() => handleDeleteRule(rule.id)}><Trash2 className="h-4 w-4" /></Button>
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            )) : (
+                                <TableRow>
+                                    <TableCell colSpan={3} className="h-24 text-center">Nenhuma regra de redirecionamento criada.</TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
                  </div>

@@ -7,15 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Megaphone, Send, Users, User } from 'lucide-react';
+import { Megaphone, Send, Users, User, Loader2 } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-
-// In a real app, this would be fetched from a database
-const mockSentNotifications: any[] = [];
-
+import { sendNotificationAction, getSentNotificationsAction } from '@/app/actions/admin';
 
 export default function NotificationsPage() {
     const { toast } = useToast();
@@ -23,39 +20,53 @@ export default function NotificationsPage() {
     const [specificUser, setSpecificUser] = React.useState('');
     const [notificationType, setNotificationType] = React.useState('info');
     const [message, setMessage] = React.useState('');
+    
+    const [sentNotifications, setSentNotifications] = React.useState<any[]>([]);
+    const [isLoading, setIsLoading] = React.useState(false);
+    const [isSending, setIsSending] = React.useState(false);
 
-    const handleSendNotification = () => {
+    const fetchSentNotifications = React.useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const result = await getSentNotificationsAction();
+            setSentNotifications(result);
+        } catch (error: any) {
+            toast({ title: "Erro", description: error.message, variant: "destructive" });
+        } finally {
+            setIsLoading(false);
+        }
+    }, [toast]);
+    
+    React.useEffect(() => {
+        fetchSentNotifications();
+    }, [fetchSentNotifications]);
+
+
+    const handleSendNotification = async () => {
         if (!message.trim()) {
-            toast({
-                title: "Erro",
-                description: "A mensagem não pode estar vazia.",
-                variant: "destructive"
-            });
+            toast({ title: "Erro", description: "A mensagem não pode estar vazia.", variant: "destructive" });
             return;
         }
-
         if (target === 'specific' && !specificUser.trim()) {
-             toast({
-                title: "Erro",
-                description: "Por favor, especifique o e-mail do usuário.",
-                variant: "destructive"
-            });
+             toast({ title: "Erro", description: "Por favor, especifique o e-mail do usuário.", variant: "destructive" });
             return;
         }
 
-        // In a real application, this would trigger a server action to:
-        // 1. Find the user(s) in the database.
-        // 2. Update their record with the new notification message and type.
-        // 3. This would then be displayed on their dashboard.
-        
-        toast({
-            title: "Notificação Enviada!",
-            description: `Sua mensagem foi enviada para ${target === 'all' ? 'todos os usuários' : specificUser}.`,
-        });
-
-        // Reset form
-        setMessage('');
-        setSpecificUser('');
+        setIsSending(true);
+        try {
+            await sendNotificationAction({ target, specificUser, notificationType, message });
+            toast({
+                title: "Notificação Enviada!",
+                description: `Sua mensagem foi enviada para ${target === 'all' ? 'todos os usuários' : specificUser}.`,
+            });
+            setMessage('');
+            setSpecificUser('');
+            fetchSentNotifications();
+        } catch (error: any) {
+            toast({ title: "Erro ao Enviar", description: error.message, variant: "destructive" });
+        } finally {
+            setIsSending(false);
+        }
     };
 
     return (
@@ -113,7 +124,8 @@ export default function NotificationsPage() {
                                 <Textarea id="message" placeholder="Escreva sua mensagem aqui..." rows={5} value={message} onChange={(e) => setMessage(e.target.value)} />
                             </div>
 
-                             <Button onClick={handleSendNotification}>
+                             <Button onClick={handleSendNotification} disabled={isSending}>
+                                {isSending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 <Send className="mr-2 h-4 w-4"/>
                                 Enviar Notificação
                              </Button>
@@ -135,12 +147,14 @@ export default function NotificationsPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {mockSentNotifications.length > 0 ? (
-                                        mockSentNotifications.map(n => (
+                                    {isLoading ? (
+                                        <TableRow><TableCell colSpan={2} className='text-center'><Loader2 className='mx-auto h-5 w-5 animate-spin'/></TableCell></TableRow>
+                                    ) : sentNotifications.length > 0 ? (
+                                        sentNotifications.map(n => (
                                             <TableRow key={n.id}>
                                                 <TableCell className="font-medium truncate">{n.target}</TableCell>
                                                 <TableCell>
-                                                    <Badge variant={n.type === 'Crítico' ? 'destructive' : 'secondary'}>{n.type}</Badge>
+                                                    <Badge variant={n.type === 'critical' ? 'destructive' : 'secondary'}>{n.type}</Badge>
                                                 </TableCell>
                                             </TableRow>
                                         ))

@@ -92,7 +92,8 @@ CREATE TABLE IF NOT EXISTS security_logs (
   id INT AUTO_INCREMENT PRIMARY KEY,
   project_id VARCHAR(255) NOT NULL,
   ip_address VARCHAR(45),
-  country VARCHAR(100),
+  country_code VARCHAR(2),
+  country_name VARCHAR(100),
   user_agent TEXT,
   reason VARCHAR(255),
   is_critical BOOLEAN DEFAULT FALSE,
@@ -104,9 +105,11 @@ CREATE TABLE IF NOT EXISTS security_logs (
 const createNotificationsTableQuery = `
 CREATE TABLE IF NOT EXISTS notifications (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id VARCHAR(255),
+  user_id VARCHAR(255) NOT NULL,
   type VARCHAR(50) NOT NULL,
   message TEXT NOT NULL,
+  cta_text VARCHAR(255),
+  cta_href VARCHAR(2048),
   is_read BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -131,7 +134,7 @@ CREATE TABLE IF NOT EXISTS analytics_visits (
   path VARCHAR(2048) NOT NULL,
   referrer VARCHAR(2048),
   user_agent TEXT,
-  country VARCHAR(100),
+  country_code VARCHAR(2),
   device_type VARCHAR(50),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   KEY project_id_idx (project_id),
