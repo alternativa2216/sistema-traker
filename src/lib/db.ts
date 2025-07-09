@@ -1,16 +1,17 @@
 import 'server-only';
 import mysql from 'mysql2/promise';
 
-// A configuração da conexão deve usar variáveis de ambiente.
-// Adicione essas variáveis ao seu arquivo .env ou .env.local
+// ATENÇÃO: As credenciais foram inseridas diretamente aqui para facilitar a instalação,
+// conforme solicitado. Em um ambiente de produção, elas NUNCA devem ser
+// hardcoded. O ideal é movê-las para variáveis de ambiente.
 const dbConfig = {
-  host: process.env.DB_HOST || '127.0.0.1',
-  port: Number(process.env.DB_PORT) || 3306,
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE || 'tracklytics_db',
-  connectTimeout: 10000, // 10 segundos
+  host: '84.54.23.29',
+  user: 'tracklytics',
+  password: 'Niz83SJJwxeBCGjN',
+  database: 'tracklytics',
+  connectTimeout: 10000,
 };
+
 
 /**
  * Cria e retorna uma nova conexão com o banco de dados.

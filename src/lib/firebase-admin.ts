@@ -1,49 +1,65 @@
 import 'server-only';
 import admin from 'firebase-admin';
+import type { Auth } from 'firebase-admin/auth';
+import type { Firestore } from 'firebase-admin/firestore';
 
-let adminAuth: admin.auth.Auth;
-let adminDb: admin.firestore.Firestore;
+function initializeFirebaseAdmin() {
+  // Only initialize if it hasn't been already
+  if (admin.apps.length > 0) {
+    return;
+  }
 
-try {
   const serviceAccountString = process.env.FIREBASE_ADMIN_SDK_CONFIG;
-
   if (!serviceAccountString) {
     throw new Error('A variável de ambiente FIREBASE_ADMIN_SDK_CONFIG não está definida.');
   }
-
-  // Parse a stringified service account key
   const serviceAccount = JSON.parse(serviceAccountString);
 
-  if (!admin.apps.length) {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
-  }
-
-  adminAuth = admin.auth();
-  adminDb = admin.firestore();
-
-} catch (error: any) {
-    console.warn(
-    "Firebase Admin SDK não inicializado. A autenticação e as funções de admin não funcionarão. " +
-    "Verifique se a variável de ambiente FIREBASE_ADMIN_SDK_CONFIG está definida corretamente. " +
-    `Erro: ${error.message}`
-  );
-  
-  // Provide a mock implementation to prevent crashes on import
-  // This allows the app to run, but auth-related server actions will fail gracefully.
-  const mockAuth = {
-    createUser: () => Promise.reject(new Error('Firebase Admin não está inicializado')),
-    createSessionCookie: () => Promise.reject(new Error('Firebase Admin não está inicializado')),
-    verifySessionCookie: () => Promise.reject(new Error('Firebase Admin não está inicializado')),
-    generatePasswordResetLink: () => Promise.reject(new Error('Firebase Admin não está inicializado')),
-    // Add any other functions you might call
-  };
-
-  // @ts-ignore
-  adminAuth = mockAuth;
-  // @ts-ignore
-  adminDb = {}; // Mock Firestore if needed
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
 }
 
-export { adminAuth, adminDb };
+// A proxy to lazily initialize Firebase and get the auth service
+const adminAuthProxy = new Proxy<Auth>({} as Auth, {
+  get(target, prop) {
+    try {
+      initializeFirebaseAdmin();
+      // Ensure we are getting the property from the initialized auth service
+      return Reflect.get(admin.auth(), prop);
+    } catch (e: any) {
+      console.warn(
+        "Firebase Admin SDK não inicializado. A autenticação não funcionará. " +
+        `Erro: ${e.message}`
+      );
+      // Fallback to a mock object on error
+      const mockAuth = {
+          createUser: () => Promise.reject(new Error('Firebase Admin não está inicializado')),
+          createSessionCookie: () => Promise.reject(new Error('Firebase Admin não está inicializado')),
+          verifySessionCookie: () => Promise.reject(new Error('Firebase Admin não está inicializado')),
+          generatePasswordResetLink: () => Promise.reject(new Error('Firebase Admin não está inicializado')),
+      };
+      // @ts-ignore
+      return Reflect.get(mockAuth, prop);
+    }
+  },
+});
+
+// A proxy for Firestore
+const adminDbProxy = new Proxy<Firestore>({} as Firestore, {
+  get(target, prop) {
+     try {
+      initializeFirebaseAdmin();
+      return Reflect.get(admin.firestore(), prop);
+    } catch (e: any) {
+      console.warn(
+        "Firebase Admin SDK não inicializado. O Firestore não funcionará. " +
+        `Erro: ${e.message}`
+      );
+      return Reflect.get({} as Firestore, prop); // Return a dummy object
+    }
+  }
+});
+
+export const adminAuth = adminAuthProxy;
+export const adminDb = adminDbProxy;

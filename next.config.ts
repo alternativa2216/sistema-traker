@@ -22,6 +22,9 @@ const nextConfig: NextConfig = {
     config.experiments = { ...config.experiments, asyncWebAssembly: true };
     return config;
   },
+  // Adicionado para resolver erros de build com pacotes de servidor.
+  // Isso instrui o Next.js a não empacotar esses módulos no lado do cliente.
+  serverComponentsExternalPackages: ['mysql2', 'nodemailer'],
 };
 
 export default nextConfig;
