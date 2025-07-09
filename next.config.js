@@ -48,7 +48,6 @@ const nextConfig = {
     '@genkit-ai/googleai',
     'genkit',
     '@genkit-ai/next',
-    'firebase-admin',
   ],
 };
 
