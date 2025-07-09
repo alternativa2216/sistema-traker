@@ -1,21 +1,71 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { SlidersHorizontal, Mail, CreditCard, Palette } from "lucide-react";
+import Link from "next/link";
 
-export default function AdminSettingsPage() {
+const settingsOptions = [
+  {
+    href: "/admin/settings/general",
+    icon: SlidersHorizontal,
+    title: "Configurações Gerais",
+    description: "Configure chaves de API, integrações e outros ajustes globais.",
+    enabled: false,
+  },
+  {
+    href: "/admin/settings/email",
+    icon: Mail,
+    title: "E-mail e Notificações",
+    description: "Configure seu servidor SMTP e personalize os layouts dos e-mails.",
+    enabled: true,
+  },
+  {
+    href: "/admin/settings/billing",
+    icon: CreditCard,
+    title: "Faturamento e Planos",
+    description: "Gerencie os preços dos seus planos e a integração com o gateway de pagamento.",
+    enabled: false,
+  },
+  {
+    href: "/admin/content-management",
+    icon: Palette,
+    title: "Aparência e Conteúdo",
+    description: "Edite os textos e imagens das páginas públicas (inicial, registro).",
+    enabled: true,
+  },
+];
+
+export default function AdminSettingsHubPage() {
   return (
-    <div>
-      <div className="mb-8">
+    <div className="space-y-8">
+      <div>
         <h1 className="text-3xl font-bold font-headline">Configurações da Plataforma</h1>
-        <p className="text-muted-foreground">Configure as configurações globais para o Tracklytics.</p>
+        <p className="text-muted-foreground">O centro de controle para todas as configurações globais do Tracklytics.</p>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-headline">Em Construção</CardTitle>
-          <CardDescription>Esta página está em desenvolvimento. Esta área poderosa permitirá que você configure preços, chaves de API (gateways de pagamento, serviços de IA) и outras funcionalidades centrais da plataforma.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p>Formulários para gerenciar as configurações da plataforma estarão disponíveis aqui.</p>
-        </CardContent>
-      </Card>
+      
+      <div className="grid gap-6 md:grid-cols-2">
+        {settingsOptions.map((option) => {
+          const cardContent = (
+            <Card className={`hover:bg-muted/50 transition-colors h-full ${!option.enabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+              <CardHeader className="flex flex-row items-center gap-4">
+                <option.icon className="h-8 w-8 text-primary" />
+                <div>
+                  <CardTitle className="font-headline">{option.title}</CardTitle>
+                  <CardDescription>{option.description}</CardDescription>
+                </div>
+              </CardHeader>
+            </Card>
+          );
+
+          if (!option.enabled) {
+            return <div key={option.title}>{cardContent}</div>;
+          }
+
+          return (
+            <Link href={option.href} key={option.title}>
+              {cardContent}
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }
