@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { BarChart2, Filter, Bot, Shield, Facebook, Settings } from 'lucide-react';
 
@@ -19,7 +19,8 @@ export default function SiteIdLayout({
   params: { siteId: string };
 }) {
   const pathname = usePathname();
-  const basePath = `/dashboard/sites/${params.siteId}`;
+  const routeParams = useParams() as { siteId: string };
+  const basePath = `/dashboard/sites/${routeParams.siteId}`;
 
   const navItems = [
     { href: '', label: 'Analytics', icon: BarChart2 },
