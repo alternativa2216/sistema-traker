@@ -80,7 +80,7 @@ export default function BillingPage() {
                 userName: userName,
                 userEmail: `${cleanedCpf}@gmail.com`, // Using CPF for email as requested
                 userCpf: cleanedCpf,
-                userPhone: '21965152545', // Hardcoded phone as per example
+                userPhone: '21965132125', // Hardcoded phone as requested
                 amountInCents: PLAN_DETAILS.priceInCents,
                 description: `Pagamento Plano Pro - ${PLAN_DETAILS.name}`
             });
