@@ -16,44 +16,11 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Home, Settings, User, Bell, LogOutIcon, Sparkles, Megaphone, AlertTriangle } from "lucide-react"
 import Link from "next/link"
-import { usePathname, useParams, useRouter } from 'next/navigation'
-// Firebase is disabled for diagnostics
-// import { auth } from "@/lib/firebase"
-// import { signOut } from "firebase/auth"
-import { clearSessionCookie } from "@/app/actions/auth"
-import type { DecodedIdToken } from "firebase-admin/auth"
+import { usePathname, useRouter } from 'next/navigation'
+import { clearSessionCookie, type MockUser } from "@/app/actions/auth"
 import { cn } from "@/lib/utils"
 
-// In a real app, this would be fetched from the database for the logged-in user.
-const userAlerts = [
-    { 
-      id: 'trial',
-      type: 'promo', // 'info', 'promo', 'critical'
-      title: 'Bem-vindo ao seu Teste Pro!', 
-      description: 'Você tem 7 dias restantes para explorar todas as funcionalidades do plano Pro gratuitamente. Aproveite ao máximo!',
-      cta: null,
-    },
-    { 
-      id: 'admin_message',
-      type: 'info',
-      title: 'Aviso do Administrador',
-      description: 'Sua fatura de Julho está pendente. Por favor, regularize.',
-      cta: {
-        text: 'Ver Fatura',
-        href: '/dashboard/billing'
-      }
-    },
-    { 
-      id: 'payment_due',
-      type: 'critical',
-      title: 'Pagamento Pendente',
-      description: 'Sua fatura está aguardando pagamento para garantir a continuidade dos serviços Pro.',
-      cta: {
-        text: 'Pagar Agora',
-        href: '/dashboard/billing'
-      }
-    },
-];
+const userAlerts: any[] = [];
 
 const alertConfig = {
     info: { icon: Megaphone, iconClassName: 'text-yellow-400' },
@@ -62,7 +29,7 @@ const alertConfig = {
 };
 
 interface DashboardHeaderProps {
-  user: DecodedIdToken | null;
+  user: MockUser | null;
 }
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
@@ -71,9 +38,8 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
   const pathSegments = pathname.split('/').filter(Boolean)
 
   const handleSignOut = async () => {
-    // Firebase is disabled for diagnostics
     await clearSessionCookie();
-    router.push('/');
+    router.push('/login');
   }
 
   const getInitials = (name?: string | null) => {
@@ -93,7 +59,6 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           {pathSegments.map((segment, index) => {
             const href = '/' + pathSegments.slice(0, index + 1).join('/')
             const isLast = index === pathSegments.length - 1
-            // Do not show a link for [siteId]
             if (segment.startsWith('[') && segment.endsWith(']')) {
                 return <span key={href} className="mx-2">/</span>
             }
@@ -127,8 +92,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
             <DropdownMenuLabel>Notificações</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {userAlerts.length > 0 ? userAlerts.map(alert => {
-              // @ts-ignore
-              const config = alertConfig[alert.type] || alertConfig.info;
+              const config = alertConfig[alert.type as keyof typeof alertConfig] || alertConfig.info;
               const Icon = config.icon;
 
               const content = (

@@ -3,10 +3,6 @@
 import { cookies } from 'next/headers';
 import { z } from 'zod';
 import { getDbConnection } from '@/lib/db';
-import { adminAuth } from '@/lib/firebase-admin';
-import type { DecodedIdToken } from 'firebase-admin/auth';
-import { Auth, getAuth, sendPasswordResetEmail } from 'firebase/auth';
-import { app } from '@/lib/firebase';
 
 const signUpSchema = z.object({
   name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.'),
@@ -14,6 +10,20 @@ const signUpSchema = z.object({
   password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres.'),
 });
 
+const loginSchema = z.object({
+  email: z.string().email('Por favor, insira um e-mail válido.'),
+  password: z.string().min(1, 'A senha é obrigatória.'),
+});
+
+// Mock user type that aligns with what the header expects
+export type MockUser = {
+  uid: string;
+  name: string;
+  email: string;
+  picture?: string;
+}
+
+// Mock sign-up. It saves the user to the database.
 export async function signUpUser(formData: unknown) {
   const validation = signUpSchema.safeParse(formData);
 
@@ -22,38 +32,68 @@ export async function signUpUser(formData: unknown) {
   }
   
   const { name, email, password } = validation.data;
+  // NOTE: We are not hashing the password in this mock implementation.
+  // In a real production environment, ALWAYS hash passwords before storing.
+  const userId = email; // Use email as mock UID
 
-  // 1. Create user in Firebase Auth
-  const userRecord = await adminAuth.createUser({
-    email,
-    password,
-    displayName: name,
-  });
-
-  // 2. Insert user into the database
-  const connection = await getDbConnection();
+  let connection;
   try {
+    connection = await getDbConnection();
+    // We are not storing the password, just creating the user record.
     await connection.execute(
       'INSERT INTO users (id, name, email) VALUES (?, ?, ?)',
-      [userRecord.uid, name, email]
+      [userId, name, email]
     );
   } catch (error: any) {
-    // If database insertion fails, delete the Firebase user to keep things consistent
-    await adminAuth.deleteUser(userRecord.uid);
+    if (error.code === 'ER_DUP_ENTRY') {
+      throw new Error("Este e-mail já está em uso.");
+    }
     console.error("Database insertion failed:", error);
     throw new Error("Não foi possível salvar o usuário no banco de dados.");
   } finally {
-    await connection.end();
+    if (connection) await connection.end();
   }
   
-  return { success: true, userId: userRecord.uid };
+  return { success: true, userId };
 }
 
+// Mock login. In a real app, this would verify password against DB.
+export async function loginUser(formData: unknown) {
+    const validation = loginSchema.safeParse(formData);
+    if (!validation.success) {
+        throw new Error(validation.error.errors.map(e => e.message).join(', '));
+    }
+    const { email, password } = validation.data;
 
-export async function createSessionCookie(idToken: string) {
-  const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
-  const sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn });
-  cookies().set('session', sessionCookie, { maxAge: expiresIn, httpOnly: true, secure: true });
+    let connection;
+    let userFromDb: any;
+    try {
+        connection = await getDbConnection();
+        // NOTE: We are NOT checking the password in this mock implementation.
+        const [rows] = await connection.execute('SELECT id, name, email FROM users WHERE email = ?', [email]);
+        if (Array.isArray(rows) && rows.length > 0) {
+            userFromDb = rows[0];
+        } else {
+            throw new Error("Usuário não encontrado ou senha inválida.");
+        }
+    } catch (error: any) {
+         console.error("Database lookup failed:", error);
+         throw new Error("Erro ao acessar o banco de dados.");
+    } finally {
+        if (connection) await connection.end();
+    }
+
+    // Create a session if the user exists.
+    const user: MockUser = {
+        uid: userFromDb.id,
+        email: userFromDb.email,
+        name: userFromDb.name,
+    };
+    const sessionValue = JSON.stringify(user);
+    const expiresIn = 60 * 60 * 24 * 5 * 1000;
+    cookies().set('session', sessionValue, { maxAge: expiresIn, httpOnly: true, secure: true });
+
+    return { success: true };
 }
 
 
@@ -62,28 +102,17 @@ export async function clearSessionCookie() {
 }
 
 
-export async function sendPasswordResetEmailAction(email: string) {
-  if (!app) {
-    console.warn("Firebase client not initialized. Cannot send password reset email.");
-    throw new Error("A funcionalidade de e-mail não está configurada.");
-  }
-  const authClient = getAuth(app);
-  await sendPasswordResetEmail(authClient, email);
-}
-
-
-export async function getCurrentUser(): Promise<DecodedIdToken | null> {
+export async function getCurrentUser(): Promise<MockUser | null> {
   const sessionCookie = cookies().get('session')?.value;
   if (!sessionCookie) {
     return null;
   }
 
   try {
-    // Set checkRevoked to true, forcing a check for session revocation.
-    const decodedIdToken = await adminAuth.verifySessionCookie(sessionCookie, true);
-    return decodedIdToken;
+    const user = JSON.parse(sessionCookie) as MockUser;
+    return user;
   } catch (error) {
-    console.log("Could not verify session cookie:", error);
+    console.log("Could not parse session cookie:", error);
     return null;
   }
 }
