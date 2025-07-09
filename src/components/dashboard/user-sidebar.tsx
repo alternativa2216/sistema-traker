@@ -52,15 +52,16 @@ export function UserSidebar() {
             <React.Fragment key={groupIndex}>
               {group.items.map(({ href, label, icon: Icon }) => (
                  <SidebarMenuItem key={href}>
-                  <Link href={href} legacyBehavior passHref>
                     <SidebarMenuButton
+                      asChild
                       isActive={href === '/dashboard' ? pathname === href : pathname.startsWith(href)}
                       tooltip={{ children: label }}
                     >
-                      <Icon />
-                      <span>{label}</span>
+                      <Link href={href}>
+                        <Icon />
+                        <span>{label}</span>
+                      </Link>
                     </SidebarMenuButton>
-                  </Link>
                 </SidebarMenuItem>
               ))}
               {groupIndex < menuGroups.length - 1 && <SidebarSeparator className="my-2" />}
