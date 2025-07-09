@@ -8,7 +8,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { Logo } from "@/components/shared/logo"
 import { usePathname } from 'next/navigation'
@@ -17,19 +16,22 @@ import Link from "next/link"
 
 const menuGroups = [
   {
+    label: 'Visão Geral',
     items: [
-      { href: "/dashboard", label: "Visão Geral", icon: Home },
+      { href: "/dashboard", label: "Painel Principal", icon: Home },
       { href: "/dashboard/analytics", label: "Análises", icon: BarChart },
       { href: "/dashboard/projects", label: "Meus Sites", icon: Globe },
     ]
   },
   {
+    label: 'Ferramentas de IA',
     items: [
-      { href: "/dashboard/analysis", label: "Análise SWOT de IA", icon: Bot },
+      { href: "/dashboard/analysis", label: "Análise SWOT", icon: Bot },
       { href: "/dashboard/reports", label: "Relatórios de IA", icon: FileText },
     ]
   },
   {
+    label: 'Gerenciamento',
     items: [
       { href: "/dashboard/settings", label: "Configurações", icon: Settings },
       { href: "/dashboard/diagnostics", label: "Diagnósticos", icon: Crosshair },
@@ -42,32 +44,35 @@ export function UserSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className='px-4 pt-6 pb-2'>
+      <SidebarHeader>
         <Logo href="/dashboard" />
       </SidebarHeader>
-      <SidebarContent className="px-2">
-        <SidebarMenu>
-          {menuGroups.map((group, groupIndex) => (
-            <React.Fragment key={groupIndex}>
-              {group.items.map(({ href, label, icon: Icon }) => (
-                 <SidebarMenuItem key={href}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={href === '/dashboard' ? pathname === href : pathname.startsWith(href)}
-                      tooltip={{ children: label }}
-                      className="hover:bg-transparent text-muted-foreground hover:text-foreground data-[active=true]:bg-transparent data-[active=true]:text-foreground data-[active=true]:font-semibold"
-                    >
-                      <Link href={href}>
-                        <Icon className="h-5 w-5" />
-                        <span className="text-base">{label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-              {groupIndex < menuGroups.length - 1 && <SidebarSeparator className="my-3 bg-transparent" />}
-            </React.Fragment>
+      <SidebarContent className="p-4">
+        <div className="space-y-4">
+          {menuGroups.map((group) => (
+            <div key={group.label}>
+              <h4 className="mb-2 px-2 text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+                {group.label}
+              </h4>
+              <SidebarMenu>
+                {group.items.map(({ href, label, icon: Icon }) => (
+                  <SidebarMenuItem key={href}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={href === '/dashboard' ? pathname === href : pathname.startsWith(href)}
+                        tooltip={{ children: label }}
+                      >
+                        <Link href={href}>
+                          <Icon />
+                          <span>{label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </div>
           ))}
-        </SidebarMenu>
+        </div>
       </SidebarContent>
     </Sidebar>
   )
