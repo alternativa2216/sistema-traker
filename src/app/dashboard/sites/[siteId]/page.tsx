@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
-import { ArrowDown, ArrowUp, Bot, Copy, Eye, LogOut, MousePointerClick, TrendingDown, Users, Target, Network } from 'lucide-react';
+import { ArrowDown, ArrowUp, Bot, Copy, Eye, LogOut, MousePointerClick, TrendingDown, Users, Target, Network, Code } from 'lucide-react';
 import { VisitsOverTimeChart } from '@/components/dashboard/site-analytics/visits-over-time-chart';
 import { TrafficSourceChart } from '@/components/dashboard/site-analytics/traffic-source-chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 // Mock data, in a real app this would be fetched based on siteId and date range
 const MOCK_SITE_DETAILS = {
@@ -57,13 +58,13 @@ export default function SiteAnalyticsPage({ params }: { params: { siteId: string
     const { toast } = useToast();
     // @ts-ignore
     const data = MOCK_SITE_DETAILS.stats[timeRange];
+    const trackingScript = `<script async src="https://tracklytics.ai/track.js?id=${params.siteId}"></script>`;
 
-    const copyTrackingLink = () => {
-        const trackingLink = `https://tracklytics.ai/track.js?id=${params.siteId}`;
-        navigator.clipboard.writeText(trackingLink);
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(trackingScript);
         toast({
-            title: "Link Copiado!",
-            description: "O link de rastreamento foi copiado para a área de transferência.",
+            title: "Copiado!",
+            description: "O script de rastreamento foi copiado para sua área de transferência.",
         });
     };
 
@@ -79,10 +80,33 @@ export default function SiteAnalyticsPage({ params }: { params: { siteId: string
                         <TabsTrigger value="all">Total</TabsTrigger>
                     </TabsList>
                 </Tabs>
-                <Button variant="outline" onClick={copyTrackingLink}>
-                    <Copy className="mr-2 h-4 w-4" />
-                    Copiar Link de Rastreamento
-                </Button>
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="outline">
+                            <Code className="mr-2 h-4 w-4" />
+                            Ver Script de Rastreamento
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Script de Rastreamento</DialogTitle>
+                            <DialogDescription>
+                                Copie e cole este script no final da tag `&lt;head&gt;` de todas as páginas que você deseja rastrear.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="bg-muted p-4 rounded-md">
+                            <pre className="text-sm text-muted-foreground break-all">
+                                <code>
+                                    {trackingScript}
+                                </code>
+                            </pre>
+                        </div>
+                        <Button onClick={copyToClipboard}>
+                            <Copy className="mr-2 h-4 w-4" />
+                            Copiar Script
+                        </Button>
+                    </DialogContent>
+                </Dialog>
             </div>
 
             {/* Key Metrics */}

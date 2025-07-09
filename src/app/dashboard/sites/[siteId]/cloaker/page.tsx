@@ -18,18 +18,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
-const CloakerOption = ({ id, label, description, children }: { id: string, label: string, description: string, children?: React.ReactNode }) => (
-    <div className="flex items-start sm:items-center justify-between rounded-lg border p-4 flex-col sm:flex-row gap-4">
-        <div className="space-y-0.5">
-            <Label htmlFor={id} className="text-base">{label}</Label>
-            <p className="text-sm text-muted-foreground">
-                {description}
-            </p>
-        </div>
-        {children || <Switch id={id} />}
-    </div>
-);
-
 const osOptions = [
     { id: 'windows', label: 'Windows' },
     { id: 'macos', label: 'macOS' },
@@ -101,18 +89,51 @@ export default function CloakerPage() {
   const { toast } = useToast();
   const params = useParams() as { siteId: string };
 
-  const [redirectDesktopEnabled, setRedirectDesktopEnabled] = React.useState(false);
-  const [redirectMobileEnabled, setRedirectMobileEnabled] = React.useState(false);
+  // General Cloaker Settings
+  const [blockRightClick, setBlockRightClick] = React.useState(false);
+  const [blockDevTools, setBlockDevTools] = React.useState(false);
+  const [redirectOnInspectUrl, setRedirectOnInspectUrl] = React.useState('https://google.com');
 
-  const [geoFilterEnabled, setGeoFilterEnabled] = React.useState(false);
-  const [osFilterEnabled, setOsFilterEnabled] = React.useState(false);
-  const [ipFilterEnabled, setIpFilterEnabled] = React.useState(false);
-  const [referrerFilterEnabled, setReferrerFilterEnabled] = React.useState(false);
-  const [userAgentFilterEnabled, setUserAgentFilterEnabled] = React.useState(false);
-  const [ispFilterEnabled, setIspFilterEnabled] = React.useState(false);
-  const [timeFilterEnabled, setTimeFilterEnabled] = React.useState(false);
-  const [utmFilterEnabled, setUtmFilterEnabled] = React.useState(false);
+  // Device Redirect
+  const [redirectMobileEnabled, setRedirectMobileEnabled] = React.useState(false);
+  const [mobileRedirectUrl, setMobileRedirectUrl] = React.useState('');
+  const [redirectDesktopEnabled, setRedirectDesktopEnabled] = React.useState(false);
+  const [desktopRedirectUrl, setDesktopRedirectUrl] = React.useState('');
+
+  // Traffic Filters
+  const [antiBotFilter, setAntiBotFilter] = React.useState(true);
+  const [antiSpyFilter, setAntiSpyFilter] = React.useState(true);
+  const [antiEmulatorFilter, setAntiEmulatorFilter] = React.useState(false);
+  const [antiClonerFilter, setAntiClonerFilter] = React.useState(true);
+  const [fingerprintDetection, setFingerprintDetection] = React.useState(false);
   
+  // Advanced Filters State
+  const [utmFilterEnabled, setUtmFilterEnabled] = React.useState(false);
+  const [utmSource, setUtmSource] = React.useState('');
+  const [geoFilterEnabled, setGeoFilterEnabled] = React.useState(false);
+  const [geoFilterAction, setGeoFilterAction] = React.useState('block');
+  const [geoLocations, setGeoLocations] = React.useState('');
+  const [osFilterEnabled, setOsFilterEnabled] = React.useState(false);
+  const [osFilterAction, setOsFilterAction] = React.useState('block');
+  const [selectedOs, setSelectedOs] = React.useState<Record<string, boolean>>({});
+  const [ipFilterEnabled, setIpFilterEnabled] = React.useState(false);
+  const [ipFilterAction, setIpFilterAction] = React.useState('block');
+  const [ipList, setIpList] = React.useState('');
+  const [referrerFilterEnabled, setReferrerFilterEnabled] = React.useState(false);
+  const [referrerFilterAction, setReferrerFilterAction] = React.useState('allow');
+  const [referrerList, setReferrerList] = React.useState('');
+  const [userAgentFilterEnabled, setUserAgentFilterEnabled] = React.useState(false);
+  const [userAgentFilterAction, setUserAgentFilterAction] = React.useState('block');
+  const [userAgentList, setUserAgentList] = React.useState('');
+  const [ispFilterEnabled, setIspFilterEnabled] = React.useState(false);
+  const [ispFilterAction, setIspFilterAction] = React.useState('block');
+  const [ispList, setIspList] = React.useState('');
+  const [timeFilterEnabled, setTimeFilterEnabled] = React.useState(false);
+  const [selectedDays, setSelectedDays] = React.useState<Record<string, boolean>>({});
+  const [startTime, setStartTime] = React.useState('09:00');
+  const [endTime, setEndTime] = React.useState('18:00');
+
+  // Advanced Rules
   const [rules, setRules] = React.useState<Rule[]>(initialRules);
   const [currentPage, setCurrentPage] = React.useState(1);
   const RULES_PER_PAGE = 5;
@@ -165,6 +186,14 @@ export default function CloakerPage() {
       }
   };
 
+  const handleSaveSettings = () => {
+    // In a real app, this would collect all state and send it to the backend.
+    toast({
+      title: "Configurações Salvas!",
+      description: "Suas configurações do cloaker foram salvas e serão aplicadas em tempo real."
+    });
+  };
+
   return (
     <div className="space-y-6">
         <Card>
@@ -175,16 +204,20 @@ export default function CloakerPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <CloakerOption 
-                    id="block-right-click"
-                    label="Bloquear Clique Direito"
-                    description="Desativa o menu de contexto do navegador para impedir a cópia fácil de conteúdo."
-                />
-                <CloakerOption 
-                    id="block-f12"
-                    label="Bloquear Ferramentas de Desenvolvedor"
-                    description="Impede o acesso às ferramentas de inspeção do navegador (F12, Inspencionar Elemento)."
-                />
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                        <Label htmlFor="block-right-click" className="text-base">Bloquear Clique Direito</Label>
+                        <p className="text-sm text-muted-foreground">Desativa o menu de contexto do navegador para impedir a cópia fácil de conteúdo.</p>
+                    </div>
+                    <Switch id="block-right-click" checked={blockRightClick} onCheckedChange={setBlockRightClick} />
+                </div>
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                        <Label htmlFor="block-f12" className="text-base">Bloquear Ferramentas de Desenvolvedor</Label>
+                        <p className="text-sm text-muted-foreground">Impede o acesso às ferramentas de inspeção do navegador (F12, Inspencionar Elemento).</p>
+                    </div>
+                    <Switch id="block-f12" checked={blockDevTools} onCheckedChange={setBlockDevTools} />
+                </div>
                  <div className="flex items-start sm:items-center justify-between rounded-lg border p-4 flex-col sm:flex-row gap-4">
                     <div className="space-y-0.5">
                         <Label htmlFor="redirect-url" className="text-base">Redirecionar ao Inspecionar</Label>
@@ -192,7 +225,7 @@ export default function CloakerPage() {
                             Se um usuário abrir as ferramentas de desenvolvedor, ele será redirecionado para esta URL.
                         </p>
                     </div>
-                    <Input id="redirect-url" placeholder="https://google.com" className="w-full sm:max-w-xs" />
+                    <Input id="redirect-url" value={redirectOnInspectUrl} onChange={(e) => setRedirectOnInspectUrl(e.target.value)} placeholder="https://google.com" className="w-full sm:max-w-xs" />
                 </div>
             </CardContent>
         </Card>
@@ -243,7 +276,7 @@ export default function CloakerPage() {
                         <div className="pt-4 border-t mt-4">
                             <div className="space-y-2">
                                 <Label htmlFor="mobile-url">URL Mobile</Label>
-                                <Input id="mobile-url" placeholder="https://seusite.com/lp-mobile" />
+                                <Input id="mobile-url" value={mobileRedirectUrl} onChange={(e) => setMobileRedirectUrl(e.target.value)} placeholder="https://seusite.com/lp-mobile" />
                             </div>
                         </div>
                     )}
@@ -263,7 +296,7 @@ export default function CloakerPage() {
                         <div className="pt-4 border-t mt-4">
                             <div className="space-y-2">
                                 <Label htmlFor="desktop-url">URL Desktop</Label>
-                                <Input id="desktop-url" placeholder="https://seusite.com/lp-desktop" />
+                                <Input id="desktop-url" value={desktopRedirectUrl} onChange={(e) => setDesktopRedirectUrl(e.target.value)} placeholder="https://seusite.com/lp-desktop" />
                             </div>
                         </div>
                     )}
@@ -388,31 +421,41 @@ export default function CloakerPage() {
             <CardContent className="space-y-6">
                  {/* Simple Filters */}
                 <div className="grid md:grid-cols-2 gap-4">
-                    <CloakerOption
-                        id="bot-filter"
-                        label="Filtro Anti-Bot"
-                        description="Bloqueia bots conhecidos e tráfego automatizado."
-                    />
-                    <CloakerOption
-                        id="spy-filter"
-                        label="Filtro Anti-Spy"
-                        description="Protege contra ferramentas de espionagem de anúncios e concorrentes."
-                    />
-                    <CloakerOption
-                        id="emulator-filter"
-                        label="Filtro Anti-Emulador"
-                        description="Bloqueia o acesso de emuladores de Android e iOS, comumente usados para inspeção e clonagem de páginas."
-                    />
-                     <CloakerOption
-                        id="cloner-filter"
-                        label="Filtro Anti-Clonagem"
-                        description="Bloqueia User-Agents de ferramentas conhecidas de clonagem de sites como HTTrack, Wget e outras."
-                    />
-                    <CloakerOption
-                        id="fingerprint-filter"
-                        label="Detecção por Impressão Digital"
-                        description="Bloqueia o acesso com base em uma análise avançada do navegador (fontes, plugins, etc.) para identificar bots e emuladores."
-                    />
+                    <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                            <Label htmlFor="bot-filter" className="text-base">Filtro Anti-Bot</Label>
+                            <p className="text-sm text-muted-foreground">Bloqueia bots conhecidos e tráfego automatizado.</p>
+                        </div>
+                        <Switch id="bot-filter" checked={antiBotFilter} onCheckedChange={setAntiBotFilter} />
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                            <Label htmlFor="spy-filter" className="text-base">Filtro Anti-Spy</Label>
+                            <p className="text-sm text-muted-foreground">Protege contra ferramentas de espionagem de anúncios e concorrentes.</p>
+                        </div>
+                        <Switch id="spy-filter" checked={antiSpyFilter} onCheckedChange={setAntiSpyFilter} />
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                            <Label htmlFor="emulator-filter" className="text-base">Filtro Anti-Emulador</Label>
+                            <p className="text-sm text-muted-foreground">Bloqueia o acesso de emuladores.</p>
+                        </div>
+                        <Switch id="emulator-filter" checked={antiEmulatorFilter} onCheckedChange={setAntiEmulatorFilter} />
+                    </div>
+                     <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                            <Label htmlFor="cloner-filter" className="text-base">Filtro Anti-Clonagem</Label>
+                            <p className="text-sm text-muted-foreground">Bloqueia User-Agents de ferramentas de clonagem.</p>
+                        </div>
+                        <Switch id="cloner-filter" checked={antiClonerFilter} onCheckedChange={setAntiClonerFilter} />
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                            <Label htmlFor="fingerprint-filter" className="text-base">Detecção por Impressão Digital</Label>
+                            <p className="text-sm text-muted-foreground">Bloqueia o acesso com base em uma análise avançada do navegador.</p>
+                        </div>
+                        <Switch id="fingerprint-filter" checked={fingerprintDetection} onCheckedChange={setFingerprintDetection} />
+                    </div>
                 </div>
                 
                 <Separator />
@@ -433,7 +476,7 @@ export default function CloakerPage() {
                         <div className="pt-4 border-t mt-4">
                             <div className="space-y-2">
                                 <Label htmlFor="utm-source">Exigir `utm_source`</Label>
-                                <Input id="utm-source" placeholder="facebook" />
+                                <Input id="utm-source" value={utmSource} onChange={(e) => setUtmSource(e.target.value)} placeholder="facebook" />
                                 <p className="text-xs text-muted-foreground">O visitante só terá acesso se a URL contiver `?utm_source=valor_inserido`.</p>
                             </div>
                         </div>
@@ -464,7 +507,7 @@ export default function CloakerPage() {
                         <div className="grid sm:grid-cols-3 gap-4 pt-4 border-t mt-4">
                             <div className="space-y-2">
                                 <Label htmlFor="geo-action">Ação</Label>
-                                <Select defaultValue="block">
+                                <Select value={geoFilterAction} onValueChange={setGeoFilterAction}>
                                     <SelectTrigger id="geo-action">
                                         <SelectValue placeholder="Selecione a ação" />
                                     </SelectTrigger>
@@ -478,6 +521,7 @@ export default function CloakerPage() {
                                 <Label htmlFor="geo-locations">Lista de Países ou Cidades</Label>
                                 <Input
                                     id="geo-locations"
+                                    value={geoLocations} onChange={(e) => setGeoLocations(e.target.value)}
                                     placeholder="Ex: Brasil, Lisboa, Estados Unidos"
                                 />
                                  <p className="text-xs text-muted-foreground">Use a vírgula para separar os locais.</p>
@@ -510,7 +554,7 @@ export default function CloakerPage() {
                         <div className="space-y-4 pt-4 border-t mt-4">
                             <div className="w-full max-w-xs space-y-2">
                                 <Label htmlFor="os-action">Ação</Label>
-                                <Select defaultValue="block">
+                                <Select value={osFilterAction} onValueChange={setOsFilterAction}>
                                     <SelectTrigger id="os-action">
                                         <SelectValue placeholder="Selecione a ação" />
                                     </SelectTrigger>
@@ -525,7 +569,7 @@ export default function CloakerPage() {
                                 <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 pt-2">
                                     {osOptions.map((os) => (
                                         <div key={os.id} className="flex items-center space-x-2">
-                                            <Checkbox id={`os-${os.id}`} />
+                                            <Checkbox id={`os-${os.id}`} checked={selectedOs[os.id]} onCheckedChange={checked => setSelectedOs(prev => ({...prev, [os.id]: !!checked}))} />
                                             <Label htmlFor={`os-${os.id}`} className="font-normal">{os.label}</Label>
                                         </div>
                                     ))}
@@ -551,7 +595,7 @@ export default function CloakerPage() {
                         <div className="grid sm:grid-cols-3 gap-4 pt-4 border-t mt-4">
                             <div className="space-y-2">
                                 <Label htmlFor="ip-action">Ação</Label>
-                                <Select defaultValue="block">
+                                <Select value={ipFilterAction} onValueChange={setIpFilterAction}>
                                     <SelectTrigger id="ip-action"><SelectValue placeholder="Selecione a ação" /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="block">Bloquear IPs da Lista</SelectItem>
@@ -561,7 +605,7 @@ export default function CloakerPage() {
                             </div>
                             <div className="space-y-2 sm:col-span-2">
                                 <Label htmlFor="ip-list">Lista de IPs</Label>
-                                <Textarea id="ip-list" placeholder="Um IP por linha. Ex: 192.168.1.1&#10;10.0.0.0/8" rows={4} />
+                                <Textarea id="ip-list" value={ipList} onChange={e => setIpList(e.target.value)} placeholder="Um IP por linha. Ex: 192.168.1.1\n10.0.0.0/8" rows={4} />
                                 <p className="text-xs text-muted-foreground">Você pode usar IPs individuais ou intervalos (CIDR).</p>
                             </div>
                         </div>
@@ -584,7 +628,7 @@ export default function CloakerPage() {
                         <div className="grid sm:grid-cols-3 gap-4 pt-4 border-t mt-4">
                             <div className="space-y-2">
                                 <Label htmlFor="referrer-action">Ação</Label>
-                                <Select defaultValue="allow">
+                                <Select value={referrerFilterAction} onValueChange={setReferrerFilterAction}>
                                     <SelectTrigger id="referrer-action"><SelectValue placeholder="Selecione a ação" /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="block">Bloquear Referrers</SelectItem>
@@ -594,7 +638,7 @@ export default function CloakerPage() {
                             </div>
                             <div className="space-y-2 sm:col-span-2">
                                 <Label htmlFor="referrer-list">Lista de Referrers (Domínios)</Label>
-                                <Textarea id="referrer-list" placeholder="Um domínio por linha. Ex: facebook.com&#10;google.com" rows={4} />
+                                <Textarea id="referrer-list" value={referrerList} onChange={e => setReferrerList(e.target.value)} placeholder="Um domínio por linha. Ex: facebook.com\ngoogle.com" rows={4} />
                                 <p className="text-xs text-muted-foreground">Insira apenas o domínio, sem https://.</p>
                             </div>
                         </div>
@@ -617,7 +661,7 @@ export default function CloakerPage() {
                         <div className="grid sm:grid-cols-3 gap-4 pt-4 border-t mt-4">
                             <div className="space-y-2">
                                 <Label htmlFor="user-agent-action">Ação</Label>
-                                <Select defaultValue="block">
+                                <Select value={userAgentFilterAction} onValueChange={setUserAgentFilterAction}>
                                     <SelectTrigger id="user-agent-action"><SelectValue placeholder="Selecione a ação" /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="block">Bloquear User-Agents</SelectItem>
@@ -627,7 +671,7 @@ export default function CloakerPage() {
                             </div>
                             <div className="space-y-2 sm:col-span-2">
                                 <Label htmlFor="user-agent-list">Lista de User-Agents</Label>
-                                <Textarea id="user-agent-list" placeholder="Uma string ou palavra-chave por linha. Ex: GoogleBot&#10;AhrefsBot" rows={4} />
+                                <Textarea id="user-agent-list" value={userAgentList} onChange={e => setUserAgentList(e.target.value)} placeholder="Uma string ou palavra-chave por linha. Ex: GoogleBot\nAhrefsBot" rows={4} />
                                 <p className="text-xs text-muted-foreground">A correspondência é parcial (contém a string).</p>
                             </div>
                         </div>
@@ -650,7 +694,7 @@ export default function CloakerPage() {
                         <div className="grid sm:grid-cols-3 gap-4 pt-4 border-t mt-4">
                             <div className="space-y-2">
                                 <Label htmlFor="isp-action">Ação</Label>
-                                <Select defaultValue="block">
+                                <Select value={ispFilterAction} onValueChange={setIspFilterAction}>
                                     <SelectTrigger id="isp-action"><SelectValue placeholder="Selecione a ação" /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="block">Bloquear ISPs</SelectItem>
@@ -660,7 +704,7 @@ export default function CloakerPage() {
                             </div>
                             <div className="space-y-2 sm:col-span-2">
                                 <Label htmlFor="isp-list">Lista de ISPs</Label>
-                                <Textarea id="isp-list" placeholder="Um nome de provedor por linha. Ex: Google Cloud&#10;OVH SAS" rows={4} />
+                                <Textarea id="isp-list" value={ispList} onChange={e => setIspList(e.target.value)} placeholder="Um nome de provedor por linha. Ex: Google Cloud\nOVH SAS" rows={4} />
                                 <p className="text-xs text-muted-foreground">A correspondência é parcial (contém o nome).</p>
                             </div>
                         </div>
@@ -686,7 +730,7 @@ export default function CloakerPage() {
                                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4 pt-2">
                                     {dayOptions.map((day) => (
                                         <div key={day.id} className="flex items-center space-x-2">
-                                            <Checkbox id={`day-${day.id}`} />
+                                            <Checkbox id={`day-${day.id}`} checked={selectedDays[day.id]} onCheckedChange={checked => setSelectedDays(prev => ({...prev, [day.id]: !!checked}))} />
                                             <Label htmlFor={`day-${day.id}`} className="font-normal">{day.label}</Label>
                                         </div>
                                     ))}
@@ -695,11 +739,11 @@ export default function CloakerPage() {
                             <div className="grid sm:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="start-time">Horário de Início</Label>
-                                    <Input id="start-time" type="time" defaultValue="09:00" />
+                                    <Input id="start-time" type="time" value={startTime} onChange={e => setStartTime(e.target.value)} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="end-time">Horário de Fim</Label>
-                                    <Input id="end-time" type="time" defaultValue="18:00" />
+                                    <Input id="end-time" type="time" value={endTime} onChange={e => setEndTime(e.target.value)} />
                                 </div>
                             </div>
                         </div>
@@ -710,7 +754,7 @@ export default function CloakerPage() {
         </Card>
 
         <div className="flex justify-end">
-            <Button>Salvar Configurações do Cloaker</Button>
+            <Button onClick={handleSaveSettings}>Salvar Configurações do Cloaker</Button>
         </div>
     </div>
   );
