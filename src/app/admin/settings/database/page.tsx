@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
-import { testDatabaseConnectionAction } from '@/app/actions/database';
+import { setupDatabaseAction } from '@/app/actions/database';
 
 export default function DatabaseSettingsPage() {
   const [host, setHost] = React.useState('127.0.0.1');
@@ -26,7 +26,7 @@ export default function DatabaseSettingsPage() {
   const handleTestConnection = async () => {
     setIsTesting(true);
     try {
-      await testDatabaseConnectionAction({
+      const result = await setupDatabaseAction({
         host,
         port: Number(port),
         user,
@@ -35,7 +35,7 @@ export default function DatabaseSettingsPage() {
       });
       toast({
         title: "Sucesso!",
-        description: "A conexão com o banco de dados foi bem-sucedida.",
+        description: result.message || "A conexão com o banco de dados foi bem-sucedida.",
       });
     } catch (error: any) {
       toast({
@@ -50,7 +50,8 @@ export default function DatabaseSettingsPage() {
 
   const handleSave = () => {
     setIsSaving(true);
-    // Em um app real, aqui você salvaria as credenciais de forma segura.
+    // In a real app, this would save the credentials to a secure store (e.g., .env file on the server)
+    // For this prototype, we just show a toast.
     setTimeout(() => {
       toast({
         title: "Configurações Salvas",
@@ -125,7 +126,7 @@ export default function DatabaseSettingsPage() {
                   <div className="flex justify-end gap-2">
                     <Button variant="outline" onClick={handleTestConnection} disabled={isTesting}>
                       {isTesting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Testar Conexão
+                      Testar e Preparar
                     </Button>
                     <Button onClick={handleSave} disabled={isSaving}>
                       {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

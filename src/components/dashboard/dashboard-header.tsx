@@ -14,14 +14,34 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Home, Settings, User, Bell, ShieldAlert, Bot } from "lucide-react"
+import { Home, Settings, User, Bell, ShieldAlert, Bot, LogOutIcon } from "lucide-react"
 import Link from "next/link"
-import { usePathname, useParams } from 'next/navigation'
+import { usePathname, useParams, useRouter } from 'next/navigation'
+import { auth } from "@/lib/firebase"
+import { signOut } from "firebase/auth"
+import { clearSessionCookie } from "@/app/actions/auth"
+import type { DecodedIdToken } from "firebase-admin/auth"
 
-export function DashboardHeader() {
+interface DashboardHeaderProps {
+  user: DecodedIdToken | null;
+}
+
+export function DashboardHeader({ user }: DashboardHeaderProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const pathSegments = pathname.split('/').filter(Boolean)
   const params = useParams() as { siteId?: string };
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+    await clearSessionCookie();
+    router.push('/');
+  }
+
+  const getInitials = (name?: string | null) => {
+    if (!name) return 'UA';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  }
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-6">
@@ -122,21 +142,25 @@ export function DashboardHeader() {
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full">
               <Avatar>
-                <AvatarImage src="https://placehold.co/40x40.png" alt="User avatar" data-ai-hint="user avatar" />
-                <AvatarFallback>UA</AvatarFallback>
+                <AvatarImage src={user?.picture} alt="User avatar" />
+                <AvatarFallback>{getInitials(user?.name)}</AvatarFallback>
               </Avatar>
               <span className="sr-only">Toggle user menu</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+            <DropdownMenuLabel>
+              <div className="font-medium">{user?.name || 'Usuário'}</div>
+              <div className="text-xs text-muted-foreground">{user?.email}</div>
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/dashboard/settings" className="flex items-center gap-2"><Settings className="h-4 w-4" /> Configurações</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/">Sair</Link>
+            <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+              <LogOutIcon className="mr-2 h-4 w-4" />
+              Sair
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

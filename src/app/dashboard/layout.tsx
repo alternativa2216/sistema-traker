@@ -9,6 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertTriangle, Sparkles, Megaphone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { getCurrentUser } from '../actions/auth'
 
 // In a real app, this would be fetched from the database for the logged-in user.
 // The admin panel would control these alerts.
@@ -85,16 +86,18 @@ const UserAlert = ({ alert }: { alert: typeof userAlerts[0] }) => {
     )
 }
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const user = await getCurrentUser();
+
   return (
     <SidebarProvider>
         <UserSidebar />
         <SidebarInset>
-            <DashboardHeader />
+            <DashboardHeader user={user}/>
             <main className="p-4 sm:p-6 lg:p-8">
                 <div className="space-y-4 mb-6">
                     {userAlerts.map(alert => (
