@@ -5,6 +5,7 @@ import { analyzeProjectData, AnalyzeProjectDataInput, AnalyzeProjectDataOutput }
 import { generateAdCopy, GenerateAdCopyInput, GenerateAdCopyOutput } from "@/ai/flows/generate-ad-copy";
 import { suggestAdAudience, SuggestAdAudienceInput, SuggestAdAudienceOutput } from "@/ai/flows/suggest-ad-audience";
 import { analyzeAdCreative, AnalyzeAdCreativeInput, AnalyzeAdCreativeOutput } from "@/ai/flows/analyze-ad-creative";
+import { generateAbTestHypothesis, GenerateAbTestHypothesisInput, GenerateAbTestHypothesisOutput } from "@/ai/flows/generate-ab-test-hypothesis";
 
 export async function generateSwotAnalysisAction(
   input: GenerateSwotAnalysisInput
@@ -83,5 +84,16 @@ export async function analyzeAdCreativeAction(
   } catch (error) {
     console.error("Error analyzing ad creative:", error);
     throw new Error("Falha ao analisar o criativo.");
+  }
+}
+
+export async function generateAbTestHypothesisAction(
+  input: GenerateAbTestHypothesisInput
+): Promise<GenerateAbTestHypothesisOutput> {
+  try {
+    return await generateAbTestHypothesis(input);
+  } catch (error) {
+    console.error("Error generating A/B test hypothesis:", error);
+    throw new Error("Falha ao gerar hipóteses de teste A/B.");
   }
 }

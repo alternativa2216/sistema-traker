@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AiChat } from "@/components/dashboard/ai-chat";
@@ -8,17 +9,112 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, Lightbulb, Search, Sparkles } from "lucide-react";
+import { FileText, Lightbulb, Loader2, Search, Sparkles } from "lucide-react";
+import { useToast } from '@/hooks/use-toast';
+import { generateAbTestHypothesisAction } from '@/app/actions/ai';
+import type { GenerateAbTestHypothesisOutput } from '@/ai/flows/generate-ab-test-hypothesis';
+
+const AbTestGenerator = () => {
+    const [pageUrl, setPageUrl] = React.useState('');
+    const [goal, setGoal] = React.useState('');
+    const [isLoading, setIsLoading] = React.useState(false);
+    const [result, setResult] = React.useState<GenerateAbTestHypothesisOutput | null>(null);
+    const { toast } = useToast();
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!pageUrl.trim() || !goal.trim()) {
+            toast({
+                title: 'Campos obrigatórios',
+                description: 'Por favor, preencha a página e o objetivo.',
+                variant: 'destructive',
+            });
+            return;
+        }
+        setIsLoading(true);
+        setResult(null);
+        try {
+            const res = await generateAbTestHypothesisAction({
+                pageUrl,
+                optimizationGoal: goal,
+            });
+            setResult(res);
+        } catch (error: any) {
+            toast({
+                title: 'Erro ao gerar hipóteses',
+                description: error.message || 'Não foi possível se comunicar com a IA.',
+                variant: 'destructive',
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline">Gerador de Hipóteses para Testes A/B</CardTitle>
+                <CardDescription>Receba sugestões de testes A/B prontas para implementar e otimizar suas conversões.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4 max-w-2xl">
+                    <div className="space-y-2">
+                        <Label htmlFor="test-page">Página para Otimizar</Label>
+                        <Input
+                            id="test-page"
+                            placeholder="Ex: /pricing ou /checkout"
+                            value={pageUrl}
+                            onChange={(e) => setPageUrl(e.target.value)}
+                            disabled={isLoading}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="test-goal">Objetivo Principal</Label>
+                        <Input
+                            id="test-goal"
+                            placeholder="Ex: Aumentar cliques no botão de compra"
+                            value={goal}
+                            onChange={(e) => setGoal(e.target.value)}
+                            disabled={isLoading}
+                        />
+                    </div>
+                    <Button type="submit" disabled={isLoading}>
+                        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4" />}
+                        Gerar Hipóteses
+                    </Button>
+                </form>
+
+                {result && (
+                    <div className="border-t pt-4 mt-6 space-y-4">
+                        <h4 className="font-semibold text-lg">Hipóteses Geradas:</h4>
+                        {result.hypotheses.map((item, index) => (
+                            <div key={index} className="bg-muted/50 p-4 rounded-lg">
+                                <blockquote className="border-l-2 pl-6 italic">
+                                    <p className="font-semibold">Hipótese {index + 1}:</p>
+                                    <p>{item.hypothesis}</p>
+                                    <footer className="mt-2 text-sm not-italic">
+                                        <strong>Sugestão:</strong> {item.suggestion}
+                                    </footer>
+                                </blockquote>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
+};
+
 
 export default function AiAnalysisPage() {
     return (
         <Tabs defaultValue="chat" className="w-full">
             <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
                 <TabsTrigger value="chat">Chat com IA</TabsTrigger>
-                <TabsTrigger value="reports">Gerador de Relatórios</TabsTrigger>
-                <TabsTrigger value="predictive">Análise Preditiva</TabsTrigger>
+                <TabsTrigger value="reports" disabled>Gerador de Relatórios</TabsTrigger>
+                <TabsTrigger value="predictive" disabled>Análise Preditiva</TabsTrigger>
                 <TabsTrigger value="ab_testing">Testes A/B</TabsTrigger>
-                <TabsTrigger value="competitor">Análise Competitiva</TabsTrigger>
+                <TabsTrigger value="competitor" disabled>Análise Competitiva</TabsTrigger>
             </TabsList>
             
             <TabsContent value="chat" className="mt-4">
@@ -79,25 +175,7 @@ export default function AiAnalysisPage() {
             </TabsContent>
             
             <TabsContent value="ab_testing" className="mt-4">
-                 <Card>
-                    <CardHeader>
-                        <CardTitle className="font-headline">Gerador de Hipóteses para Testes A/B</CardTitle>
-                        <CardDescription>Receba sugestões de testes A/B prontas para implementar e otimizar suas conversões.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4 max-w-2xl">
-                        <div className="space-y-2">
-                            <Label htmlFor="test-page">Página para Otimizar</Label>
-                            <Input id="test-page" placeholder="Ex: /pricing ou /checkout"/>
-                        </div>
-                        <Button disabled><Lightbulb className="mr-2" /> Gerar Hipóteses</Button>
-                        <div className="border-t pt-4 mt-4 space-y-3">
-                             <h4 className="font-semibold">Sugestão de Teste (Exemplo):</h4>
-                             <blockquote className="border-l-2 pl-6 italic">
-                                <strong>Hipótese:</strong> Mudar o texto do botão 'Começar' para 'Começar Gratuitamente' na página inicial pode aumentar os cliques em até 15%, pois reduz a fricção e a incerteza do usuário sobre custos.
-                             </blockquote>
-                        </div>
-                    </CardContent>
-                </Card>
+                 <AbTestGenerator />
             </TabsContent>
 
             <TabsContent value="competitor" className="mt-4">
