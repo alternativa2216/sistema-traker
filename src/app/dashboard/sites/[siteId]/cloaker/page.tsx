@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -10,10 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { ListFilter, ServerOff, ArrowLeftRight, Fingerprint, WifiOff, Clock, ShieldAlert, Link2, Plus, Pencil, Trash2 } from 'lucide-react';
+import { ListFilter, ServerOff, ArrowLeftRight, Fingerprint, WifiOff, Clock, ShieldAlert, Link2, Plus, Pencil, Trash2, Globe, Laptop, MonitorSmartphone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 const CloakerOption = ({ id, label, description, children }: { id: string, label: string, description: string, children?: React.ReactNode }) => (
     <div className="flex items-start sm:items-center justify-between rounded-lg border p-4 flex-col sm:flex-row gap-4">
@@ -63,6 +64,37 @@ const mockThreats = [
   }
 ];
 
+interface RuleCondition {
+  type: 'País' | 'Dispositivo' | 'S.O.';
+  value: string;
+}
+
+interface Rule {
+  id: string;
+  conditions: RuleCondition[];
+  redirectUrl: string;
+}
+
+const initialRules: Rule[] = [
+  {
+    id: '1',
+    conditions: [
+      { type: 'País', value: 'Brasil' },
+      { type: 'Dispositivo', value: 'Mobile' },
+    ],
+    redirectUrl: '/lp/oferta-br-mobile',
+  },
+  {
+    id: '2',
+    conditions: [
+      { type: 'País', value: 'Portugal' },
+      { type: 'S.O.', value: 'Windows' },
+    ],
+    redirectUrl: '/lp/oferta-pt-desktop',
+  },
+];
+
+
 export default function CloakerPage() {
   const { toast } = useToast();
   const [geoFilterEnabled, setGeoFilterEnabled] = React.useState(false);
@@ -73,6 +105,19 @@ export default function CloakerPage() {
   const [ispFilterEnabled, setIspFilterEnabled] = React.useState(false);
   const [timeFilterEnabled, setTimeFilterEnabled] = React.useState(false);
   const [utmFilterEnabled, setUtmFilterEnabled] = React.useState(false);
+  
+  const [rules, setRules] = React.useState<Rule[]>(initialRules);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const RULES_PER_PAGE = 5;
+  const totalPages = Math.ceil(rules.length / RULES_PER_PAGE);
+  const paginatedRules = rules.slice((currentPage - 1) * RULES_PER_PAGE, currentPage * RULES_PER_PAGE);
+  
+  const [isAddRuleDialogOpen, setIsAddRuleDialogOpen] = React.useState(false);
+  const [newRuleCountry, setNewRuleCountry] = React.useState('');
+  const [newRuleDevice, setNewRuleDevice] = React.useState('');
+  const [newRuleOs, setNewRuleOs] = React.useState('');
+  const [newRuleRedirectUrl, setNewRuleRedirectUrl] = React.useState('');
+
 
   const handleAddToBlocklist = (userAgent: string) => {
     // In a real app, this would update the state or call an API
@@ -80,6 +125,46 @@ export default function CloakerPage() {
       title: "User-Agent Adicionado",
       description: `${userAgent} foi adicionado à sua lista de bloqueio de User-Agent.`,
     });
+  };
+  
+  const handleDeleteRule = (ruleId: string) => {
+    setRules(prev => prev.filter(rule => rule.id !== ruleId));
+    toast({
+        title: "Regra Removida",
+        description: "A regra de redirecionamento foi removida.",
+    });
+  };
+
+  const handleAddRule = (e: React.FormEvent) => {
+      e.preventDefault();
+      const conditions: RuleCondition[] = [];
+      if (newRuleCountry.trim()) conditions.push({ type: 'País', value: newRuleCountry.trim() });
+      if (newRuleDevice.trim()) conditions.push({ type: 'Dispositivo', value: newRuleDevice.trim() });
+      if (newRuleOs.trim()) conditions.push({ type: 'S.O.', value: newRuleOs.trim() });
+      
+      if (conditions.length > 0 && newRuleRedirectUrl.trim()) {
+          const newRule: Rule = {
+              id: Date.now().toString(),
+              conditions,
+              redirectUrl: newRuleRedirectUrl.trim(),
+          };
+          setRules(prev => [newRule, ...prev]);
+          setNewRuleCountry('');
+          setNewRuleDevice('');
+          setNewRuleOs('');
+          setNewRuleRedirectUrl('');
+          setIsAddRuleDialogOpen(false);
+          toast({
+              title: "Regra Adicionada",
+              description: "A nova regra de redirecionamento foi salva.",
+          });
+      } else {
+          toast({
+              title: "Erro",
+              description: "Preencha pelo menos uma condição e a URL de redirecionamento.",
+              variant: "destructive",
+          });
+      }
   };
 
   return (
@@ -146,10 +231,43 @@ export default function CloakerPage() {
                            Crie regras complexas para redirecionar o tráfego com base em múltiplas condições.
                         </CardDescription>
                     </div>
-                    <Button>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Adicionar Regra
-                    </Button>
+                    <Dialog open={isAddRuleDialogOpen} onOpenChange={setIsAddRuleDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Adicionar Regra
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[480px]">
+                            <DialogHeader>
+                                <DialogTitle>Adicionar Nova Regra</DialogTitle>
+                                <DialogDescription>
+                                    Defina as condições e a URL de redirecionamento. A regra será aplicada se TODAS as condições forem atendidas. Deixe um campo em branco se não quiser usá-lo como condição.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <form id="add-rule-form" onSubmit={handleAddRule} className="grid gap-4 py-4">
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="country" className="text-right">País</Label>
+                                    <Input id="country" value={newRuleCountry} onChange={(e) => setNewRuleCountry(e.target.value)} className="col-span-3" placeholder="Ex: Brasil, Portugal"/>
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="device" className="text-right">Dispositivo</Label>
+                                    <Input id="device" value={newRuleDevice} onChange={(e) => setNewRuleDevice(e.target.value)} className="col-span-3" placeholder="Ex: Mobile, Desktop"/>
+                                </div>
+                                 <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="os" className="text-right">S.O.</Label>
+                                    <Input id="os" value={newRuleOs} onChange={(e) => setNewRuleOs(e.target.value)} className="col-span-3" placeholder="Ex: Windows, iOS"/>
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="redirectUrl" className="text-right">URL de Redirec.</Label>
+                                    <Input id="redirectUrl" value={newRuleRedirectUrl} onChange={(e) => setNewRuleRedirectUrl(e.target.value)} className="col-span-3" placeholder="/nova-oferta" required/>
+                                </div>
+                            </form>
+                            <DialogFooter>
+                                <Button type="submit" form="add-rule-form">Salvar Regra</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -163,36 +281,49 @@ export default function CloakerPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow>
-                                <TableCell>
-                                    <div className="flex flex-wrap gap-1">
-                                        <Badge variant="secondary">País: Brasil</Badge>
-                                        <Badge variant="secondary">Dispositivo: Mobile</Badge>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="font-mono">/lp/oferta-br-mobile</TableCell>
-                                <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
-                                    <Button variant="ghost" size="icon"><Trash2 className="h-4 w-4" /></Button>
-                                </TableCell>
-                            </TableRow>
-                             <TableRow>
-                                <TableCell>
-                                    <div className="flex flex-wrap gap-1">
-                                        <Badge variant="secondary">País: Portugal</Badge>
-                                        <Badge variant="secondary">S.O.: Windows</Badge>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="font-mono">/lp/oferta-pt-desktop</TableCell>
-                                <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
-                                    <Button variant="ghost" size="icon"><Trash2 className="h-4 w-4" /></Button>
-                                </TableCell>
-                            </TableRow>
+                            {paginatedRules.map(rule => (
+                                <TableRow key={rule.id}>
+                                    <TableCell>
+                                        <div className="flex flex-wrap gap-1">
+                                            {rule.conditions.map(condition => (
+                                                <Badge key={condition.value} variant="secondary">{condition.type}: {condition.value}</Badge>
+                                            ))}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="font-mono">{rule.redirectUrl}</TableCell>
+                                    <TableCell className="text-right">
+                                        <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
+                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteRule(rule.id)}><Trash2 className="h-4 w-4" /></Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
                         </TableBody>
                     </Table>
                  </div>
             </CardContent>
+            {totalPages > 1 && (
+                <CardFooter className="flex items-center justify-end gap-2 pt-4">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                    >
+                        Anterior
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                        Página {currentPage} de {totalPages}
+                    </span>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                    >
+                        Próxima
+                    </Button>
+                </CardFooter>
+            )}
         </Card>
         
         <Card>
@@ -263,13 +394,16 @@ export default function CloakerPage() {
                 {/* Geo Filter Section */}
                 <div className="space-y-4 rounded-lg border p-4">
                     <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                            <Label htmlFor="geo-filter-switch" className="text-base font-semibold">
-                                Filtro por Geolocalização
-                            </Label>
-                            <p className="text-sm text-muted-foreground">
-                                Restrinja o acesso com base no país ou cidade do visitante.
-                            </p>
+                        <div className="flex items-start gap-4">
+                          <Globe className="h-6 w-6 text-primary mt-1 hidden sm:block" />
+                          <div className="space-y-0.5">
+                              <Label htmlFor="geo-filter-switch" className="text-base font-semibold">
+                                  Filtro por Geolocalização
+                              </Label>
+                              <p className="text-sm text-muted-foreground">
+                                  Restrinja o acesso com base no país ou cidade do visitante.
+                              </p>
+                          </div>
                         </div>
                         <Switch
                             id="geo-filter-switch"
@@ -306,14 +440,17 @@ export default function CloakerPage() {
                 {/* OS Filter Section */}
                 <div className="space-y-4 rounded-lg border p-4">
                     <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                            <Label htmlFor="os-filter-switch" className="text-base font-semibold">
-                                Filtro por Sistema Operacional
-                            </Label>
-                            <p className="text-sm text-muted-foreground">
-                                Filtre visitantes com base no sistema operacional.
-                            </p>
-                        </div>
+                       <div className="flex items-start gap-4">
+                          <Laptop className="h-6 w-6 text-primary mt-1 hidden sm:block" />
+                           <div className="space-y-0.5">
+                               <Label htmlFor="os-filter-switch" className="text-base font-semibold">
+                                   Filtro por Sistema Operacional
+                               </Label>
+                               <p className="text-sm text-muted-foreground">
+                                   Filtre visitantes com base no sistema operacional.
+                               </p>
+                           </div>
+                       </div>
                         <Switch
                             id="os-filter-switch"
                             checked={osFilterEnabled}
