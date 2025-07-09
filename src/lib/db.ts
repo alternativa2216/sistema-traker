@@ -1,3 +1,4 @@
+import 'server-only';
 import mysql from 'mysql2/promise';
 
 // A configuração da conexão deve usar variáveis de ambiente.
