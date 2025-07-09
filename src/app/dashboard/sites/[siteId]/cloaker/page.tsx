@@ -21,7 +21,8 @@ const CloakerOption = ({ id, label, description, children }: { id: string, label
 
 
 export default function CloakerPage() {
-  const [deviceRedirectEnabled, setDeviceRedirectEnabled] = React.useState(false);
+  const [desktopRedirectEnabled, setDesktopRedirectEnabled] = React.useState(false);
+  const [mobileRedirectEnabled, setMobileRedirectEnabled] = React.useState(false);
 
   return (
     <div className="space-y-6">
@@ -56,34 +57,71 @@ export default function CloakerPage() {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="font-headline">Redirecionamento por Dispositivo</CardTitle>
-            <CardDescription>
-              Envie visitantes de desktop e mobile para URLs diferentes. Se desativado, o tráfego não será redirecionado.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <Label htmlFor="device-redirect-switch" className="text-base">
-                  Ativar redirecionamento por dispositivo
-                </Label>
-              </div>
-              <Switch 
-                id="device-redirect-switch"
-                checked={deviceRedirectEnabled}
-                onCheckedChange={setDeviceRedirectEnabled}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="desktop-url" className={!deviceRedirectEnabled ? 'text-muted-foreground' : ''}>URL para Desktop</Label>
-              <Input id="desktop-url" placeholder="https://seusite.com/desktop" disabled={!deviceRedirectEnabled} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="mobile-url" className={!deviceRedirectEnabled ? 'text-muted-foreground' : ''}>URL para Mobile</Label>
-              <Input id="mobile-url" placeholder="https://seusite.com/mobile" disabled={!deviceRedirectEnabled} />
-            </div>
-          </CardContent>
+            <CardHeader>
+                <CardTitle className="font-headline">Redirecionamento por Dispositivo</CardTitle>
+                <CardDescription>
+                    Envie visitantes para URLs diferentes com base no dispositivo. Ative individualmente para Desktop ou Mobile.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                {/* Desktop Section */}
+                <div className="space-y-4 rounded-lg border p-4">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                            <Label htmlFor="desktop-redirect-switch" className="text-base">
+                                Redirecionamento para Desktop
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                                Ative para redirecionar o tráfego de desktops.
+                            </p>
+                        </div>
+                        <Switch
+                            id="desktop-redirect-switch"
+                            checked={desktopRedirectEnabled}
+                            onCheckedChange={setDesktopRedirectEnabled}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="desktop-url" className={!desktopRedirectEnabled ? 'text-muted-foreground' : ''}>
+                            URL para Desktop
+                        </Label>
+                        <Input 
+                            id="desktop-url" 
+                            placeholder="https://seusite.com/pagina-desktop" 
+                            disabled={!desktopRedirectEnabled} 
+                        />
+                    </div>
+                </div>
+                
+                {/* Mobile Section */}
+                <div className="space-y-4 rounded-lg border p-4">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                            <Label htmlFor="mobile-redirect-switch" className="text-base">
+                                Redirecionamento para Mobile
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                                Ative para redirecionar o tráfego de celulares.
+                            </p>
+                        </div>
+                        <Switch
+                            id="mobile-redirect-switch"
+                            checked={mobileRedirectEnabled}
+                            onCheckedChange={setMobileRedirectEnabled}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="mobile-url" className={!mobileRedirectEnabled ? 'text-muted-foreground' : ''}>
+                            URL para Mobile
+                        </Label>
+                        <Input 
+                            id="mobile-url" 
+                            placeholder="https://seusite.com/pagina-mobile" 
+                            disabled={!mobileRedirectEnabled} 
+                        />
+                    </div>
+                </div>
+            </CardContent>
         </Card>
         
         <Card>
