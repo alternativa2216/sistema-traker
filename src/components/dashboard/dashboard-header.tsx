@@ -14,13 +14,51 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Home, Settings, User, Bell, ShieldAlert, Bot, LogOutIcon } from "lucide-react"
+import { Home, Settings, User, Bell, LogOutIcon, Sparkles, Megaphone, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useParams, useRouter } from 'next/navigation'
 import { auth } from "@/lib/firebase"
 import { signOut } from "firebase/auth"
 import { clearSessionCookie } from "@/app/actions/auth"
 import type { DecodedIdToken } from "firebase-admin/auth"
+import { cn } from "@/lib/utils"
+
+// In a real app, this would be fetched from the database for the logged-in user.
+const userAlerts = [
+    { 
+      id: 'trial',
+      type: 'promo', // 'info', 'promo', 'critical'
+      title: 'Bem-vindo ao seu Teste Pro!', 
+      description: 'Você tem 7 dias restantes para explorar todas as funcionalidades do plano Pro gratuitamente. Aproveite ao máximo!',
+      cta: null,
+    },
+    { 
+      id: 'admin_message',
+      type: 'info',
+      title: 'Aviso do Administrador',
+      description: 'Sua fatura de Julho está pendente. Por favor, regularize.',
+      cta: {
+        text: 'Ver Fatura',
+        href: '/dashboard/billing'
+      }
+    },
+    { 
+      id: 'payment_due',
+      type: 'critical',
+      title: 'Pagamento Pendente',
+      description: 'Sua fatura está aguardando pagamento para garantir a continuidade dos serviços Pro.',
+      cta: {
+        text: 'Pagar Agora',
+        href: '/dashboard/billing'
+      }
+    },
+];
+
+const alertConfig = {
+    info: { icon: Megaphone, iconClassName: 'text-yellow-400' },
+    promo: { icon: Sparkles, iconClassName: 'text-primary' },
+    critical: { icon: AlertTriangle, iconClassName: 'text-destructive' },
+};
 
 interface DashboardHeaderProps {
   user: DecodedIdToken | null;
@@ -30,7 +68,6 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
   const pathname = usePathname()
   const router = useRouter()
   const pathSegments = pathname.split('/').filter(Boolean)
-  const params = useParams() as { siteId?: string };
 
   const handleSignOut = async () => {
     if (auth) {
@@ -81,62 +118,48 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full relative">
               <Bell className="h-5 w-5" />
-              <span className="absolute top-2 right-2 block h-2 w-2 rounded-full bg-destructive ring-2 ring-background" />
+              {userAlerts.length > 0 && (
+                <span className="absolute top-2 right-2 block h-2 w-2 rounded-full bg-destructive ring-2 ring-background" />
+              )}
               <span className="sr-only">Alternar notificações</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80 sm:w-96">
             <DropdownMenuLabel>Notificações</DropdownMenuLabel>
             <DropdownMenuSeparator />
-             <DropdownMenuItem asChild className="cursor-pointer">
-              <Link
-                href={`/dashboard/sites/${params.siteId || 'site-1'}/security-logs`}
-                className="flex items-start gap-3 p-2 bg-destructive/10"
-              >
-                <div className="mt-1">
-                  <ShieldAlert className="h-4 w-4 text-destructive" />
+            {userAlerts.length > 0 ? userAlerts.map(alert => {
+              // @ts-ignore
+              const config = alertConfig[alert.type] || alertConfig.info;
+              const Icon = config.icon;
+
+              const content = (
+                <div className={cn("flex items-start gap-3 p-2 w-full", alert.type === 'critical' ? "bg-destructive/10" : "")}>
+                  <div className="mt-1">
+                    <Icon className={cn("h-4 w-4", config.iconClassName)} />
+                  </div>
+                  <div className="flex-1 whitespace-normal">
+                    <p className="font-semibold">{alert.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {alert.description}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1 whitespace-normal">
-                  <p className="font-semibold text-destructive">Ameaça Crítica Bloqueada</p>
-                  <p className="text-xs text-muted-foreground">
-                    Um IP foi bloqueado automaticamente após uma tentativa de invasão no site '{params.siteId || 'meu-ecommerce.com'}'.
-                  </p>
-                </div>
-              </Link>
-            </DropdownMenuItem>
-             <DropdownMenuItem asChild className="cursor-pointer">
-              <Link
-                href={`/dashboard/sites/${params.siteId || 'site-1'}/ai-analysis`}
-                className="flex items-start gap-3 p-2"
-              >
-                <div className="mt-1">
-                  <Bot className="h-4 w-4 text-primary" />
-                </div>
-                <div className="flex-1 whitespace-normal">
-                  <p className="font-semibold">Nova Oportunidade de Otimização</p>
-                  <p className="text-xs text-muted-foreground">
-                    A IA identificou que a taxa de rejeição da sua página de preços é alta. Veja a análise.
-                  </p>
-                </div>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <Link
-                href={`/dashboard/sites/${params.siteId || 'site-1'}/cloaker`}
-                className="flex items-start gap-3 p-2"
-              >
-                <div className="mt-1">
-                  <ShieldAlert className="h-4 w-4 text-orange-400" />
-                </div>
-                <div className="flex-1 whitespace-normal">
-                  <p className="font-semibold">Atividade Suspeita Detectada</p>
-                  <p className="text-xs text-muted-foreground">
-                    Detectamos bots tentando acessar o site '{params.siteId || 'meu-ecommerce.com'}'. Veja as recomendações no Cloaker.
-                  </p>
-                </div>
-              </Link>
-            </DropdownMenuItem>
+              );
+
+              return (
+                <DropdownMenuItem key={alert.id} asChild className="cursor-pointer p-0">
+                  {alert.cta ? (
+                    <Link href={alert.cta.href}>
+                      {content}
+                    </Link>
+                  ) : (
+                    <div>{content}</div>
+                  )}
+                </DropdownMenuItem>
+              )
+            }) : (
+              <p className="p-4 text-center text-sm text-muted-foreground">Nenhuma notificação nova.</p>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
 

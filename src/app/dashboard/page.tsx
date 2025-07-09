@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { ArrowUpRight, Eye, MousePointerClick, PlusCircle, Sparkles, LogOut, Loader2, Target, Users, Network, AlertTriangle, Lightbulb, TrendingUp, Copy } from "lucide-react";
+import { ArrowUpRight, Eye, MousePointerClick, PlusCircle, Sparkles, LogOut, Loader2, Target, Users, Network, AlertTriangle, Lightbulb, TrendingUp, Copy, Megaphone } from "lucide-react";
 import Link from "next/link";
 import { analyzeProjectDataAction } from "../actions/ai";
 import { useToast } from "@/hooks/use-toast";
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 
 // --- Mock Data ---
@@ -143,8 +144,88 @@ const MOCK_DATA = {
 // --- End Mock Data ---
 
 
+// In a real app, this would be fetched from the database for the logged-in user.
+// The admin panel would control these alerts.
+const userAlerts = [
+    { 
+      id: 'trial',
+      type: 'promo', // 'info', 'promo', 'critical'
+      title: 'Bem-vindo ao seu Teste Pro!', 
+      description: 'Você tem 7 dias restantes para explorar todas as funcionalidades do plano Pro gratuitamente. Aproveite ao máximo!',
+      cta: null,
+    },
+    { 
+      id: 'admin_message',
+      type: 'info',
+      title: 'Aviso do Administrador',
+      description: 'Sua fatura de Julho está pendente. Por favor, regularize.',
+      cta: {
+        text: 'Ver Fatura',
+        href: '/dashboard/billing'
+      },
+    },
+    { 
+      id: 'payment_due',
+      type: 'critical',
+      title: 'Pagamento Pendente',
+      description: 'Sua fatura está aguardando pagamento para garantir a continuidade dos serviços Pro.',
+      cta: {
+        text: 'Pagar Agora',
+        href: '/dashboard/billing'
+      }
+    },
+];
+
+const alertConfig = {
+    info: {
+        icon: Megaphone,
+        className: 'border-yellow-500/50',
+        titleClassName: 'text-yellow-400',
+        iconClassName: 'text-yellow-500',
+    },
+    promo: {
+        icon: Sparkles,
+        className: 'border-primary/50',
+        titleClassName: 'text-primary',
+        iconClassName: 'text-primary',
+    },
+    critical: {
+        icon: AlertTriangle,
+        variant: 'destructive',
+    },
+};
+
+const UserAlert = ({ alert }: { alert: typeof userAlerts[0] }) => {
+    // @ts-ignore
+    const config = alertConfig[alert.type] || alertConfig.info;
+    const Icon = config.icon;
+
+    return (
+        <Alert variant={config.variant} className={config.className}>
+           <div className="flex w-full items-center justify-between gap-4">
+              <div className="flex items-center">
+                 <Icon className={`h-4 w-4 ${config.iconClassName}`} />
+                 <div className="ml-4">
+                   <AlertTitle className={config.titleClassName}>{alert.title}</AlertTitle>
+                   <AlertDescription>
+                     {alert.description}
+                   </AlertDescription>
+                 </div>
+              </div>
+              {alert.cta && (
+                 <Button asChild>
+                    <Link href={alert.cta.href}>{alert.cta.text}</Link>
+                 </Button>
+              )}
+           </div>
+        </Alert>
+    )
+}
+
+
 export default function DashboardPage() {
     const [selectedSiteId, setSelectedSiteId] = useState('all');
+    // @ts-ignore
     const [displayData, setDisplayData] = useState(MOCK_DATA.all);
     const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
     const [isAiLoading, setIsAiLoading] = useState(false);
@@ -266,6 +347,12 @@ export default function DashboardPage() {
 
     return (
         <div className="space-y-8">
+            <div className="space-y-4 mb-6">
+                {userAlerts.map(alert => (
+                    <UserAlert key={alert.id} alert={alert} />
+                ))}
+            </div>
+
             <div className="flex items-center justify-between space-y-2">
                 <div>
                     <h1 className="text-3xl font-bold font-headline">
