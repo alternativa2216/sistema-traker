@@ -255,7 +255,7 @@ export default function Home() {
                     <ul className="space-y-3">
                       {tier.features.map((feature) => (
                         <li key={feature} className="flex items-center gap-2">
-                          <Check className="h-5 w-5 text-accent" />
+                          <Check className="h-5 w-5 text-green-400" />
                           <span className="text-muted-foreground">{feature}</span>
                         </li>
                       ))}

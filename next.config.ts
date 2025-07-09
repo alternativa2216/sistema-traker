@@ -1,7 +1,6 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -22,9 +21,14 @@ const nextConfig: NextConfig = {
     config.experiments = { ...config.experiments, asyncWebAssembly: true };
     return config;
   },
-  // Adicionado para resolver erros de build com pacotes de servidor.
-  // Isso instrui o Next.js a não empacotar esses módulos no lado do cliente.
-  serverComponentsExternalPackages: ['mysql2', 'nodemailer', 'firebase-admin', '@genkit-ai/googleai'],
+  serverComponentsExternalPackages: [
+    'mysql2',
+    'nodemailer',
+    'firebase-admin',
+    '@genkit-ai/googleai',
+    'genkit',
+    '@genkit-ai/next',
+  ],
 };
 
 export default nextConfig;
