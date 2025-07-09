@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Logo } from "@/components/shared/logo"
 import { usePathname } from 'next/navigation'
-import { CreditCard, Flag, Gauge, Globe, HardDrive, Shield, SlidersHorizontal, Users } from "lucide-react"
+import { CreditCard, FileEdit, Flag, Gauge, Globe, HardDrive, Shield, SlidersHorizontal, Users } from "lucide-react"
 import Link from "next/link"
 
 const menuItems = [
@@ -18,8 +18,9 @@ const menuItems = [
   { href: "/admin/users", label: "Usuários", icon: Users },
   { href: "/admin/projects", label: "Sites", icon: Globe },
   { href: "/admin/subscriptions", label: "Assinaturas", icon: CreditCard },
-  { href: "/admin/settings", label: "Configurações da Plataforma", icon: SlidersHorizontal },
-  { href: "/admin/feature-flags", label: "Flags de Funcionalidades", icon: Flag },
+  { href: "/admin/content-management", label: "Conteúdo", icon: FileEdit },
+  { href: "/admin/settings", label: "Configurações", icon: SlidersHorizontal },
+  { href: "/admin/feature-flags", label: "Feature Flags", icon: Flag },
   { href: "/admin/health", label: "Saúde do Sistema", icon: HardDrive },
   { href: "/admin/security", label: "Segurança", icon: Shield },
 ];
