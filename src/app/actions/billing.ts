@@ -16,7 +16,6 @@ const CheckTransactionInputSchema = z.object({
   transactionId: z.string(),
 });
 
-// Tornando qrcode_image opcional para uma análise mais robusta
 const NovaEraTransactionResponseSchema = z.object({
     id: z.string(),
     pix: z.object({
@@ -52,6 +51,30 @@ export async function createPaymentTransaction(input: z.infer<typeof CreateTrans
     const auth = getNovaEraAuth();
 
     try {
+        const transactionPayload = {
+            amount: amountInCents,
+            paymentMethod: "pix",
+            customer: {
+                name: userName,
+                email: userEmail,
+                document: {
+                    number: userCpf,
+                    type: "cpf"
+                },
+                phone: userPhone,
+                externalRef: userCpf // Correção: A API provavelmente espera um valor numérico como string.
+            },
+            pix: {
+                expiresInDays: 1
+            },
+            items: [{
+                title: description,
+                unitPrice: amountInCents,
+                quantity: 1,
+                tangible: false
+            }]
+        };
+
         const response = await fetch('https://api.novaera-pagamentos.com/api/v1/transactions', {
             method: 'POST',
             headers: {
@@ -59,24 +82,7 @@ export async function createPaymentTransaction(input: z.infer<typeof CreateTrans
                 'Authorization': `Basic ${auth}`,
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({
-                amount: amountInCents,
-                paymentMethod: "pix",
-                customer: {
-                    name: userName,
-                    email: userEmail,
-                    document: { number: userCpf, type: "cpf" },
-                    phone: userPhone,
-                    externalRef: `ref-${userCpf}` // Ajustado para corresponder ao exemplo funcional
-                },
-                pix: { expiresInDays: 1 },
-                items: [{
-                    title: description,
-                    unitPrice: amountInCents,
-                    quantity: 1,
-                    tangible: false
-                }]
-            })
+            body: JSON.stringify(transactionPayload)
         });
 
         if (!response.ok) {
@@ -84,18 +90,14 @@ export async function createPaymentTransaction(input: z.infer<typeof CreateTrans
             console.error('Erro da API Nova Era:', response.status, errorBody);
             try {
                 const errorJson = JSON.parse(errorBody);
-                // Tenta extrair a mensagem de erro específica, se houver.
                 const message = errorJson.errors?.[0]?.message || errorJson.message || `Erro da API: ${response.status}`;
                 throw new Error(message);
             } catch (e) {
-                // Se o corpo do erro não for JSON válido
                 throw new Error(`Falha ao criar transação PIX. Status: ${response.status}`);
             }
         }
 
         const rawData = await response.json();
-        
-        // Usar safeParse para um tratamento de erros robusto, semelhante às verificações do exemplo PHP.
         const validationResult = NovaEraTransactionResponseSchema.safeParse(rawData.data);
 
         if (!validationResult.success) {
@@ -106,9 +108,8 @@ export async function createPaymentTransaction(input: z.infer<typeof CreateTrans
 
         const transactionData = validationResult.data;
 
-        // Salvar a transação no banco de dados
+        // Salvar a transação no banco de dados (descomente quando estiver pronto)
         // const connection = await getDbConnection();
-        // Em uma aplicação real, você deve ter uma tabela `transactions`
         // await connection.execute(
         //     'INSERT INTO transactions (transaction_id, user_cpf, user_name, user_email, amount, pix_code, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
         //     [transactionData.id, userCpf, userName, userEmail, amountInCents / 100, transactionData.pix.qrcode, 'pending']
@@ -118,7 +119,7 @@ export async function createPaymentTransaction(input: z.infer<typeof CreateTrans
         return {
             transactionId: transactionData.id,
             pixCode: transactionData.pix.qrcode,
-            pixQrCodeImage: transactionData.pix.qrcode_image || '' // Retornar string vazia se não estiver presente
+            pixQrCodeImage: transactionData.pix.qrcode_image || ''
         };
 
     } catch (error: any) {
@@ -153,13 +154,13 @@ export async function checkPaymentStatus(input: z.infer<typeof CheckTransactionI
         const status = statusData.data.status;
 
         if (status === 'paid') {
-            const connection = await getDbConnection();
-            // Atualizar status no banco de dados
+            // Atualizar status no banco de dados (descomente quando estiver pronto)
+            // const connection = await getDbConnection();
             // await connection.execute(
             //     "UPDATE transactions SET status = 'paid', paid_at = NOW() WHERE transaction_id = ?",
             //     [transactionId]
             // );
-            await connection.end();
+            // await connection.end();
         }
 
         return { status };
