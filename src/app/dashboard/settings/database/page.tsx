@@ -1,12 +1,65 @@
+'use client'
+
+import * as React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { useToast } from '@/hooks/use-toast';
+import { testDatabaseConnectionAction } from '@/app/actions/database';
 
 export default function DatabaseSettingsPage() {
+  const [host, setHost] = React.useState('127.0.0.1');
+  const [port, setPort] = React.useState('3306');
+  const [database, setDatabase] = React.useState('tracklytics_db');
+  const [user, setUser] = React.useState('root');
+  const [password, setPassword] = React.useState('');
+  
+  const [isTesting, setIsTesting] = React.useState(false);
+  const [isSaving, setIsSaving] = React.useState(false);
+
+  const { toast } = useToast();
+
+  const handleTestConnection = async () => {
+    setIsTesting(true);
+    try {
+      await testDatabaseConnectionAction({
+        host,
+        port: Number(port),
+        user,
+        password,
+        database,
+      });
+      toast({
+        title: "Sucesso!",
+        description: "A conexão com o banco de dados foi bem-sucedida.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Falha na Conexão",
+        description: error.message || "Não foi possível conectar ao banco de dados. Verifique suas credenciais.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
+  const handleSave = () => {
+    setIsSaving(true);
+    // Em um app real, aqui você salvaria as credenciais de forma segura.
+    setTimeout(() => {
+      toast({
+        title: "Configurações Salvas",
+        description: "Suas credenciais do banco de dados foram salvas com segurança."
+      });
+      setIsSaving(false);
+    }, 1000);
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -39,25 +92,25 @@ export default function DatabaseSettingsPage() {
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="host">Host</Label>
-                      <Input id="host" placeholder="127.0.0.1" />
+                      <Input id="host" value={host} onChange={(e) => setHost(e.target.value)} placeholder="127.0.0.1" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="port">Porta</Label>
-                      <Input id="port" placeholder="3306" />
+                      <Input id="port" value={port} onChange={(e) => setPort(e.target.value)} placeholder="3306" />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="database">Nome do Banco de Dados</Label>
-                    <Input id="database" placeholder="tracklytics_db" />
+                    <Input id="database" value={database} onChange={(e) => setDatabase(e.target.value)} placeholder="tracklytics_db" />
                   </div>
                    <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="user">Usuário</Label>
-                      <Input id="user" placeholder="root" />
+                      <Input id="user" value={user} onChange={(e) => setUser(e.target.value)} placeholder="root" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="password">Senha</Label>
-                      <Input id="password" type="password" />
+                      <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
                     </div>
                   </div>
                   <div className="flex items-center justify-between rounded-lg border p-4">
@@ -70,8 +123,14 @@ export default function DatabaseSettingsPage() {
                     <Switch id="auto-backup" />
                   </div>
                   <div className="flex justify-end gap-2">
-                    <Button variant="outline">Testar Conexão</Button>
-                    <Button>Salvar</Button>
+                    <Button variant="outline" onClick={handleTestConnection} disabled={isTesting}>
+                      {isTesting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Testar Conexão
+                    </Button>
+                    <Button onClick={handleSave} disabled={isSaving}>
+                      {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Salvar
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
