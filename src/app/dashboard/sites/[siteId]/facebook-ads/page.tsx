@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle, Bot, CheckCircle, DollarSign, Image as ImageIcon, LayoutDashboard, Loader2, MousePointerClick, PenSquare, Target, Upload, Users } from "lucide-react";
+import { Bot, CheckCircle, DollarSign, Image as ImageIcon, LayoutDashboard, Loader2, MousePointerClick, PenSquare, Target, Upload, Users } from "lucide-react";
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,6 +16,8 @@ import type { GenerateAdCopyOutput } from '@/ai/flows/generate-ad-copy';
 import type { SuggestAdAudienceOutput } from '@/ai/flows/suggest-ad-audience';
 import type { AnalyzeAdCreativeOutput } from '@/ai/flows/analyze-ad-creative';
 import Image from 'next/image';
+import { CampaignPerformanceChart } from '@/components/dashboard/facebook/campaign-performance-chart';
+import { cn } from '@/lib/utils';
 
 const mockCampaigns = [
   { id: 'C001', name: 'Promoção de Verão - Vendas', status: 'Ativa', spent: 'R$ 2.500,00', conversions: 120, roas: '4.8x' },
@@ -283,42 +285,42 @@ export default function FacebookAdsPage() {
                     <MetricCard title="CTR Médio" value="2.34%" icon={MousePointerClick} />
                     <MetricCard title="Conversões (Total)" value="577" icon={CheckCircle} />
                 </div>
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="font-headline">Desempenho das Campanhas</CardTitle>
-                        <CardDescription>Uma visão detalhada de todas as suas campanhas do Facebook Ads.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                         <div className="rounded-lg border">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Campanha</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Gasto</TableHead>
-                                        <TableHead>Conversões</TableHead>
-                                        <TableHead>ROAS</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {mockCampaigns.map((campaign) => (
-                                        <TableRow key={campaign.id}>
-                                            <TableCell className="font-medium">{campaign.name}</TableCell>
-                                            <TableCell>
-                                                <Badge variant={campaign.status === 'Ativa' ? 'default' : 'secondary'} className={campaign.status === 'Ativa' ? 'bg-green-600' : ''}>
-                                                    {campaign.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>{campaign.spent}</TableCell>
-                                            <TableCell>{campaign.conversions}</TableCell>
-                                            <TableCell>{campaign.roas}</TableCell>
+                <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+                    <CampaignPerformanceChart />
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="font-headline">Desempenho das Campanhas</CardTitle>
+                            <CardDescription>Resumo de suas campanhas ativas e pausadas.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="rounded-lg border">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Campanha</TableHead>
+                                            <TableHead>Gasto</TableHead>
+                                            <TableHead className='text-right'>Conversões</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                         </div>
-                    </CardContent>
-                </Card>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {mockCampaigns.map((campaign) => (
+                                            <TableRow key={campaign.id}>
+                                                <TableCell className="font-medium">
+                                                    <div className='flex items-center gap-2'>
+                                                        <span className={cn('w-2 h-2 rounded-full', campaign.status === 'Ativa' ? 'bg-green-500' : campaign.status === 'Pausada' ? 'bg-yellow-500' : 'bg-gray-500')} />
+                                                        {campaign.name}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>{campaign.spent}</TableCell>
+                                                <TableCell className='text-right'>{campaign.conversions}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
             </TabsContent>
 
             <TabsContent value="ad_generator" className="mt-4">

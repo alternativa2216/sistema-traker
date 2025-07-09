@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Facebook } from "lucide-react";
 
 export default function SiteSettingsPage() {
   return (
@@ -25,6 +25,28 @@ export default function SiteSettingsPage() {
           </CardContent>
           <CardFooter>
             <Button>Salvar Alterações</Button>
+          </CardFooter>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+                <Facebook className="h-5 w-5 text-primary"/>
+                <CardTitle className="font-headline">Integrações de Marketing</CardTitle>
+            </div>
+            <CardDescription>Conecte suas ferramentas de marketing para uma análise completa.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="fb-pixel">ID do Pixel do Facebook</Label>
+              <Input id="fb-pixel" placeholder="Cole seu ID do Pixel aqui" />
+              <p className="text-xs text-muted-foreground">
+                Isso nos permitirá rastrear conversões e criar públicos para suas campanhas no Facebook Ads.
+              </p>
+            </div>
+          </CardContent>
+           <CardFooter>
+            <Button>Salvar Integrações</Button>
           </CardFooter>
         </Card>
       </div>
