@@ -1,44 +1,92 @@
 'use server';
 
-// A funcionalidade de autenticação foi temporariamente desativada para diagnóstico.
-const authDisabledError = "A funcionalidade de autenticação está temporariamente desativada para diagnóstico.";
+import { cookies } from 'next/headers';
+import { adminAuth } from '@/lib/firebase-admin';
+import { getDbConnection } from '@/lib/db';
+import { z } from 'zod';
 
-export async function signUpUser(formData: any) {
-  console.log("signUpUser called but is disabled for diagnostics");
-  throw new Error(authDisabledError);
+const signUpSchema = z.object({
+  name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.'),
+  email: z.string().email('Por favor, insira um e-mail válido.'),
+  password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres.'),
+});
+
+export async function signUpUser(formData: unknown) {
+  const validation = signUpSchema.safeParse(formData);
+
+  if (!validation.success) {
+    throw new Error(validation.error.errors.map(e => e.message).join(', '));
+  }
+  
+  const { email, password, name } = validation.data;
+
+  try {
+    // Create user in Firebase Auth
+    const userRecord = await adminAuth.createUser({
+      email,
+      password,
+      displayName: name,
+    });
+    
+    // Create user in local database
+    const connection = await getDbConnection();
+    await connection.execute(
+      'INSERT INTO users (id, name, email) VALUES (?, ?, ?)',
+      [userRecord.uid, name, email]
+    );
+    await connection.end();
+
+    return { success: true, userId: userRecord.uid };
+  } catch (error: any) {
+    console.error("Error signing up:", error);
+    if (error.code === 'auth/email-already-exists') {
+      throw new Error('Este e-mail já está em uso. Por favor, tente outro.');
+    }
+    throw new Error('Ocorreu um erro inesperado ao criar a conta.');
+  }
 }
 
 export async function createSessionCookie(idToken: string) {
-    console.log("createSessionCookie called but is disabled for diagnostics");
-    // Não gere erro para permitir que o fluxo de login de teste pareça funcionar.
+  const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
+  const sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn });
+  cookies().set('session', sessionCookie, { maxAge: expiresIn, httpOnly: true, secure: true });
 }
 
 export async function clearSessionCookie() {
-    // Não gere erro aqui para permitir que o fluxo de logout complete visualmente.
-    console.log("clearSessionCookie called but is disabled for diagnostics");
+  cookies().delete('session');
 }
 
 export async function sendPasswordResetEmailAction(email: string) {
-    console.log("sendPasswordResetEmailAction called but is disabled for diagnostics");
-    throw new Error(authDisabledError);
+    try {
+        const link = await adminAuth.generatePasswordResetLink(email);
+        // Here you would typically use an email service to send the link.
+        // For now, we'll just log it to the console for demonstration.
+        console.log(`Password reset link for ${email}: ${link}`);
+        // In a real app, you'd want to avoid leaking the link to the console.
+        // You would integrate a service like Nodemailer, SendGrid, etc.
+    } catch (error: any) {
+        console.error("Error sending password reset email:", error);
+        if (error.code === 'auth/user-not-found') {
+            // To avoid email enumeration attacks, don't reveal that the user doesn't exist.
+            // Just return normally. The user won't receive an email.
+            return;
+        }
+        throw new Error('Não foi possível enviar o e-mail de redefinição de senha.');
+    }
 }
 
 export async function getCurrentUser() {
-  // Para fins de desenvolvimento, estamos retornando um usuário mockado.
-  // Isso permite que você acesse o painel sem precisar configurar a autenticação completa.
-  console.log("getCurrentUser called, returning mock user for development.");
-  return {
-    name: "Usuário de Teste",
-    email: "teste@tracklytics.com",
-    picture: "https://placehold.co/40x40.png",
-    uid: "mock-user-uid",
-    auth_time: Date.now() / 1000,
-    user_id: "mock-user-uid",
-    firebase: { identities: {}, 'sign_in_provider': 'password' },
-    iat: Date.now() / 1000,
-    exp: (Date.now() / 1000) + 3600,
-    sub: "mock-user-uid",
-    aud: "mock-project-id",
-    iss: "https://securetoken.google.com/mock-project-id"
-  };
+  const sessionCookie = cookies().get('session')?.value;
+  if (!sessionCookie) {
+    return null;
+  }
+  try {
+    const decodedIdToken = await adminAuth.verifySessionCookie(sessionCookie, true);
+    return decodedIdToken;
+  } catch (error) {
+    // Session cookie is invalid or expired.
+    // Force a cleanup of the cookie.
+    cookies().delete('session');
+    return null;
+  }
 }
