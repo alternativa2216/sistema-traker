@@ -2,6 +2,9 @@
 
 import { generateSwotAnalysis, GenerateSwotAnalysisInput, GenerateSwotAnalysisOutput } from "@/ai/flows/generate-swot-analysis";
 import { analyzeProjectData, AnalyzeProjectDataInput, AnalyzeProjectDataOutput } from "@/ai/flows/analyze-project-data";
+import { generateAdCopy, GenerateAdCopyInput, GenerateAdCopyOutput } from "@/ai/flows/generate-ad-copy";
+import { suggestAdAudience, SuggestAdAudienceInput, SuggestAdAudienceOutput } from "@/ai/flows/suggest-ad-audience";
+import { analyzeAdCreative, AnalyzeAdCreativeInput, AnalyzeAdCreativeOutput } from "@/ai/flows/analyze-ad-creative";
 
 export async function generateSwotAnalysisAction(
   input: GenerateSwotAnalysisInput
@@ -47,5 +50,38 @@ export async function analyzeProjectDataAction(
   } catch (error) {
     console.error("Error analyzing project data:", error);
     throw new Error("Falha ao analisar os dados do projeto.");
+  }
+}
+
+export async function generateAdCopyAction(
+  input: GenerateAdCopyInput
+): Promise<GenerateAdCopyOutput> {
+  try {
+    return await generateAdCopy(input);
+  } catch (error) {
+    console.error("Error generating ad copy:", error);
+    throw new Error("Falha ao gerar o texto do anúncio.");
+  }
+}
+
+export async function suggestAdAudienceAction(
+  input: SuggestAdAudienceInput
+): Promise<SuggestAdAudienceOutput> {
+  try {
+    return await suggestAdAudience(input);
+  } catch (error) {
+    console.error("Error suggesting ad audience:", error);
+    throw new Error("Falha ao sugerir o público-alvo.");
+  }
+}
+
+export async function analyzeAdCreativeAction(
+  input: AnalyzeAdCreativeInput
+): Promise<AnalyzeAdCreativeOutput> {
+  try {
+    return await analyzeAdCreative(input);
+  } catch (error) {
+    console.error("Error analyzing ad creative:", error);
+    throw new Error("Falha ao analisar o criativo.");
   }
 }
