@@ -13,6 +13,8 @@ import { Progress } from '@/components/ui/progress';
 import QRCode from "qrcode.react";
 import { format, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 // Dados de exemplo
 const MOCK_INVOICES = [
@@ -20,13 +22,6 @@ const MOCK_INVOICES = [
     { id: 'INV-002', date: '01/05/2024', amount: 'R$ 29,00', status: 'Paga' },
     { id: 'INV-001', date: '01/04/2024', amount: 'R$ 29,00', status: 'Paga' },
 ];
-
-const MOCK_USER = {
-    name: 'Usuário de Amostra',
-    email: 'usuario@amostra.com',
-    cpf: '12345678900', // Use um CPF válido para testes reais
-    phone: '21965152545'
-}
 
 const PLAN_DETAILS = {
     name: "Pro",
@@ -38,20 +33,54 @@ const PLAN_DETAILS = {
 export default function BillingPage() {
     const { toast } = useToast();
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = React.useState(false);
-    const [paymentState, setPaymentState] = React.useState<'idle' | 'loading' | 'qr_visible' | 'paid'>('idle');
+    const [paymentState, setPaymentState] = React.useState<'idle' | 'form_visible' | 'loading' | 'qr_visible' | 'paid'>('idle');
+    
+    // State for the form
+    const [userName, setUserName] = React.useState('');
+    const [userCpf, setUserCpf] = React.useState('');
+
     const [pixData, setPixData] = React.useState<{ transactionId: string; pixCode: string; } | null>(null);
     const [timer, setTimer] = React.useState(1800); // 30 minutos em segundos
     const paymentCheckIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
-    const handlePayNow = async () => {
-        setPaymentState('loading');
+    const resetPaymentState = () => {
+        setPaymentState('idle');
+        setUserName('');
+        setUserCpf('');
+        setPixData(null);
+        setTimer(1800);
+        if (paymentCheckIntervalRef.current) {
+            clearInterval(paymentCheckIntervalRef.current);
+        }
+    };
+
+    const handleOpenDialog = () => {
+        resetPaymentState();
+        setPaymentState('form_visible');
         setIsPaymentDialogOpen(true);
+    };
+
+    const handleFormSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const cleanedCpf = userCpf.replace(/\D/g, '');
+
+        if (!userName.trim()) {
+            toast({ title: "Campo Obrigatório", description: "Por favor, preencha o nome completo.", variant: "destructive" });
+            return;
+        }
+
+        if (cleanedCpf.length !== 11) {
+            toast({ title: "CPF Inválido", description: "O CPF deve conter exatamente 11 dígitos.", variant: "destructive" });
+            return;
+        }
+
+        setPaymentState('loading');
         try {
             const data = await createPaymentTransaction({
-                userName: MOCK_USER.name,
-                userEmail: MOCK_USER.email,
-                userCpf: MOCK_USER.cpf,
-                userPhone: MOCK_USER.phone,
+                userName: userName,
+                userEmail: `${cleanedCpf}@gmail.com`, // Using CPF for email as requested
+                userCpf: cleanedCpf,
+                userPhone: '21965152545', // Hardcoded phone as per example
                 amountInCents: PLAN_DETAILS.priceInCents,
                 description: `Pagamento Plano Pro - ${PLAN_DETAILS.name}`
             });
@@ -60,7 +89,7 @@ export default function BillingPage() {
         } catch (error: any) {
             toast({ title: "Erro ao Gerar Pagamento", description: error.message, variant: "destructive" });
             setIsPaymentDialogOpen(false);
-            setPaymentState('idle');
+            resetPaymentState();
         }
     };
     
@@ -73,12 +102,12 @@ export default function BillingPage() {
 
     React.useEffect(() => {
         if (paymentState === 'qr_visible' && pixData) {
-            // Iniciar timer
+            // Start timer
             const countdown = setInterval(() => {
                 setTimer(prev => (prev > 0 ? prev - 1 : 0));
             }, 1000);
             
-            // Iniciar verificação de pagamento
+            // Start payment check
             paymentCheckIntervalRef.current = setInterval(async () => {
                 try {
                     const { status } = await checkPaymentStatus({ transactionId: pixData.transactionId });
@@ -88,7 +117,7 @@ export default function BillingPage() {
                 } catch (error) {
                     console.error("Erro ao verificar status:", error);
                 }
-            }, 5000); // Verificar a cada 5 segundos
+            }, 5000); // Check every 5 seconds
 
             return () => {
                 clearInterval(countdown);
@@ -102,14 +131,20 @@ export default function BillingPage() {
     React.useEffect(() => {
         if (paymentState === 'paid' && paymentCheckIntervalRef.current) {
             clearInterval(paymentCheckIntervalRef.current);
-            // Redirecionar ou fechar o dialog após um tempo
+            // Redirect or close dialog after a while
             setTimeout(() => {
                 setIsPaymentDialogOpen(false);
-                setPaymentState('idle');
-                 toast({ title: "Pagamento Confirmado!", description: "Seu plano foi renovado com sucesso." });
+                resetPaymentState();
+                toast({ title: "Pagamento Confirmado!", description: "Seu plano foi renovado com sucesso." });
             }, 5000)
         }
     }, [paymentState, toast]);
+
+    React.useEffect(() => {
+        if (!isPaymentDialogOpen) {
+            resetPaymentState();
+        }
+    }, [isPaymentDialogOpen]);
 
     const formatTime = (seconds: number) => {
         const minutes = Math.floor(seconds / 60);
@@ -117,9 +152,35 @@ export default function BillingPage() {
         return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
     };
 
-
     const renderPaymentContent = () => {
         switch (paymentState) {
+            case 'form_visible':
+                return (
+                    <form onSubmit={handleFormSubmit} className="space-y-4 pt-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="user-name">Nome Completo</Label>
+                            <Input 
+                                id="user-name" 
+                                value={userName} 
+                                onChange={(e) => setUserName(e.target.value)} 
+                                placeholder="Seu nome completo"
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="user-cpf">CPF</Label>
+                            <Input 
+                                id="user-cpf" 
+                                value={userCpf} 
+                                onChange={(e) => setUserCpf(e.target.value.replace(/\D/g, ''))} 
+                                placeholder="Apenas números"
+                                maxLength={11}
+                                required
+                            />
+                        </div>
+                        <Button type="submit" className="w-full">Gerar Pagamento PIX</Button>
+                    </form>
+                );
             case 'loading':
                 return (
                     <div className="flex flex-col items-center justify-center h-80">
@@ -191,14 +252,17 @@ export default function BillingPage() {
                 <CardFooter className="flex justify-between items-center">
                     <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
                         <DialogTrigger asChild>
-                           <Button onClick={handlePayNow} disabled={paymentState !== 'idle'}>
+                           <Button onClick={handleOpenDialog} disabled={paymentState !== 'idle'}>
                              <DollarSign className="mr-2 h-4 w-4"/>
                              Pagar Fatura Atual
                            </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-md">
                              <DialogHeader>
-                                <DialogTitle className="font-headline text-center text-2xl">Pagamento PIX</DialogTitle>
+                                <DialogTitle className="font-headline text-center text-2xl">
+                                    {paymentState === 'form_visible' ? 'Informações para Pagamento' : 'Pagamento PIX'}
+                                </DialogTitle>
+                                {paymentState === 'form_visible' && <DialogDescription className="text-center pt-2">Precisamos de alguns dados para gerar a cobrança do PIX.</DialogDescription>}
                              </DialogHeader>
                              {renderPaymentContent()}
                         </DialogContent>
