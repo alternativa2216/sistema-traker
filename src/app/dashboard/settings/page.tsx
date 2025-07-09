@@ -1,5 +1,5 @@
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Database, UserCircle, Bell, KeyRound } from "lucide-react";
+import { UserCircle, Bell, KeyRound } from "lucide-react";
 import Link from "next/link";
 
 const settingsOptions = [
@@ -8,13 +8,6 @@ const settingsOptions = [
     icon: UserCircle,
     title: "Perfil",
     description: "Gerencie os detalhes do seu perfil e senha.",
-    enabled: true,
-  },
-  {
-    href: "/dashboard/settings/database",
-    icon: Database,
-    title: "Banco de Dados",
-    description: "Configure a conexão com seu banco de dados.",
     enabled: true,
   },
   {
