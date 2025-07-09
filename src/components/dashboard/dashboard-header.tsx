@@ -134,9 +134,6 @@ export function DashboardHeader() {
             <DropdownMenuItem asChild>
               <Link href="/dashboard/settings" className="flex items-center gap-2"><Settings className="h-4 w-4" /> Configurações</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/admin" className="flex items-center gap-2"><User className="h-4 w-4" /> Painel do Admin</Link>
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/">Sair</Link>

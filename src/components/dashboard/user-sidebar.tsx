@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Logo } from "@/components/shared/logo"
 import { usePathname } from 'next/navigation'
-import { BarChart, Bot, FileText, Globe, Home, LifeBuoy, Settings } from "lucide-react"
+import { BarChart, Bot, Crosshair, FileText, Globe, Home, Settings } from "lucide-react"
 import Link from "next/link"
 
 const menuGroups = [
@@ -32,7 +32,7 @@ const menuGroups = [
   {
     items: [
       { href: "/dashboard/settings", label: "Configurações", icon: Settings },
-      { href: "/dashboard/diagnostics", label: "Diagnósticos", icon: LifeBuoy },
+      { href: "/dashboard/diagnostics", label: "Diagnósticos", icon: Crosshair },
     ]
   }
 ];
@@ -42,10 +42,10 @@ export function UserSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader>
+      <SidebarHeader className='px-4 pt-6 pb-2'>
         <Logo href="/dashboard" />
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="px-2">
         <SidebarMenu>
           {menuGroups.map((group, groupIndex) => (
             <React.Fragment key={groupIndex}>
@@ -55,15 +55,16 @@ export function UserSidebar() {
                       asChild
                       isActive={href === '/dashboard' ? pathname === href : pathname.startsWith(href)}
                       tooltip={{ children: label }}
+                      className="hover:bg-transparent text-muted-foreground hover:text-foreground data-[active=true]:bg-transparent data-[active=true]:text-foreground data-[active=true]:font-semibold"
                     >
                       <Link href={href}>
-                        <Icon />
-                        <span>{label}</span>
+                        <Icon className="h-5 w-5" />
+                        <span className="text-base">{label}</span>
                       </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-              {groupIndex < menuGroups.length - 1 && <SidebarSeparator className="my-2" />}
+              {groupIndex < menuGroups.length - 1 && <SidebarSeparator className="my-3 bg-transparent" />}
             </React.Fragment>
           ))}
         </SidebarMenu>
