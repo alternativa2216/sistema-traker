@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Logo } from "@/components/shared/logo"
 import { usePathname } from 'next/navigation'
-import { CreditCard, FileEdit, Flag, Gauge, Globe, HardDrive, Shield, SlidersHorizontal, Users, ClipboardList } from "lucide-react"
+import { CreditCard, FileEdit, Flag, Gauge, Globe, HardDrive, Shield, SlidersHorizontal, Users, ClipboardList, Megaphone } from "lucide-react"
 import Link from "next/link"
 
 const menuGroups = [
@@ -21,6 +21,7 @@ const menuGroups = [
       { href: "/admin/users", label: "Usuários", icon: Users },
       { href: "/admin/projects", label: "Sites", icon: Globe },
       { href: "/admin/subscriptions", label: "Assinaturas", icon: CreditCard },
+      { href: "/admin/notifications", label: "Notificações", icon: Megaphone },
     ]
   },
   {

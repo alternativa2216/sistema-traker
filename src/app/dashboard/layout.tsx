@@ -10,63 +10,97 @@ import { AlertTriangle, Sparkles, Megaphone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
+// In a real app, this would be fetched from the database for the logged-in user.
+// The admin panel would control these alerts.
+const userAlerts = [
+    { 
+      id: 'trial',
+      type: 'promo', // 'info', 'promo', 'critical'
+      title: 'Bem-vindo ao seu Teste Pro!', 
+      description: 'Você tem 7 dias restantes para explorar todas as funcionalidades do plano Pro gratuitamente. Aproveite ao máximo!',
+      cta: null,
+    },
+    { 
+      id: 'admin_message',
+      type: 'info',
+      title: 'Aviso do Administrador',
+      description: 'Sua fatura de Julho está pendente. Por favor, regularize.',
+      cta: null,
+    },
+    { 
+      id: 'payment_due',
+      type: 'critical',
+      title: 'Pagamento Pendente',
+      description: 'Sua fatura está aguardando pagamento para garantir a continuidade dos serviços Pro.',
+      cta: {
+        text: 'Pagar Agora',
+        href: '/dashboard/billing'
+      }
+    },
+];
+
+const alertConfig = {
+    info: {
+        icon: Megaphone,
+        className: 'border-yellow-500/50',
+        titleClassName: 'text-yellow-400',
+        iconClassName: 'text-yellow-500',
+    },
+    promo: {
+        icon: Sparkles,
+        className: 'border-primary/50',
+        titleClassName: 'text-primary',
+        iconClassName: 'text-primary',
+    },
+    critical: {
+        icon: AlertTriangle,
+        variant: 'destructive',
+    },
+};
+
+const UserAlert = ({ alert }: { alert: typeof userAlerts[0] }) => {
+    // @ts-ignore
+    const config = alertConfig[alert.type] || alertConfig.info;
+    const Icon = config.icon;
+
+    return (
+        <Alert variant={config.variant} className={config.className}>
+           <div className="flex w-full items-center justify-between gap-4">
+              <div className="flex items-center">
+                 <Icon className={`h-4 w-4 ${config.iconClassName}`} />
+                 <div className="ml-4">
+                   <AlertTitle className={config.titleClassName}>{alert.title}</AlertTitle>
+                   <AlertDescription>
+                     {alert.description}
+                   </AlertDescription>
+                 </div>
+              </div>
+              {alert.cta && (
+                 <Button asChild>
+                    <Link href={alert.cta.href}>{alert.cta.text}</Link>
+                 </Button>
+              )}
+           </div>
+        </Alert>
+    )
+}
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  // In a real app, these values would come from your database based on the logged-in user.
-  const isPaymentDue = true; 
-  const isProTrialActive = true; 
-  const trialDaysLeft = 7; 
-  const customUserAlert = 'Sua fatura de Julho está pendente. Por favor, regularize.'; // This simulates the custom alert set by the admin.
-
   return (
     <SidebarProvider>
         <UserSidebar />
         <SidebarInset>
             <DashboardHeader />
             <main className="p-4 sm:p-6 lg:p-8">
-                {customUserAlert && (
-                     <Alert className="mb-6 border-yellow-500/50">
-                       <Megaphone className="h-4 w-4 text-yellow-500" />
-                       <div className="ml-4 flex-grow">
-                         <AlertTitle className="font-headline text-yellow-400">Aviso do Administrador</AlertTitle>
-                         <AlertDescription>
-                           {customUserAlert}
-                         </AlertDescription>
-                       </div>
-                    </Alert>
-                )}
-
-                {isProTrialActive && (
-                    <Alert className="mb-6 border-primary/50">
-                       <Sparkles className="h-4 w-4 text-primary" />
-                       <div className="ml-4 flex-grow">
-                         <AlertTitle className="font-headline text-primary">Bem-vindo ao seu Teste Pro!</AlertTitle>
-                         <AlertDescription>
-                           Você tem {trialDaysLeft} dias restantes para explorar todas as funcionalidades do plano Pro gratuitamente. Aproveite ao máximo!
-                         </AlertDescription>
-                       </div>
-                    </Alert>
-                )}
-                
-                {isPaymentDue && (
-                    <Alert variant="destructive" className="mb-6 flex items-center justify-between">
-                       <div className="flex items-center">
-                         <AlertTriangle className="h-4 w-4" />
-                         <div className="ml-4">
-                           <AlertTitle>Pagamento Pendente</AlertTitle>
-                           <AlertDescription>
-                             Sua fatura está aguardando pagamento para garantir a continuidade dos serviços Pro.
-                           </AlertDescription>
-                         </div>
-                       </div>
-                       <Button asChild>
-                          <Link href="/dashboard/billing">Pagar Agora</Link>
-                       </Button>
-                    </Alert>
-                )}
+                <div className="space-y-4 mb-6">
+                    {userAlerts.map(alert => (
+                        <UserAlert key={alert.id} alert={alert} />
+                    ))}
+                </div>
                 {children}
             </main>
         </SidebarInset>
