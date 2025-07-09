@@ -53,6 +53,11 @@ const mockThreats = [
     userAgent: "python-requests/2.25.1",
     reason: "User-agent comum para scripts automatizados e scraping.",
     type: "Scraping",
+  },
+  {
+    userAgent: "HTTrack/3.x",
+    reason: "Ferramenta de clonagem de site detectada. Ative o Filtro Anti-Clonagem.",
+    type: "Clonagem de Site",
   }
 ];
 
@@ -214,6 +219,16 @@ export default function CloakerPage() {
                         id="spy-filter"
                         label="Filtro Anti-Spy"
                         description="Protege contra ferramentas de espionagem de anúncios e concorrentes."
+                    />
+                    <CloakerOption
+                        id="emulator-filter"
+                        label="Filtro Anti-Emulador"
+                        description="Bloqueia o acesso de emuladores de Android e iOS, comumente usados para inspeção e clonagem de páginas."
+                    />
+                     <CloakerOption
+                        id="cloner-filter"
+                        label="Filtro Anti-Clonagem"
+                        description="Bloqueia User-Agents de ferramentas conhecidas de clonagem de sites como HTTrack, Wget e outras."
                     />
                 </div>
                 
