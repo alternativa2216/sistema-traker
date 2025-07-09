@@ -10,13 +10,13 @@ import {
 } from "@/components/ui/sidebar"
 import { Logo } from "@/components/shared/logo"
 import { usePathname } from 'next/navigation'
-import { BarChart, CreditCard, Flag, Gauge, HardDrive, Shield, SlidersHorizontal, Users, LogOut } from "lucide-react"
+import { CreditCard, Flag, Gauge, Globe, HardDrive, Shield, SlidersHorizontal, Users } from "lucide-react"
 import Link from "next/link"
 
 const menuItems = [
   { href: "/admin", label: "Painel", icon: Gauge },
   { href: "/admin/users", label: "Usuários", icon: Users },
-  { href: "/admin/projects", label: "Projetos", icon: BarChart },
+  { href: "/admin/projects", label: "Sites", icon: Globe },
   { href: "/admin/subscriptions", label: "Assinaturas", icon: CreditCard },
   { href: "/admin/settings", label: "Configurações da Plataforma", icon: SlidersHorizontal },
   { href: "/admin/feature-flags", label: "Flags de Funcionalidades", icon: Flag },
