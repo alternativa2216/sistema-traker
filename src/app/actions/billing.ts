@@ -7,6 +7,7 @@ const CreateTransactionInputSchema = z.object({
   userName: z.string(),
   userEmail: z.string().email(),
   userCpf: z.string().length(11),
+  userPhone: z.string(),
   amountInCents: z.number().int().positive(),
   description: z.string(),
 });
@@ -46,7 +47,7 @@ export async function createPaymentTransaction(input: z.infer<typeof CreateTrans
         throw new Error('Dados de transação inválidos.');
     }
 
-    const { userName, userEmail, userCpf, amountInCents, description } = validation.data;
+    const { userName, userEmail, userCpf, userPhone, amountInCents, description } = validation.data;
     const auth = getNovaEraAuth();
 
     try {
@@ -64,6 +65,8 @@ export async function createPaymentTransaction(input: z.infer<typeof CreateTrans
                     name: userName,
                     email: userEmail,
                     document: { number: userCpf, type: "cpf" },
+                    phone: userPhone,
+                    externalRef: `tracklytics-user-${userCpf}`
                 },
                 pix: { expiresInDays: 1 },
                 items: [{

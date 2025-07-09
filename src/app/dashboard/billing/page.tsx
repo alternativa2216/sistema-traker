@@ -24,7 +24,8 @@ const MOCK_INVOICES = [
 const MOCK_USER = {
     name: 'Usuário de Amostra',
     email: 'usuario@amostra.com',
-    cpf: '12345678900' // Use um CPF válido para testes reais
+    cpf: '12345678900', // Use um CPF válido para testes reais
+    phone: '21965152545'
 }
 
 const PLAN_DETAILS = {
@@ -50,6 +51,7 @@ export default function BillingPage() {
                 userName: MOCK_USER.name,
                 userEmail: MOCK_USER.email,
                 userCpf: MOCK_USER.cpf,
+                userPhone: MOCK_USER.phone,
                 amountInCents: PLAN_DETAILS.priceInCents,
                 description: `Pagamento Plano Pro - ${PLAN_DETAILS.name}`
             });
