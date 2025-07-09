@@ -4,12 +4,14 @@ import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { BarChart2, Filter, Bot, Shield, Facebook, Settings, ClipboardList, Activity } from 'lucide-react';
+import { BarChart2, Filter, Bot, Shield, Facebook, Settings, ClipboardList, Activity, Loader2 } from 'lucide-react';
+import { getProjectByIdAction } from '@/app/actions/projects';
+import { useToast } from '@/hooks/use-toast';
 
-const MOCK_SITE_DETAILS = {
-    id: "site-1",
-    name: "meu-ecommerce.com",
-};
+type ProjectDetails = {
+    id: string;
+    name: string;
+}
 
 export default function SiteIdLayout({
   children,
@@ -19,6 +21,26 @@ export default function SiteIdLayout({
   const pathname = usePathname();
   const params = useParams() as { siteId: string };
   const basePath = `/dashboard/sites/${params.siteId}`;
+  const { toast } = useToast();
+
+  const [project, setProject] = React.useState<ProjectDetails | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function fetchProjectDetails() {
+        if (!params.siteId) return;
+        setIsLoading(true);
+        try {
+            const projectDetails = await getProjectByIdAction(params.siteId);
+            setProject(projectDetails);
+        } catch (error: any) {
+            toast({ title: "Erro", description: error.message, variant: "destructive" });
+        } finally {
+            setIsLoading(false);
+        }
+    }
+    fetchProjectDetails();
+  }, [params.siteId, toast]);
 
   const navItems = [
     { href: '', label: 'Analytics', icon: BarChart2 },
@@ -35,8 +57,17 @@ export default function SiteIdLayout({
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold font-headline">{MOCK_SITE_DETAILS.name}</h1>
-        <p className="text-muted-foreground">Análise detalhada do seu site.</p>
+        {isLoading ? (
+            <div className="flex items-center gap-2">
+                <Loader2 className="h-6 w-6 animate-spin" />
+                <h1 className="text-3xl font-bold font-headline">Carregando...</h1>
+            </div>
+        ) : (
+            <>
+                <h1 className="text-3xl font-bold font-headline">{project?.name || 'Site não encontrado'}</h1>
+                <p className="text-muted-foreground">Análise detalhada do seu site.</p>
+            </>
+        )}
       </div>
 
       {/* Navigation Tabs */}
@@ -44,7 +75,6 @@ export default function SiteIdLayout({
         <nav className="-mb-px flex space-x-6" aria-label="Tabs">
           {navItems.map((item) => {
             const fullPath = `${basePath}${item.href || ''}`;
-            // Handle the case where the base path itself is the active path
             const isActive = item.href === '' ? pathname === fullPath : pathname.startsWith(fullPath);
             return (
               <Link

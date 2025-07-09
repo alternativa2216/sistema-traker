@@ -11,48 +11,70 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { MoreHorizontal, UserCog, Ban, LogIn } from "lucide-react";
+import { MoreHorizontal, UserCog, Ban, LogIn, Loader2 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
-
-// In a real app, this data would be fetched from the database
-const initialUsers: any[] = [];
+import { getUsersAction, updateUserAction } from '@/app/actions/admin';
 
 type User = {
   id: string;
   name: string;
   email: string;
   plan: string;
-  joined: string;
-  customAlert: string;
+  created_at: string;
+  custom_alert: string;
 }
 
 export default function AdminUsersPage() {
   const { toast } = useToast();
-  const [users, setUsers] = React.useState<User[]>(initialUsers);
+  const [users, setUsers] = React.useState<User[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [isSaving, setIsSaving] = React.useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
   const [editingUser, setEditingUser] = React.useState<User | null>(null);
+
+  const fetchUsers = React.useCallback(async () => {
+    setIsLoading(true);
+    try {
+        const result = await getUsersAction();
+        setUsers(result);
+    } catch (error: any) {
+        toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } finally {
+        setIsLoading(false);
+    }
+  }, [toast]);
   
-  // React.useEffect(() => {
-  //   // Here you would fetch users from your database
-  //   // e.g., fetchUsersAction().then(setUsers);
-  // }, []);
+  React.useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const handleOpenEditDialog = (user: User) => {
-    setEditingUser({ ...user }); // Create a copy to edit
+    setEditingUser({ ...user });
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     if (!editingUser) return;
     
-    // In a real app, this would be a server action to update the user
-    setUsers(users.map(u => u.id === editingUser.id ? editingUser : u));
-    toast({
-        title: "Usuário Atualizado!",
-        description: `As informações de ${editingUser.name} foram salvas.`
-    })
-    setIsEditDialogOpen(false);
-    setEditingUser(null);
+    setIsSaving(true);
+    try {
+        await updateUserAction({
+            id: editingUser.id,
+            plan: editingUser.plan,
+            customAlert: editingUser.custom_alert,
+        });
+        toast({
+            title: "Usuário Atualizado!",
+            description: `As informações de ${editingUser.name} foram salvas.`
+        });
+        setIsEditDialogOpen(false);
+        setEditingUser(null);
+        fetchUsers(); // Re-fetch users to show updated data
+    } catch (error: any) {
+        toast({ title: "Erro ao Salvar", description: error.message, variant: "destructive" });
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   return (
@@ -82,7 +104,13 @@ export default function AdminUsersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.length > 0 ? (
+                  {isLoading ? (
+                    <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">
+                            <Loader2 className="mx-auto h-6 w-6 animate-spin" />
+                        </TableCell>
+                    </TableRow>
+                  ) : users.length > 0 ? (
                     users.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell>
@@ -95,10 +123,10 @@ export default function AdminUsersPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {new Date(user.joined).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                          {new Date(user.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
                         </TableCell>
                         <TableCell>
-                          {user.customAlert ? (
+                          {user.custom_alert ? (
                             <span className="text-xs text-yellow-400 italic">Sim</span>
                           ) : (
                             <span className="text-xs text-muted-foreground">Não</span>
@@ -165,8 +193,8 @@ export default function AdminUsersPage() {
                                 <SelectValue placeholder="Selecione um plano" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="Grátis">Grátis</SelectItem>
-                                <SelectItem value="Pro">Pro</SelectItem>
+                                <SelectItem value="free">Grátis</SelectItem>
+                                <SelectItem value="pro">Pro</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -176,14 +204,17 @@ export default function AdminUsersPage() {
                             id="alert"
                             placeholder="Deixe em branco para não exibir nenhum alerta."
                             className="col-span-3"
-                            value={editingUser.customAlert}
-                            onChange={(e) => setEditingUser(prev => prev ? {...prev, customAlert: e.target.value} : null)}
+                            value={editingUser.custom_alert}
+                            onChange={(e) => setEditingUser(prev => prev ? {...prev, custom_alert: e.target.value} : null)}
                         />
                     </div>
                 </div>
                 <DialogFooter>
                     <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancelar</Button>
-                    <Button onClick={handleSaveChanges}>Salvar Alterações</Button>
+                    <Button onClick={handleSaveChanges} disabled={isSaving}>
+                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                        Salvar Alterações
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
