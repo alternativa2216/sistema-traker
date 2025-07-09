@@ -22,12 +22,10 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { addProjectAction, getProjectsAction } from "../actions/projects";
+import { addProjectAction, getProjectsAction, getNotificationsForUserAction } from "../actions/projects";
 import { cn } from "@/lib/utils";
 
-// This data will be fetched from the database
-const initialAlerts: any[] = [];
-// This component now fetches its own data
+
 const UserAlert = ({ alert }: { alert: any }) => {
     const alertConfig = {
         info: {
@@ -85,6 +83,7 @@ const emptyData = {
 
 export default function DashboardPage() {
     const [sites, setSites] = useState<any[]>([]);
+    const [alerts, setAlerts] = useState<any[]>([]);
     const [selectedSiteId, setSelectedSiteId] = useState('all');
     const [displayData, setDisplayData] = useState(emptyData);
     const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
@@ -103,16 +102,26 @@ export default function DashboardPage() {
     useEffect(() => {
         async function fetchData() {
             setIsLoading(true);
-            const fetchedSites = await getProjectsAction();
-            setSites(fetchedSites);
-            // Here you would also fetch stats for the selected site
-            // For now, we'll just show empty data
-            // const stats = await getStatsForSite(selectedSiteId);
-            // setDisplayData(stats);
-            setIsLoading(false);
+            try {
+                const [fetchedSites, fetchedAlerts] = await Promise.all([
+                    getProjectsAction(),
+                    getNotificationsForUserAction()
+                ]);
+                setSites(fetchedSites);
+                setAlerts(fetchedAlerts);
+            } catch (error) {
+                console.error("Failed to fetch dashboard data:", error);
+                toast({
+                    title: "Erro ao Carregar Dados",
+                    description: "Não foi possível buscar seus projetos e notificações.",
+                    variant: "destructive",
+                });
+            } finally {
+                setIsLoading(false);
+            }
         }
         fetchData();
-    }, []);
+    }, [toast]);
 
     useEffect(() => {
         // This effect would re-fetch data when the selected site changes
@@ -215,7 +224,7 @@ export default function DashboardPage() {
     return (
         <div className="space-y-8">
              <div className="space-y-4 mb-6">
-                {initialAlerts.map(alert => (
+                {alerts.map(alert => (
                     <UserAlert key={alert.id} alert={alert} />
                 ))}
             </div>

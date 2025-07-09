@@ -14,15 +14,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-const chartData = [
-  { date: "01/07", gasto: 150, conversoes: 5 },
-  { date: "02/07", gasto: 180, conversoes: 8 },
-  { date: "03/07", gasto: 200, conversoes: 7 },
-  { date: "04/07", gasto: 170, conversoes: 10 },
-  { date: "05/07", gasto: 220, conversoes: 12 },
-  { date: "06/07", gasto: 250, conversoes: 15 },
-  { date: "07/07", gasto: 210, conversoes: 11 },
-];
+const chartData: any[] = [];
 
 const chartConfig = {
   gasto: {
@@ -44,62 +36,68 @@ export function CampaignPerformanceChart() {
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
-          <ComposedChart
-            accessibilityLayer
-            data={chartData}
-            margin={{
-              left: -20,
-              right: 10,
-            }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-            />
-            <YAxis
-              yAxisId="left"
-              orientation="left"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tickFormatter={(value) => `R$${value}`}
-            />
-            <YAxis
-              yAxisId="right"
-              orientation="right"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-            />
-            <Tooltip
-              cursor={false}
-              content={<ChartTooltipContent
-                indicator="dot"
-              />}
-            />
-            <Legend />
-            <Bar
-              dataKey="gasto"
-              yAxisId="left"
-              fill="var(--color-gasto)"
-              radius={4}
-            />
-            <Line
-              dataKey="conversoes"
-              yAxisId="right"
-              type="monotone"
-              stroke="var(--color-conversoes)"
-              strokeWidth={2}
-              dot={{
-                r: 4,
-                fill: "var(--color-conversoes)",
-                stroke: "var(--color-conversoes)",
-              }}
-            />
-          </ComposedChart>
+          {chartData.length > 0 ? (
+            <ComposedChart
+                accessibilityLayer
+                data={chartData}
+                margin={{
+                left: -20,
+                right: 10,
+                }}
+            >
+                <CartesianGrid vertical={false} />
+                <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                />
+                <YAxis
+                yAxisId="left"
+                orientation="left"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) => `R$${value}`}
+                />
+                <YAxis
+                yAxisId="right"
+                orientation="right"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                />
+                <Tooltip
+                cursor={false}
+                content={<ChartTooltipContent
+                    indicator="dot"
+                />}
+                />
+                <Legend />
+                <Bar
+                dataKey="gasto"
+                yAxisId="left"
+                fill="var(--color-gasto)"
+                radius={4}
+                />
+                <Line
+                dataKey="conversoes"
+                yAxisId="right"
+                type="monotone"
+                stroke="var(--color-conversoes)"
+                strokeWidth={2}
+                dot={{
+                    r: 4,
+                    fill: "var(--color-conversoes)",
+                    stroke: "var(--color-conversoes)",
+                }}
+                />
+            </ComposedChart>
+           ) : (
+            <div className="flex h-full items-center justify-center text-muted-foreground">
+                Conecte sua conta do Facebook Ads para ver os dados.
+            </div>
+           )}
         </ChartContainer>
       </CardContent>
     </Card>

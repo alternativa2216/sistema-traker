@@ -17,7 +17,6 @@ import Image from 'next/image';
 import { CampaignPerformanceChart } from '@/components/dashboard/facebook/campaign-performance-chart';
 import { cn } from '@/lib/utils';
 
-// In a real app, this data would be fetched from the Facebook Ads API
 const mockCampaigns: any[] = [];
 
 const MetricCard = ({ title, value, icon: Icon }: { title: string, value: string, icon: React.ElementType }) => (
