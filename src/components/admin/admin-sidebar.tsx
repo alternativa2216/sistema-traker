@@ -10,18 +10,18 @@ import {
 } from "@/components/ui/sidebar"
 import { Logo } from "@/components/shared/logo"
 import { usePathname } from 'next/navigation'
-import { BarChart, CreditCard, Flag, Gauge, HardDrive, Shield, SlidersHorizontal, Users } from "lucide-react"
+import { BarChart, CreditCard, Flag, Gauge, HardDrive, Shield, SlidersHorizontal, Users, LogOut } from "lucide-react"
 import Link from "next/link"
 
 const menuItems = [
-  { href: "/admin", label: "Dashboard", icon: Gauge },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/projects", label: "Projects", icon: BarChart },
-  { href: "/admin/subscriptions", label: "Subscriptions", icon: CreditCard },
-  { href: "/admin/settings", label: "Platform Settings", icon: SlidersHorizontal },
-  { href: "/admin/feature-flags", label: "Feature Flags", icon: Flag },
-  { href: "/admin/health", label: "System Health", icon: HardDrive },
-  { href: "/admin/security", label: "Security", icon: Shield },
+  { href: "/admin", label: "Painel", icon: Gauge },
+  { href: "/admin/users", label: "Usuários", icon: Users },
+  { href: "/admin/projects", label: "Projetos", icon: BarChart },
+  { href: "/admin/subscriptions", label: "Assinaturas", icon: CreditCard },
+  { href: "/admin/settings", label: "Configurações da Plataforma", icon: SlidersHorizontal },
+  { href: "/admin/feature-flags", label: "Flags de Funcionalidades", icon: Flag },
+  { href: "/admin/health", label: "Saúde do Sistema", icon: HardDrive },
+  { href: "/admin/security", label: "Segurança", icon: Shield },
 ];
 
 export function AdminSidebar() {

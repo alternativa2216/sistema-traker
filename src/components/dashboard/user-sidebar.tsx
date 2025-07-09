@@ -14,14 +14,14 @@ import { BarChart, Bot, FileText, Home, LifeBuoy, Settings, ShoppingCart, Users 
 import Link from "next/link"
 
 const menuItems = [
-  { href: "/dashboard", label: "Overview", icon: Home },
-  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart },
-  { href: "/dashboard/analysis", label: "AI SWOT Analysis", icon: Bot },
-  { href: "/dashboard/reports", label: "AI Reports", icon: FileText },
-  { href: "/dashboard/projects", label: "Projects", icon: Users },
-  { href: "/dashboard/billing", label: "Billing", icon: ShoppingCart },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
-  { href: "/dashboard/diagnostics", label: "Diagnostics", icon: LifeBuoy },
+  { href: "/dashboard", label: "Visão Geral", icon: Home },
+  { href: "/dashboard/analytics", label: "Análises", icon: BarChart },
+  { href: "/dashboard/analysis", label: "Análise SWOT de IA", icon: Bot },
+  { href: "/dashboard/reports", label: "Relatórios de IA", icon: FileText },
+  { href: "/dashboard/projects", label: "Projetos", icon: Users },
+  { href: "/dashboard/billing", label: "Faturamento", icon: ShoppingCart },
+  { href: "/dashboard/settings", label: "Configurações", icon: Settings },
+  { href: "/dashboard/diagnostics", label: "Diagnósticos", icon: LifeBuoy },
 ];
 
 export function UserSidebar() {

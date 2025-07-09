@@ -2,25 +2,25 @@
 'use server';
 
 /**
- * @fileOverview Implements an AI chatbot for analyzing project data based on user queries.
+ * @fileOverview Implementa um chatbot de IA para analisar dados de projetos com base nas consultas do usuário.
  *
- * - analyzeProjectData - A function that accepts a project data analysis request and returns an AI-generated analysis.
- * - AnalyzeProjectDataInput - The input type for the analyzeProjectData function.
- * - AnalyzeProjectDataOutput - The return type for the analyzeProjectData function.
+ * - analyzeProjectData - Uma função que aceita uma solicitação de análise de dados do projeto e retorna uma análise gerada por IA.
+ * - AnalyzeProjectDataInput - O tipo de entrada para a função analyzeProjectData.
+ * - AnalyzeProjectDataOutput - O tipo de retorno para a função analyzeProjectData.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const AnalyzeProjectDataInputSchema = z.object({
-  projectId: z.string().describe('The ID of the project to analyze.'),
-  query: z.string().describe('The specific question or analysis request from the user.'),
-  data: z.string().optional().describe('The JSON data related to project'),
+  projectId: z.string().describe('O ID do projeto a ser analisado.'),
+  query: z.string().describe('A pergunta específica ou solicitação de análise do usuário.'),
+  data: z.string().optional().describe('Os dados JSON relacionados ao projeto'),
 });
 export type AnalyzeProjectDataInput = z.infer<typeof AnalyzeProjectDataInputSchema>;
 
 const AnalyzeProjectDataOutputSchema = z.object({
-  analysis: z.string().describe('The AI-generated analysis of the project data based on the user query.'),
+  analysis: z.string().describe('A análise gerada por IA dos dados do projeto com base na consulta do usuário.'),
 });
 export type AnalyzeProjectDataOutput = z.infer<typeof AnalyzeProjectDataOutputSchema>;
 
@@ -32,13 +32,13 @@ const prompt = ai.definePrompt({
   name: 'analyzeProjectDataPrompt',
   input: {schema: AnalyzeProjectDataInputSchema},
   output: {schema: AnalyzeProjectDataOutputSchema},
-  prompt: `You are an AI chatbot specialized in analyzing web analytics data for projects.
+  prompt: `Você é um chatbot de IA especializado em analisar dados de web analytics para projetos.
 
-  A user has asked the following question about their project data: {{{query}}}
+  Um usuário fez a seguinte pergunta sobre os dados do projeto: {{{query}}}
   
-  Here is the project's data: {{{data}}}
+  Aqui estão os dados do projeto: {{{data}}}
 
-  Provide a concise and insightful analysis of the data, directly addressing the user's query. Focus on actionable insights and recommendations.
+  Forneça uma análise concisa e perspicaz dos dados, abordando diretamente a consulta do usuário. Concentre-se em insights e recomendações acionáveis.
   `,
 });
 

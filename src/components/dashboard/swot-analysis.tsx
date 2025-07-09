@@ -28,7 +28,7 @@ import { Loader2 } from 'lucide-react'
 
 const formSchema = z.object({
   projectData: z.string().min(50, {
-    message: "Please provide at least 50 characters of project data for an effective analysis.",
+    message: "Forneça pelo menos 50 caracteres de dados do projeto para uma análise eficaz.",
   }),
 })
 
@@ -52,7 +52,7 @@ export function SwotAnalysis() {
       const result = await generateSwotAnalysisAction(values)
       setAnalysis(result)
     } catch (err) {
-      setError("An error occurred while generating the analysis. Please try again.")
+      setError("Ocorreu um erro ao gerar a análise. Por favor, tente novamente.")
     } finally {
       setIsLoading(false)
     }
@@ -62,9 +62,9 @@ export function SwotAnalysis() {
     <div className="space-y-8">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Generate SWOT Analysis</CardTitle>
+          <CardTitle className="font-headline">Gerar Análise SWOT</CardTitle>
           <CardDescription>
-            Provide some data or context about your project, and our AI will generate a SWOT (Strengths, Weaknesses, Opportunities, Threats) analysis.
+            Forneça alguns dados ou contexto sobre seu projeto, e nossa IA gerará uma análise SWOT (Forças, Fraquezas, Oportunidades, Ameaças).
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -75,10 +75,10 @@ export function SwotAnalysis() {
                 name="projectData"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Project Data & Context</FormLabel>
+                    <FormLabel>Dados e Contexto do Projeto</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="e.g., Describe your project, its goals, target audience, recent performance metrics, and competitive landscape..."
+                        placeholder="ex: Descreva seu projeto, seus objetivos, público-alvo, métricas de desempenho recentes e cenário competitivo..."
                         className="min-h-[150px]"
                         {...field}
                       />
@@ -89,7 +89,7 @@ export function SwotAnalysis() {
               />
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Generate Analysis
+                Gerar Análise
               </Button>
             </form>
           </Form>
@@ -102,7 +102,7 @@ export function SwotAnalysis() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle className="font-headline text-accent">Strengths</CardTitle>
+              <CardTitle className="font-headline text-accent">Forças</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">{analysis.strengths}</p>
@@ -110,7 +110,7 @@ export function SwotAnalysis() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="font-headline text-destructive">Weaknesses</CardTitle>
+              <CardTitle className="font-headline text-destructive">Fraquezas</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">{analysis.weaknesses}</p>
@@ -118,7 +118,7 @@ export function SwotAnalysis() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="font-headline text-primary">Opportunities</CardTitle>
+              <CardTitle className="font-headline text-primary">Oportunidades</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">{analysis.opportunities}</p>
@@ -126,7 +126,7 @@ export function SwotAnalysis() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="font-headline">Threats</CardTitle>
+              <CardTitle className="font-headline">Ameaças</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">{analysis.threats}</p>

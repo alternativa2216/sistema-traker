@@ -16,8 +16,8 @@ export default function LoginPage() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline text-2xl">Welcome Back</CardTitle>
-            <CardDescription>Enter your credentials to access your dashboard.</CardDescription>
+            <CardTitle className="font-headline text-2xl">Bem-vindo de volta</CardTitle>
+            <CardDescription>Digite suas credenciais para acessar seu painel.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -25,18 +25,18 @@ export default function LoginPage() {
               <Input id="email" type="email" placeholder="john.doe@example.com" required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Senha</Label>
               <Input id="password" type="password" required />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button className="w-full" asChild>
-                <Link href="/dashboard">Login</Link>
+                <Link href="/dashboard">Entrar</Link>
             </Button>
             <p className="text-sm text-center text-muted-foreground">
-              Don&apos;t have an account?{" "}
+              Não tem uma conta?{" "}
               <Link href="/register" className="font-medium text-primary hover:underline">
-                Register
+                Cadastre-se
               </Link>
             </p>
           </CardFooter>

@@ -49,11 +49,11 @@ export function AiChat() {
       const aiMessage: Message = { sender: 'ai', text: response.analysis };
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
-      const errorMessage: Message = { sender: 'ai', text: "Sorry, I couldn't process that request. Please try again." };
+      const errorMessage: Message = { sender: 'ai', text: "Desculpe, não consegui processar essa solicitação. Por favor, tente novamente." };
       setMessages((prev) => [...prev, errorMessage]);
       toast({
-        title: "Error",
-        description: "Failed to get analysis from AI.",
+        title: "Erro",
+        description: "Falha ao obter a análise da IA.",
         variant: "destructive",
       })
     } finally {
@@ -69,8 +69,8 @@ export function AiChat() {
              <div className="flex items-center justify-center h-full text-center text-muted-foreground">
                 <div>
                     <Bot className="h-12 w-12 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold">AI Analyst Chat</h3>
-                    <p>Ask me anything about your project data. <br /> e.g., "What were my top traffic sources this month?"</p>
+                    <h3 className="text-lg font-semibold">Chat com Analista de IA</h3>
+                    <p>Pergunte-me qualquer coisa sobre os dados do seu projeto. <br /> ex: "Quais foram minhas principais fontes de tráfego este mês?"</p>
                 </div>
             </div>
           )}
@@ -121,13 +121,13 @@ export function AiChat() {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about your data..."
+            placeholder="Pergunte sobre seus dados..."
             disabled={isLoading}
             autoComplete="off"
           />
           <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
             <Send className="h-4 w-4" />
-            <span className="sr-only">Send message</span>
+            <span className="sr-only">Enviar mensagem</span>
           </Button>
         </form>
       </div>

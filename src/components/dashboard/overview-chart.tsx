@@ -17,17 +17,17 @@ import {
 } from "@/components/ui/chart"
 
 const chartData = [
-  { month: "January", visitors: 18623 },
-  { month: "February", visitors: 20543 },
-  { month: "March", visitors: 29483 },
-  { month: "April", visitors: 30103 },
-  { month: "May", visitors: 25734 },
-  { month: "June", visitors: 45345 },
+  { month: "Janeiro", visitors: 18623 },
+  { month: "Fevereiro", visitors: 20543 },
+  { month: "Março", visitors: 29483 },
+  { month: "Abril", visitors: 30103 },
+  { month: "Maio", visitors: 25734 },
+  { month: "Junho", visitors: 45345 },
 ]
 
 const chartConfig = {
   visitors: {
-    label: "Visitors",
+    label: "Visitantes",
     color: "hsl(var(--accent))",
   },
 }
@@ -36,8 +36,8 @@ export function OverviewChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">Traffic Overview</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle className="font-headline">Visão Geral do Tráfego</CardTitle>
+        <CardDescription>Janeiro - Junho 2024</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -60,10 +60,10 @@ export function OverviewChart() {
         <div className="flex w-full items-start gap-2 text-sm">
           <div className="grid gap-2">
             <div className="flex items-center gap-2 font-medium leading-none">
-              Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+              Tendência de alta de 5,2% este mês <TrendingUp className="h-4 w-4" />
             </div>
             <div className="flex items-center gap-2 leading-none text-muted-foreground">
-              Showing total visitors for the last 6 months
+              Mostrando o total de visitantes dos últimos 6 meses
             </div>
           </div>
         </div>

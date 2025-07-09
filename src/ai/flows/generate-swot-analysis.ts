@@ -1,11 +1,11 @@
 'use server';
 
 /**
- * @fileOverview Generates a SWOT analysis for a given project based on collected data.
+ * @fileOverview Gera uma análise SWOT para um determinado projeto com base nos dados coletados.
  *
- * - generateSwotAnalysis - A function that generates a SWOT analysis.
- * - GenerateSwotAnalysisInput - The input type for the generateSwotAnalysis function.
- * - GenerateSwotAnalysisOutput - The return type for the generateSwotAnalysis function.
+ * - generateSwotAnalysis - Uma função que gera uma análise SWOT.
+ * - GenerateSwotAnalysisInput - O tipo de entrada para a função generateSwotAnalysis.
+ * - GenerateSwotAnalysisOutput - O tipo de retorno para a função generateSwotAnalysis.
  */
 
 import {ai} from '@/ai/genkit';
@@ -14,15 +14,15 @@ import {z} from 'genkit';
 const GenerateSwotAnalysisInputSchema = z.object({
   projectData: z
     .string()
-    .describe('The collected data for the project to analyze.'),
+    .describe('Os dados coletados para o projeto a ser analisado.'),
 });
 export type GenerateSwotAnalysisInput = z.infer<typeof GenerateSwotAnalysisInputSchema>;
 
 const GenerateSwotAnalysisOutputSchema = z.object({
-  strengths: z.string().describe('The strengths of the project.'),
-  weaknesses: z.string().describe('The weaknesses of the project.'),
-  opportunities: z.string().describe('The opportunities for the project.'),
-  threats: z.string().describe('The threats to the project.'),
+  strengths: z.string().describe('As forças do projeto.'),
+  weaknesses: z.string().describe('As fraquezas do projeto.'),
+  opportunities: z.string().describe('As oportunidades para o projeto.'),
+  threats: z.string().describe('As ameaças ao projeto.'),
 });
 export type GenerateSwotAnalysisOutput = z.infer<typeof GenerateSwotAnalysisOutputSchema>;
 
@@ -36,13 +36,13 @@ const prompt = ai.definePrompt({
   name: 'generateSwotAnalysisPrompt',
   input: {schema: GenerateSwotAnalysisInputSchema},
   output: {schema: GenerateSwotAnalysisOutputSchema},
-  prompt: `You are an AI expert in performing SWOT analysis.
+  prompt: `Você é um especialista em IA na realização de análises SWOT.
 
-Analyze the following project data and generate a SWOT analysis, identifying strengths, weaknesses, opportunities, and threats.
+Analise os seguintes dados do projeto e gere uma análise SWOT, identificando forças, fraquezas, oportunidades e ameaças.
 
-Project Data: {{{projectData}}}
+Dados do Projeto: {{{projectData}}}
 
-Format your output as a JSON object with the keys "strengths", "weaknesses", "opportunities", and "threats". Each key should contain a string value with a detailed explanation.
+Formate sua saída como um objeto JSON com as chaves "strengths", "weaknesses", "opportunities" e "threats". Cada chave deve conter um valor de string com uma explicação detalhada.
 `,
 });
 

@@ -11,7 +11,7 @@ export async function generateSwotAnalysisAction(
     return await generateSwotAnalysis(input);
   } catch (error) {
     console.error("Error generating SWOT analysis:", error);
-    throw new Error("Failed to generate SWOT analysis.");
+    throw new Error("Falha ao gerar a análise SWOT.");
   }
 }
 
@@ -46,6 +46,6 @@ export async function analyzeProjectDataAction(
     return await analyzeProjectData({ ...input, data: input.data || dummyData });
   } catch (error) {
     console.error("Error analyzing project data:", error);
-    throw new Error("Failed to analyze project data.");
+    throw new Error("Falha ao analisar os dados do projeto.");
   }
 }

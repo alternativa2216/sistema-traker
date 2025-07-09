@@ -6,47 +6,47 @@ import Link from "next/link";
 
 const tiers = [
   {
-    name: "Free",
+    name: "Grátis",
     price: "$0",
-    description: "For personal projects and getting started.",
+    description: "Para projetos pessoais e para começar.",
     features: [
-      "1 Project",
-      "10,000 monthly pageviews",
-      "Basic Analytics",
-      "7-day data retention",
+      "1 Projeto",
+      "10.000 visualizações de página mensais",
+      "Análises Básicas",
+      "Retenção de dados por 7 dias",
     ],
-    cta: "Start for Free",
+    cta: "Comece de Graça",
     href: "/register"
   },
   {
     name: "Pro",
     price: "$29",
-    description: "For professionals and small businesses.",
+    description: "Para profissionais e pequenas empresas.",
     features: [
-      "10 Projects",
-      "200,000 monthly pageviews",
-      "Advanced Analytics",
-      "AI SWOT Analysis & Reports",
-      "Error Diagnostics",
-      "1-year data retention",
+      "10 Projetos",
+      "200.000 visualizações de página mensais",
+      "Análise Avançada",
+      "Análise SWOT e Relatórios de IA",
+      "Diagnóstico de Erros",
+      "Retenção de dados por 1 ano",
     ],
-    cta: "Get Started with Pro",
+    cta: "Começar com Pro",
     href: "/register",
     featured: true,
   },
   {
-    name: "Enterprise",
+    name: "Empresarial",
     price: "Custom",
-    description: "For large-scale applications and agencies.",
+    description: "Para aplicações e agências de grande escala.",
     features: [
-      "Unlimited Projects",
-      "Custom pageview limits",
-      "AI Chatbot",
-      "API Access",
-      "Dedicated Support",
-      "Unlimited data retention",
+      "Projetos Ilimitados",
+      "Limites de visualização de página personalizados",
+      "Chatbot de IA",
+      "Acesso à API",
+      "Suporte Dedicado",
+      "Retenção de dados ilimitada",
     ],
-    cta: "Contact Sales",
+    cta: "Contatar Vendas",
     href: "mailto:sales@tracklytics.ai"
   },
 ];
@@ -61,10 +61,10 @@ export default function PricingPage() {
       <main className="flex-1">
         <section className="container mx-auto px-4 lg:px-6 py-16 text-center">
           <h1 className="text-4xl md:text-5xl font-bold font-headline tracking-tighter mb-4">
-            Find the perfect plan for your needs
+            Encontre o plano perfeito para suas necessidades
           </h1>
           <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-12">
-            Start for free, then scale as you grow. All plans include our core analytics features.
+            Comece de graça, depois dimensione conforme você cresce. Todos os planos incluem nossos principais recursos de análise.
           </p>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -77,7 +77,7 @@ export default function PricingPage() {
                 <CardContent className="flex-1 space-y-6">
                   <div className="text-4xl font-bold font-headline">
                     {tier.price}
-                    {tier.name !== "Enterprise" && <span className="text-sm font-normal text-muted-foreground">/month</span>}
+                    {tier.name !== "Empresarial" && <span className="text-sm font-normal text-muted-foreground">/mês</span>}
                   </div>
                   <ul className="space-y-3 text-left">
                     {tier.features.map((feature) => (
@@ -101,7 +101,7 @@ export default function PricingPage() {
 
       <footer className="container mx-auto px-4 lg:px-6 py-8 border-t border-border">
           <p className="text-sm text-center text-muted-foreground">
-            © {new Date().getFullYear()} Tracklytics AI. All rights reserved.
+            © {new Date().getFullYear()} Tracklytics. Todos os direitos reservados.
           </p>
       </footer>
     </div>

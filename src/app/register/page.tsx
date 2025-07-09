@@ -16,12 +16,12 @@ export default function RegisterPage() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline text-2xl">Create an Account</CardTitle>
-            <CardDescription>Start tracking your website's performance in minutes.</CardDescription>
+            <CardTitle className="font-headline text-2xl">Crie uma Conta</CardTitle>
+            <CardDescription>Comece a acompanhar o desempenho do seu site em minutos.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">Nome Completo</Label>
               <Input id="name" type="text" placeholder="John Doe" required />
             </div>
             <div className="space-y-2">
@@ -29,16 +29,16 @@ export default function RegisterPage() {
               <Input id="email" type="email" placeholder="john.doe@example.com" required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Senha</Label>
               <Input id="password" type="password" required />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button className="w-full" asChild>
-              <Link href="/dashboard">Create Account</Link>
+              <Link href="/dashboard">Criar Conta</Link>
             </Button>
             <p className="text-sm text-center text-muted-foreground">
-              Already have an account?{" "}
+              Já tem uma conta?{" "}
               <Link href="/login" className="font-medium text-primary hover:underline">
                 Login
               </Link>

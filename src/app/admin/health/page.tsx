@@ -4,16 +4,16 @@ export default function AdminHealthPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold font-headline">System Health</h1>
-        <p className="text-muted-foreground">Monitor the technical health of the platform.</p>
+        <h1 className="text-3xl font-bold font-headline">Saúde do Sistema</h1>
+        <p className="text-muted-foreground">Monitore a saúde técnica da plataforma.</p>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Under Construction</CardTitle>
-          <CardDescription>This page is currently in development. You will soon be able to monitor database connections, API response times, and other critical system metrics.</CardDescription>
+          <CardTitle className="font-headline">Em Construção</CardTitle>
+          <CardDescription>Esta página está em desenvolvimento. Em breve, você poderá monitorar conexões de banco de dados, tempos de resposta de API e outras métricas críticas do sistema.</CardDescription>
         </CardHeader>
         <CardContent>
-          <p>System health charts and status indicators will appear here.</p>
+          <p>Gráficos de saúde do sistema e indicadores de status aparecerão aqui.</p>
         </CardContent>
       </Card>
     </div>

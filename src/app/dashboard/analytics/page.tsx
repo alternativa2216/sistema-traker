@@ -17,28 +17,28 @@ import {
     return (
       <div>
         <div className="mb-8">
-          <h1 className="text-3xl font-bold font-headline">Detailed Analytics</h1>
-          <p className="text-muted-foreground">Dive deep into your project's data.</p>
+          <h1 className="text-3xl font-bold font-headline">Análises Detalhadas</h1>
+          <p className="text-muted-foreground">Mergulhe fundo nos dados do seu projeto.</p>
         </div>
         
         <Tabs defaultValue="ai_analysis" className="w-full">
           <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="ai_analysis">AI Analysis</TabsTrigger>
-            <TabsTrigger value="real_time" disabled>Real-Time</TabsTrigger>
-            <TabsTrigger value="heatmaps" disabled>Heatmaps</TabsTrigger>
+            <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="ai_analysis">Análise com IA</TabsTrigger>
+            <TabsTrigger value="real_time" disabled>Tempo Real</TabsTrigger>
+            <TabsTrigger value="heatmaps" disabled>Mapas de Calor</TabsTrigger>
           </TabsList>
           
           <TabsContent value="overview">
             <Card>
               <CardHeader>
-                <CardTitle className="font-headline">Analytics Overview</CardTitle>
+                <CardTitle className="font-headline">Visão Geral das Análises</CardTitle>
                 <CardDescription>
-                  A detailed summary of your project's performance. This section is under construction.
+                  Um resumo detalhado do desempenho do seu projeto. Esta seção está em construção.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                <p>Detailed charts and tables will be displayed here.</p>
+                <p>Gráficos e tabelas detalhados serão exibidos aqui.</p>
               </CardContent>
             </Card>
           </TabsContent>
@@ -46,9 +46,9 @@ import {
           <TabsContent value="ai_analysis">
             <Card>
                 <CardHeader>
-                    <CardTitle className="font-headline">Converse with Your Data</CardTitle>
+                    <CardTitle className="font-headline">Converse com Seus Dados</CardTitle>
                     <CardDescription>
-                    Ask our AI analyst anything about this project's data to get instant insights.
+                    Pergunte ao nosso analista de IA qualquer coisa sobre os dados deste projeto para obter insights instantâneos.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>

@@ -4,16 +4,16 @@ export default function AdminSettingsPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold font-headline">Platform Settings</h1>
-        <p className="text-muted-foreground">Configure global settings for Tracklytics AI.</p>
+        <h1 className="text-3xl font-bold font-headline">Configurações da Plataforma</h1>
+        <p className="text-muted-foreground">Configure as configurações globais para o Tracklytics.</p>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Under Construction</CardTitle>
-          <CardDescription>This page is currently in development. This powerful area will allow you to configure pricing, API keys (payment gateways, AI services), and other core platform functionalities.</CardDescription>
+          <CardTitle className="font-headline">Em Construção</CardTitle>
+          <CardDescription>Esta página está em desenvolvimento. Esta área poderosa permitirá que você configure preços, chaves de API (gateways de pagamento, serviços de IA) и outras funcionalidades centrais da plataforma.</CardDescription>
         </CardHeader>
         <CardContent>
-          <p>Forms for managing platform settings will be available here.</p>
+          <p>Formulários para gerenciar as configurações da plataforma estarão disponíveis aqui.</p>
         </CardContent>
       </Card>
     </div>
