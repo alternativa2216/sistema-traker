@@ -1,9 +1,22 @@
+'use client'
+
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import { ShieldAlert, Fingerprint, Globe, ServerOff } from "lucide-react";
 
 const mockLogs = [
+  {
+    timestamp: "2024-07-26 15:05:18",
+    ip: "203.0.113.75",
+    country: "🇨🇳",
+    countryName: "China",
+    reason: "Ameaça Crítica: Tentativa de Injeção de SQL",
+    userAgent: "sqlmap/1.5.8",
+    reasonIcon: ShieldAlert,
+    isCritical: true,
+  },
   {
     timestamp: "2024-07-26 14:32:10",
     ip: "104.28.210.132",
@@ -76,7 +89,7 @@ export default function SecurityLogsPage() {
               {mockLogs.map((log, index) => {
                   const Icon = log.reasonIcon;
                   return (
-                    <TableRow key={index}>
+                    <TableRow key={index} className={cn(log.isCritical && 'bg-destructive/10 hover:bg-destructive/20')}>
                         <TableCell className="text-muted-foreground whitespace-nowrap">{log.timestamp}</TableCell>
                         <TableCell className="font-mono">{log.ip}</TableCell>
                         <TableCell>
@@ -86,7 +99,7 @@ export default function SecurityLogsPage() {
                             </div>
                         </TableCell>
                         <TableCell>
-                            <Badge variant="destructive" className="gap-1.5">
+                            <Badge variant={log.isCritical ? "destructive" : "secondary"} className="gap-1.5">
                                 <Icon className="h-3 w-3" />
                                 {log.reason}
                             </Badge>

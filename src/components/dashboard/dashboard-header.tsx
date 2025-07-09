@@ -66,13 +66,30 @@ export function DashboardHeader() {
           <DropdownMenuContent align="end" className="w-80 sm:w-96">
             <DropdownMenuLabel>Notificações</DropdownMenuLabel>
             <DropdownMenuSeparator />
+             <DropdownMenuItem asChild className="cursor-pointer">
+              <Link
+                href={`/dashboard/sites/${params.siteId || 'site-1'}/security-logs`}
+                className="flex items-start gap-3 p-2 bg-destructive/10"
+              >
+                <div className="mt-1">
+                  <ShieldAlert className="h-4 w-4 text-destructive" />
+                </div>
+                <div className="flex-1 whitespace-normal">
+                  <p className="font-semibold text-destructive">Ameaça Crítica Bloqueada</p>
+                  <p className="text-xs text-muted-foreground">
+                    Um IP foi bloqueado automaticamente após uma tentativa de invasão no site '{params.siteId || 'meu-ecommerce.com'}'.
+                  </p>
+                </div>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem asChild className="cursor-pointer">
               <Link
                 href={`/dashboard/sites/${params.siteId || 'site-1'}/cloaker`}
                 className="flex items-start gap-3 p-2"
               >
                 <div className="mt-1">
-                  <ShieldAlert className="h-4 w-4 text-destructive" />
+                  <ShieldAlert className="h-4 w-4 text-orange-400" />
                 </div>
                 <div className="flex-1 whitespace-normal">
                   <p className="font-semibold">Atividade Suspeita Detectada</p>

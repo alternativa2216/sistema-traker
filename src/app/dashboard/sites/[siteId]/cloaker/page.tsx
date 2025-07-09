@@ -15,6 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 
 const CloakerOption = ({ id, label, description, children }: { id: string, label: string, description: string, children?: React.ReactNode }) => (
     <div className="flex items-start sm:items-center justify-between rounded-lg border p-4 flex-col sm:flex-row gap-4">
@@ -48,18 +50,18 @@ const dayOptions = [
 
 const mockThreats = [
   {
+    userAgent: "sqlmap/1.5.8",
+    reason: "Ameaça Crítica: Tentativa de injeção de SQL bloqueada.",
+    type: "Invasão",
+  },
+  {
     userAgent: "Mozilla/5.0 (compatible; AhrefsBot/7.0; +http://ahrefs.com/robot/)",
-    reason: "Bot de SEO conhecido. Pode estar copiando seu conteúdo.",
+    reason: "Bot de SEO conhecido. O acesso foi bloqueado pelo filtro Anti-Bot.",
     type: "Bot de SEO",
   },
   {
-    userAgent: "python-requests/2.25.1",
-    reason: "User-agent comum para scripts automatizados e scraping.",
-    type: "Scraping",
-  },
-  {
     userAgent: "HTTrack/3.x",
-    reason: "Ferramenta de clonagem de site detectada. Ative o Filtro Anti-Clonagem.",
+    reason: "Ferramenta de clonagem de site detectada. Acesso bloqueado.",
     type: "Clonagem de Site",
   }
 ];
@@ -97,6 +99,11 @@ const initialRules: Rule[] = [
 
 export default function CloakerPage() {
   const { toast } = useToast();
+  const params = useParams() as { siteId: string };
+
+  const [redirectDesktopEnabled, setRedirectDesktopEnabled] = React.useState(false);
+  const [redirectMobileEnabled, setRedirectMobileEnabled] = React.useState(false);
+
   const [geoFilterEnabled, setGeoFilterEnabled] = React.useState(false);
   const [osFilterEnabled, setOsFilterEnabled] = React.useState(false);
   const [ipFilterEnabled, setIpFilterEnabled] = React.useState(false);
@@ -117,15 +124,6 @@ export default function CloakerPage() {
   const [newRuleDevice, setNewRuleDevice] = React.useState('');
   const [newRuleOs, setNewRuleOs] = React.useState('');
   const [newRuleRedirectUrl, setNewRuleRedirectUrl] = React.useState('');
-
-
-  const handleAddToBlocklist = (userAgent: string) => {
-    // In a real app, this would update the state or call an API
-    toast({
-      title: "User-Agent Adicionado",
-      description: `${userAgent} foi adicionado à sua lista de bloqueio de User-Agent.`,
-    });
-  };
   
   const handleDeleteRule = (ruleId: string) => {
     setRules(prev => prev.filter(rule => rule.id !== ruleId));
@@ -202,23 +200,74 @@ export default function CloakerPage() {
         <Card>
             <CardHeader>
                 <div className="flex items-center gap-3">
-                    <ShieldAlert className="h-6 w-6 text-primary" />
-                    <CardTitle className="font-headline">Análise de Ameaças e Recomendações</CardTitle>
+                    <ShieldAlert className="h-6 w-6 text-destructive" />
+                    <CardTitle className="font-headline">Monitoramento de Ameaças Ativas</CardTitle>
                 </div>
                 <CardDescription>
-                    Nossa IA detectou atividades suspeitas. Recomendamos adicionar os seguintes User-Agents à sua lista de bloqueio.
+                    Nossa IA monitora e bloqueia automaticamente atividades suspeitas em tempo real para proteger seu site.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 {mockThreats.map((threat, index) => (
-                    <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-3 gap-3">
+                     <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border border-destructive/20 bg-destructive/5 p-3 gap-3">
                         <div className="space-y-1">
                             <p className="text-sm font-medium">{threat.userAgent}</p>
                             <p className="text-xs text-muted-foreground">{threat.reason}</p>
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => handleAddToBlocklist(threat.userAgent)}>Adicionar ao Bloqueio</Button>
+                        <Button variant="secondary" size="sm" asChild>
+                           <Link href={`/dashboard/sites/${params.siteId}/security-logs`}>Ver no Log</Link>
+                        </Button>
                     </div>
                 ))}
+            </CardContent>
+        </Card>
+        
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline">Redirecionamento por Dispositivo</CardTitle>
+                <CardDescription>Redirecione os visitantes para URLs diferentes com base no dispositivo que eles estão usando.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="space-y-4 rounded-lg border p-4">
+                     <div className="flex items-center justify-between">
+                        <div className="flex items-start gap-4">
+                          <MonitorSmartphone className="h-6 w-6 text-primary mt-1 hidden sm:block" />
+                          <div className="space-y-0.5">
+                              <Label htmlFor="mobile-redirect-switch" className="text-base font-semibold">Redirecionamento Mobile</Label>
+                              <p className="text-sm text-muted-foreground">Ative para redirecionar usuários de dispositivos móveis.</p>
+                          </div>
+                        </div>
+                        <Switch id="mobile-redirect-switch" checked={redirectMobileEnabled} onCheckedChange={setRedirectMobileEnabled} />
+                    </div>
+                    {redirectMobileEnabled && (
+                        <div className="pt-4 border-t mt-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="mobile-url">URL Mobile</Label>
+                                <Input id="mobile-url" placeholder="https://seusite.com/lp-mobile" />
+                            </div>
+                        </div>
+                    )}
+                </div>
+                 <div className="space-y-4 rounded-lg border p-4">
+                     <div className="flex items-center justify-between">
+                        <div className="flex items-start gap-4">
+                          <Laptop className="h-6 w-6 text-primary mt-1 hidden sm:block" />
+                          <div className="space-y-0.5">
+                              <Label htmlFor="desktop-redirect-switch" className="text-base font-semibold">Redirecionamento Desktop</Label>
+                              <p className="text-sm text-muted-foreground">Ative para redirecionar usuários de computadores.</p>
+                          </div>
+                        </div>
+                        <Switch id="desktop-redirect-switch" checked={redirectDesktopEnabled} onCheckedChange={setRedirectDesktopEnabled} />
+                    </div>
+                    {redirectDesktopEnabled && (
+                        <div className="pt-4 border-t mt-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="desktop-url">URL Desktop</Label>
+                                <Input id="desktop-url" placeholder="https://seusite.com/lp-desktop" />
+                            </div>
+                        </div>
+                    )}
+                </div>
             </CardContent>
         </Card>
 
