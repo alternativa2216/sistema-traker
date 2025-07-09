@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Logo } from "@/components/shared/logo"
 import { usePathname } from 'next/navigation'
-import { BarChart, Bot, Crosshair, FileText, Globe, Home, Settings } from "lucide-react"
+import { BarChart, Bot, CreditCard, Crosshair, FileText, Globe, Home, Settings } from "lucide-react"
 import Link from "next/link"
 
 const menuGroups = [
@@ -34,6 +34,7 @@ const menuGroups = [
     label: 'Gerenciamento',
     items: [
       { href: "/dashboard/settings", label: "Configurações", icon: Settings },
+      { href: "/dashboard/billing", label: "Faturamento", icon: CreditCard },
       { href: "/dashboard/diagnostics", label: "Diagnósticos", icon: Crosshair },
     ]
   }

@@ -1,31 +1,41 @@
-// NOTA: Este é um arquivo de exemplo para demonstrar como a conexão com o banco de dados seria configurada.
-// Em uma aplicação real, você deve gerenciar as conexões de forma segura,
-// possivelmente usando um pool de conexões e carregando as credenciais de variáveis de ambiente.
-
 import mysql from 'mysql2/promise';
 
 // A configuração da conexão deve usar variáveis de ambiente.
+// Adicione essas variáveis ao seu arquivo .env ou .env.local
 const dbConfig = {
   host: process.env.DB_HOST || '127.0.0.1',
   port: Number(process.env.DB_PORT) || 3306,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE || 'tracklytics',
+  database: process.env.DB_DATABASE || 'tracklytics_db',
+  connectTimeout: 10000, // 10 segundos
 };
 
-// Exemplo de função para testar a conexão.
-export async function testDbConnection() {
+/**
+ * Cria e retorna uma nova conexão com o banco de dados.
+ * É responsabilidade do chamador fechar a conexão com `connection.end()`.
+ * Para aplicações de produção, considere usar um pool de conexões.
+ */
+export async function getDbConnection() {
   try {
     const connection = await mysql.createConnection(dbConfig);
-    console.log('Conexão com o MySQL bem-sucedida!');
-    await connection.end();
-    return { success: true };
+    return connection;
   } catch (error) {
-    console.error('Falha ao conectar ao MySQL:', error);
+    console.error('Falha ao criar conexão com o MySQL:', error);
     // Em uma aplicação real, você deve tratar este erro de forma mais robusta.
     throw new Error('Não foi possível conectar ao banco de dados.');
   }
 }
 
-// Em uma aplicação real, você exportaria um pool de conexões aqui.
-// export const pool = mysql.createPool(dbConfig);
+// Para uma aplicação de produção, um pool de conexões é mais eficiente.
+// Você pode inicializá-lo aqui e exportá-lo para ser usado em toda a aplicação.
+/*
+let pool: mysql.Pool | null = null;
+
+export function getDbPool() {
+  if (!pool) {
+    pool = mysql.createPool(dbConfig);
+  }
+  return pool.promise();
+}
+*/
