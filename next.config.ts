@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
   },
   // Adicionado para resolver erros de build com pacotes de servidor.
   // Isso instrui o Next.js a não empacotar esses módulos no lado do cliente.
-  serverComponentsExternalPackages: ['mysql2', 'nodemailer'],
+  serverComponentsExternalPackages: ['mysql2', 'nodemailer', 'firebase-admin', '@genkit-ai/googleai'],
 };
 
 export default nextConfig;

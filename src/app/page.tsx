@@ -262,7 +262,7 @@ export default function Home() {
                     </ul>
                   </CardContent>
                   <CardFooter>
-                    <Button asChild className={`w-full ${!tier.featured ? 'variant="outline"' : ''}`}>
+                    <Button asChild className={`w-full ${tier.featured ? '' : 'variant="outline"'}`}>
                       <Link href={tier.href}>{tier.cta}</Link>
                     </Button>
                   </CardFooter>
