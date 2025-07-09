@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { PlusCircle, Globe, Settings, BarChart } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { PlusCircle, Globe, BarChart } from "lucide-react";
 import Link from "next/link";
 
 const MOCK_SITES = [
@@ -27,28 +27,22 @@ export default function MySitesPage() {
         {MOCK_SITES.map((site) => (
           <Card key={site.id} className="flex flex-col">
             <CardHeader className="flex-1">
-              <div className="flex items-center gap-3">
-                <Globe className="h-6 w-6 text-primary" />
+              <div className="flex items-start gap-3">
+                <Globe className="h-8 w-8 text-primary mt-1" />
                 <div>
                   <CardTitle className="font-headline text-lg">{site.name}</CardTitle>
                   <CardDescription>{site.url}</CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="flex justify-end gap-2">
-                <Button variant="outline" size="sm" asChild>
-                   <Link href={`/dashboard/settings`}>
-                       <Settings className="mr-2 h-4 w-4" />
-                       Configurar
-                   </Link>
-                </Button>
-                <Button size="sm" asChild>
-                   <Link href={`/dashboard`}>
+            <CardFooter>
+                <Button className="w-full" asChild>
+                   <Link href={`/dashboard/sites/${site.id}`}>
                        <BarChart className="mr-2 h-4 w-4" />
                        Ver Analytics
                    </Link>
                 </Button>
-            </CardContent>
+            </CardFooter>
           </Card>
         ))}
       </div>
