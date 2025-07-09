@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { ListFilter, ServerOff, ArrowLeftRight, Fingerprint, WifiOff, Clock } from 'lucide-react';
+import { ListFilter, ServerOff, ArrowLeftRight, Fingerprint, WifiOff, Clock, ShieldAlert, Link2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const CloakerOption = ({ id, label, description, children }: { id: string, label: string, description: string, children?: React.ReactNode }) => (
     <div className="flex items-start sm:items-center justify-between rounded-lg border p-4 flex-col sm:flex-row gap-4">
@@ -42,7 +43,21 @@ const dayOptions = [
   { id: 'sat', label: 'Sábado' },
 ];
 
+const mockThreats = [
+  {
+    userAgent: "Mozilla/5.0 (compatible; AhrefsBot/7.0; +http://ahrefs.com/robot/)",
+    reason: "Bot de SEO conhecido. Pode estar copiando seu conteúdo.",
+    type: "Bot de SEO",
+  },
+  {
+    userAgent: "python-requests/2.25.1",
+    reason: "User-agent comum para scripts automatizados e scraping.",
+    type: "Scraping",
+  }
+];
+
 export default function CloakerPage() {
+  const { toast } = useToast();
   const [desktopRedirectEnabled, setDesktopRedirectEnabled] = React.useState(false);
   const [mobileRedirectEnabled, setMobileRedirectEnabled] = React.useState(false);
   const [geoFilterEnabled, setGeoFilterEnabled] = React.useState(false);
@@ -52,6 +67,15 @@ export default function CloakerPage() {
   const [userAgentFilterEnabled, setUserAgentFilterEnabled] = React.useState(false);
   const [ispFilterEnabled, setIspFilterEnabled] = React.useState(false);
   const [timeFilterEnabled, setTimeFilterEnabled] = React.useState(false);
+  const [utmFilterEnabled, setUtmFilterEnabled] = React.useState(false);
+
+  const handleAddToBlocklist = (userAgent: string) => {
+    // In a real app, this would update the state or call an API
+    toast({
+      title: "User-Agent Adicionado",
+      description: `${userAgent} foi adicionado à sua lista de bloqueio de User-Agent.`,
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -82,6 +106,29 @@ export default function CloakerPage() {
                     </div>
                     <Input id="redirect-url" placeholder="https://google.com" className="w-full sm:max-w-xs" />
                 </div>
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <div className="flex items-center gap-3">
+                    <ShieldAlert className="h-6 w-6 text-primary" />
+                    <CardTitle className="font-headline">Análise de Ameaças e Recomendações</CardTitle>
+                </div>
+                <CardDescription>
+                    Nossa IA detectou atividades suspeitas. Recomendamos adicionar os seguintes User-Agents à sua lista de bloqueio.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {mockThreats.map((threat, index) => (
+                    <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-3 gap-3">
+                        <div className="space-y-1">
+                            <p className="text-sm font-medium">{threat.userAgent}</p>
+                            <p className="text-xs text-muted-foreground">{threat.reason}</p>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={() => handleAddToBlocklist(threat.userAgent)}>Adicionar ao Bloqueio</Button>
+                    </div>
+                ))}
             </CardContent>
         </Card>
 
@@ -171,6 +218,29 @@ export default function CloakerPage() {
                 </div>
                 
                 <Separator />
+
+                 {/* UTM Filter */}
+                <div className="space-y-4 rounded-lg border p-4">
+                    <div className="flex items-center justify-between">
+                       <div className="flex items-start gap-4">
+                          <Link2 className="h-6 w-6 text-primary mt-1 hidden sm:block" />
+                          <div className="space-y-0.5">
+                              <Label htmlFor="utm-filter-switch" className="text-base font-semibold">Filtro por UTM</Label>
+                              <p className="text-sm text-muted-foreground">Bloquear acessos que não contenham um `utm_source` específico.</p>
+                          </div>
+                        </div>
+                        <Switch id="utm-filter-switch" checked={utmFilterEnabled} onCheckedChange={setUtmFilterEnabled} />
+                    </div>
+                    {utmFilterEnabled && (
+                        <div className="pt-4 border-t mt-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="utm-source">Exigir `utm_source`</Label>
+                                <Input id="utm-source" placeholder="facebook" />
+                                <p className="text-xs text-muted-foreground">O visitante só terá acesso se a URL contiver `?utm_source=valor_inserido`.</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 {/* Geo Filter Section */}
                 <div className="space-y-4 rounded-lg border p-4">
