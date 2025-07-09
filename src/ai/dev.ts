@@ -1,5 +1,4 @@
-import { config } from 'dotenv';
-config();
+'use server';
 
 import '@/ai/flows/generate-swot-analysis.ts';
 import '@/ai/flows/analyze-project-data.ts';

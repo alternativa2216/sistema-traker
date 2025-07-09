@@ -7,7 +7,6 @@ try {
   // This will throw an error if GOOGLE_API_KEY is not set
   ai = genkit({
     plugins: [googleAI()],
-    model: 'googleai/gemini-2.0-flash',
   });
 } catch (e) {
   console.warn(
