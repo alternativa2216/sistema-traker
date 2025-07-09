@@ -22,7 +22,7 @@ const settingsOptions = [
     icon: CreditCard,
     title: "Faturamento e Planos",
     description: "Gerencie os preços dos seus planos e a integração com o gateway de pagamento.",
-    enabled: false,
+    enabled: true,
   },
   {
     href: "/admin/content-management",
