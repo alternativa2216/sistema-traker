@@ -4,7 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { BarChart2, Filter, Bot, Shield, Facebook, Settings, ClipboardList } from 'lucide-react';
+import { BarChart2, Filter, Bot, Shield, Facebook, Settings, ClipboardList, Activity } from 'lucide-react';
 
 const MOCK_SITE_DETAILS = {
     id: "site-1",
@@ -24,6 +24,7 @@ export default function SiteIdLayout({
 
   const navItems = [
     { href: '', label: 'Analytics', icon: BarChart2 },
+    { href: '/real-time', label: 'Tempo Real', icon: Activity },
     { href: '/funnel', label: 'Funil', icon: Filter },
     { href: '/ai-analysis', label: 'Análise IA', icon: Bot },
     { href: '/cloaker', label: 'Cloaker', icon: Shield },
