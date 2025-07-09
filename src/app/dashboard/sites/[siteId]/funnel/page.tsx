@@ -18,7 +18,10 @@ const analyticsData = {
     '/': 25840,
     '/produtos': 13120,
     '/carrinho': 6480,
-    '/checkout': 2890
+    '/checkout': 2890,
+    '/sobre-nos': 1250,
+    '/blog/post-1': 980,
+    '/contato': 750,
 };
 
 const trendData = [
@@ -50,6 +53,12 @@ const initialSteps: FunnelStep[] = [
 
 const stepIcons = [Users, Eye, ShoppingCart, CreditCard, TrendingUp];
 
+const mockUnusedPages = [
+    { path: '/sobre-nos', visits: 1250 },
+    { path: '/blog/post-1', visits: 980 },
+    { path: '/contato', visits: 750 },
+];
+
 
 export default function FunnelPage() {
     const { toast } = useToast();
@@ -68,6 +77,14 @@ export default function FunnelPage() {
     const removeStep = (index: number) => {
         const newSteps = funnelSteps.filter((_, i) => i !== index);
         setFunnelSteps(newSteps);
+    };
+    
+    const handleAddUnusedPage = (path: string) => {
+        setFunnelSteps([...funnelSteps, { id: Date.now(), name: 'Nova Etapa', url: path }]);
+        toast({
+            title: "Etapa Adicionada!",
+            description: `A página ${path} foi adicionada ao final do seu funil.`,
+        });
     };
 
     const saveFunnel = () => {
@@ -149,6 +166,40 @@ export default function FunnelPage() {
             <CardFooter>
                  <Button onClick={saveFunnel}>Salvar Funil</Button>
             </CardFooter>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline">Páginas Rastreadas Fora do Funil</CardTitle>
+                <CardDescription>
+                    Detectamos visitas em páginas com seu código de rastreamento que ainda não fazem parte do funil. Adicione-as com um clique.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Página</TableHead>
+                            <TableHead>Visitas (Exemplo)</TableHead>
+                            <TableHead className="text-right">Ação</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {mockUnusedPages.map((page) => (
+                            <TableRow key={page.path}>
+                                <TableCell className="font-mono">{page.path}</TableCell>
+                                <TableCell>{page.visits.toLocaleString('pt-BR')}</TableCell>
+                                <TableCell className="text-right">
+                                    <Button size="sm" variant="outline" onClick={() => handleAddUnusedPage(page.path)}>
+                                        <PlusCircle className="mr-2 h-4 w-4" />
+                                        Adicionar
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
         </Card>
 
         <Card>
