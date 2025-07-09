@@ -2,13 +2,13 @@
 
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, ChevronDown, MousePointerClick, Percent, ScrollText, Users } from "lucide-react";
+import { ArrowRight, ChevronDown, MousePointerClick, Percent, ScrollText, Users, Eye, ShoppingCart, CreditCard } from "lucide-react";
 
 const funnelSteps = [
   { name: 'Visitantes na Home', count: '10,250', icon: Users },
-  { name: 'Visualizaram Página de Preços', count: '4,870', conversion: 47.5 },
-  { name: 'Iniciaram o Checkout', count: '1,120', conversion: 23.0 },
-  { name: 'Compra Concluída', count: '850', conversion: 75.9 },
+  { name: 'Visualizaram Página de Preços', count: '4,870', conversion: 47.5, icon: Eye },
+  { name: 'Iniciaram o Checkout', count: '1,120', conversion: 23.0, icon: ShoppingCart },
+  { name: 'Compra Concluída', count: '850', conversion: 75.9, icon: CreditCard },
 ]
 
 export default function FunnelPage() {
@@ -21,13 +21,15 @@ export default function FunnelPage() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center gap-2">
-            {funnelSteps.map((step, index) => (
+            {funnelSteps.map((step, index) => {
+              const Icon = step.icon;
+              return (
               <React.Fragment key={step.name}>
                 <div className="w-full max-w-lg">
                   <Card className="text-center shadow-lg">
                     <CardHeader>
                       <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                        <step.icon className="h-5 w-5" />
+                        <Icon className="h-5 w-5" />
                         <span className="font-medium">{step.name}</span>
                       </div>
                       <CardTitle className="text-4xl font-bold font-headline">{step.count}</CardTitle>
@@ -43,7 +45,7 @@ export default function FunnelPage() {
                   </div>
                 )}
               </React.Fragment>
-            ))}
+            )})}
           </div>
         </CardContent>
       </Card>
