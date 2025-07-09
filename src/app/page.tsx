@@ -1,43 +1,99 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
 import Image from "next/image";
 import {
-  ArrowRight
+  ArrowRight,
+  BarChart,
+  Bot,
+  Check,
+  Filter,
+  Shield,
+  Facebook,
+  Activity,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const solutions = [
+const features = [
   {
-    title: "Para Marketing & Anúncios",
-    description: "Otimize suas campanhas com uma suíte de IA completa. Gere textos de anúncio (copy) persuasivos, sugira públicos-alvo detalhados para o Facebook Ads e analise a eficácia de seus criativos com uma nota e feedback acionável. Transforme ideias em campanhas de alta performance em minutos.",
-    imageSrc: "https://placehold.co/600x338.png",
-    imageHint: "marketing team",
-    overlay: "Análise de Criativo",
+    icon: Filter,
+    title: "Análise de Funil Visual",
+    description: "Construa funis de conversão personalizados para entender a jornada do seu cliente e identificar com precisão os pontos de abandono para otimizar suas vendas.",
   },
   {
-    title: "Para Otimização de Conversão (CRO)",
-    description: "Entenda a jornada do seu cliente como nunca. Construa funis de conversão visuais para identificar exatamente onde os usuários desistem. Acompanhe tendências de abandono e receba sugestões automáticas de páginas fora do funil para adicionar à sua análise. Otimize cada etapa para maximizar as vendas.",
-    imageSrc: "https://placehold.co/600x338.png",
-    imageHint: "funnel chart",
-    overlay: "Funil de Vendas",
+    icon: Bot,
+    title: "Insights Proativos com IA",
+    description: "Receba alertas e oportunidades geradas por IA diretamente no seu painel. Deixe nossa inteligência artificial trabalhar para você, sugerindo melhorias e destacando tendências.",
   },
   {
-    title: "Para Segurança e Proteção",
-    description: "Proteja seus ativos digitais com nosso Cloaker avançado. Bloqueie o clique direito e a inspeção de código (F12). Ative filtros anti-bot, anti-spy e anti-clonagem. Use o filtro geográfico ou por IP para restringir o acesso e crie regras de redirecionamento avançadas para garantir que apenas o público certo veja suas ofertas.",
-    imageSrc: "https://placehold.co/600x338.png",
-    imageHint: "security shield",
-    overlay: "Logs de Segurança",
+    icon: Shield,
+    title: "Cloaker e Suíte de Segurança",
+    description: "Proteja suas páginas com filtros anti-bot, anti-spy, geográficos e bloqueio de inspeção. Garanta que apenas seu público certo veja suas ofertas estratégicas.",
   },
   {
-    title: "Para Estratégia de Negócio com IA",
-    description: "Vá além dos dados brutos. Converse com seus dados através de um chat analítico para obter respostas instantâneas. Receba alertas e oportunidades proativas diretamente no seu painel. Gere análises SWOT completas para descobrir forças, fraquezas e oportunidades estratégicas.",
-    imageSrc: "https://placehold.co/600x338.png",
-    imageHint: "business strategy",
-    overlay: "Análise SWOT",
+    icon: Facebook,
+    title: "Ferramentas para Facebook Ads",
+    description: "Gere textos de anúncio (copy), sugira públicos-alvo e analise a eficácia de seus criativos. Uma suíte completa para turbinar suas campanhas.",
+  },
+  {
+    icon: Activity,
+    title: "Analytics em Tempo Real",
+    description: "Acompanhe os visitantes no seu site em tempo real. Veja de onde eles vêm, quais páginas estão visitando e entenda o fluxo de usuários ao vivo.",
+  },
+  {
+    icon: BarChart,
+    title: "Dashboards Intuitivos",
+    description: "Todos os seus dados importantes, como fontes de tráfego e páginas mais visitadas, apresentados em gráficos e tabelas fáceis de entender.",
   },
 ];
+
+const tiers = [
+  {
+    name: "Grátis",
+    price: "R$0",
+    description: "Para projetos pessoais e para começar.",
+    features: [
+      "1 Projeto",
+      "10.000 visualizações de página/mês",
+      "Análises Básicas",
+      "Retenção de dados por 7 dias",
+    ],
+    cta: "Comece de Graça",
+    href: "/register"
+  },
+  {
+    name: "Pro",
+    price: "R$29",
+    description: "Para profissionais e pequenas empresas.",
+    features: [
+      "10 Projetos",
+      "200.000 visualizações de página/mês",
+      "Suíte de Segurança e Cloaker",
+      "Todas as Ferramentas de IA",
+      "Análise de Funil e Tempo Real",
+      "Retenção de dados por 1 ano",
+    ],
+    cta: "Começar com Pro",
+    href: "/register",
+    featured: true,
+  },
+  {
+    name: "Empresarial",
+    price: "Custom",
+    description: "Para aplicações e agências de grande escala.",
+    features: [
+      "Projetos Ilimitados",
+      "Limites de visualização de página personalizados",
+      "Acesso à API",
+      "Suporte Dedicado",
+      "Retenção de dados ilimitada",
+    ],
+    cta: "Contatar Vendas",
+    href: "mailto:sales@tracklytics.ai"
+  },
+];
+
 
 const testimonials = [
   {
@@ -64,10 +120,10 @@ export default function Home() {
             <div className="flex items-center gap-8">
                 <Logo />
                 <nav className="hidden lg:flex gap-6 items-center">
-                    <Link href="#solutions" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                        Soluções
+                    <Link href="#features" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                        Funcionalidades
                     </Link>
-                    <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                    <Link href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                         Preços
                     </Link>
                     <Link href="#testimonials" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
@@ -95,17 +151,12 @@ export default function Home() {
             Analytics que <span className="text-primary">Transforma Dados</span> em<br />
             Decisões de Alto Impacto
           </h1>
-          <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-8">
-            O Tracklytics é a plataforma de analytics que oferece rastreamento completo,
-            insights de IA, segurança avançada e ferramentas visuais para você entender seus usuários como
-            nunca.
+          <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8">
+            O Tracklytics é a única plataforma de web analytics que combina rastreamento completo, insights proativos com IA, uma suíte de segurança avançada e ferramentas visuais para você dominar sua estratégia digital.
           </p>
           <div className="flex justify-center gap-4">
             <Button size="lg" asChild>
               <Link href="/register">Começar Gratuitamente por 14 dias</Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/pricing">Ver Planos</Link>
             </Button>
           </div>
         </section>
@@ -123,39 +174,100 @@ export default function Home() {
             </Card>
         </section>
 
-        <section id="solutions" className="container mx-auto px-4 lg:px-6 py-20 md:py-28">
+        <section id="features" className="container mx-auto px-4 lg:px-6 py-20 md:py-28">
             <div className="text-center mb-12">
                 <h2 className="text-3xl md:text-5xl font-bold font-headline tracking-tighter">
-                    Soluções criadas para impulsionar o <span className="text-primary">crescimento</span> de cada time
+                    Por que o <span className="text-primary">Tracklytics</span> é diferente?
                 </h2>
                 <p className="max-w-3xl mx-auto text-lg text-muted-foreground mt-4">
-                    Do marketing à segurança, o Tracklytics oferece as ferramentas certas para cada desafio, transformando dados em resultados.
+                    Fomos além do básico para entregar um conjunto de ferramentas que resolvem problemas reais e impulsionam o crescimento.
                 </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {solutions.map((solution) => (
-                    <Card key={solution.title} className="bg-card/50 border-border/50 flex flex-col p-2 hover:border-primary/50 transition-colors">
-                        <CardHeader>
-                            <CardTitle className="font-headline text-2xl">{solution.title}</CardTitle>
-                            <CardDescription className="pt-2 text-base">{solution.description}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex-1 mt-auto">
-                            <div className="relative">
-                                <Image
-                                    src={solution.imageSrc}
-                                    width={600}
-                                    height={338}
-                                    alt={solution.title}
-                                    className="rounded-md object-cover w-full"
-                                    data-ai-hint={solution.imageHint}
-                                />
-                                 <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm border border-border/50 rounded-lg px-3 py-1.5 shadow-lg">
-                                    <p className="font-semibold text-sm text-foreground">{solution.overlay}</p>
-                                </div>
-                            </div>
-                        </CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {features.map((feature) => (
+                    <Card key={feature.title} className="bg-card/50 border-border/50 p-6 flex flex-col items-start text-left">
+                        <div className="bg-primary/10 p-3 rounded-lg mb-4">
+                           <feature.icon className="h-8 w-8 text-primary" />
+                        </div>
+                        <CardTitle className="font-headline text-xl mb-2">{feature.title}</CardTitle>
+                        <CardDescription className="text-base flex-grow">{feature.description}</CardDescription>
                     </Card>
                 ))}
+            </div>
+        </section>
+        
+        <section id="how-it-works" className="bg-muted/50 py-20 md:py-28">
+          <div className="container mx-auto px-4 lg:px-6">
+              <div className="text-center mb-12">
+                  <h2 className="text-3xl md:text-5xl font-bold font-headline tracking-tighter">Comece a Otimizar em Minutos</h2>
+                  <p className="max-w-2xl mx-auto text-lg text-muted-foreground mt-4">
+                      Nosso processo é simples e direto ao ponto.
+                  </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                  <div className="flex flex-col items-center">
+                      <div className="flex items-center justify-center bg-card border rounded-full h-16 w-16 mb-4">
+                          <span className="text-2xl font-bold font-headline text-primary">1</span>
+                      </div>
+                      <h3 className="text-xl font-headline font-semibold mb-2">Instale o Script</h3>
+                      <p className="text-muted-foreground">Adicione uma única linha de código no cabeçalho do seu site para começar a coletar dados.</p>
+                  </div>
+                   <div className="flex flex-col items-center">
+                      <div className="flex items-center justify-center bg-card border rounded-full h-16 w-16 mb-4">
+                          <span className="text-2xl font-bold font-headline text-primary">2</span>
+                      </div>
+                      <h3 className="text-xl font-headline font-semibold mb-2">Configure suas Ferramentas</h3>
+                      <p className="text-muted-foreground">Defina seu funil, ative a segurança e conecte suas contas de marketing com poucos cliques.</p>
+                  </div>
+                   <div className="flex flex-col items-center">
+                      <div className="flex items-center justify-center bg-card border rounded-full h-16 w-16 mb-4">
+                          <span className="text-2xl font-bold font-headline text-primary">3</span>
+                      </div>
+                      <h3 className="text-xl font-headline font-semibold mb-2">Receba Insights e Cresça</h3>
+                      <p className="text-muted-foreground">Acompanhe os resultados, use os insights da IA e veja suas conversões aumentarem.</p>
+                  </div>
+              </div>
+          </div>
+        </section>
+
+        <section id="pricing" className="container mx-auto px-4 lg:px-6 py-20 md:py-28">
+           <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-5xl font-bold font-headline tracking-tighter">
+                Encontre o plano perfeito para você
+              </h2>
+              <p className="max-w-2xl mx-auto text-lg text-muted-foreground mt-4">
+                Comece de graça e escale conforme seu negócio cresce. Sem pegadinhas.
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start max-w-5xl mx-auto">
+              {tiers.map((tier) => (
+                <Card key={tier.name} className={`flex flex-col text-left ${tier.featured ? 'border-primary ring-2 ring-primary shadow-lg' : ''}`}>
+                  <CardHeader>
+                    <CardTitle className="font-headline text-2xl">{tier.name}</CardTitle>
+                    <CardDescription>{tier.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-1 space-y-6">
+                    <div className="text-4xl font-bold font-headline">
+                      {tier.price}
+                      {tier.name === "Pro" && <span className="text-sm font-normal text-muted-foreground">/mês</span>}
+                    </div>
+                    <ul className="space-y-3">
+                      {tier.features.map((feature) => (
+                        <li key={feature} className="flex items-center gap-2">
+                          <Check className="h-5 w-5 text-accent" />
+                          <span className="text-muted-foreground">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                  <CardFooter>
+                    <Button asChild className={`w-full ${!tier.featured ? 'variant="outline"' : ''}`}>
+                      <Link href={tier.href}>{tier.cta}</Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
             </div>
         </section>
 
@@ -171,7 +283,7 @@ export default function Home() {
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {testimonials.map((testimonial) => (
-                        <Card key={testimonial.name} className="p-6">
+                        <Card key={testimonial.name} className="p-6 text-left">
                             <CardContent className="p-0">
                                 <blockquote className="text-lg text-foreground mb-4">
                                     "{testimonial.quote}"
