@@ -62,7 +62,7 @@ export async function createPaymentTransaction(input: z.infer<typeof CreateTrans
                     type: "cpf"
                 },
                 phone: userPhone,
-                externalRef: userCpf // Correção: A API provavelmente espera um valor numérico como string.
+                externalRef: `ref-${userCpf}` // Match the working PHP implementation
             },
             pix: {
                 expiresInDays: 1
