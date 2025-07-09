@@ -13,10 +13,10 @@ import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-// Firebase is disabled for diagnostics
-// import { signInWithEmailAndPassword } from 'firebase/auth';
-// import { auth } from '@/lib/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import { createSessionCookie } from '../actions/auth';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }),
@@ -28,6 +28,7 @@ export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const isFirebaseConfigured = auth !== null;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -36,16 +37,23 @@ export default function LoginPage() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
+    if (!isFirebaseConfigured) {
+        toast({ title: "Configuração Incompleta", description: "O Firebase não está configurado.", variant: "destructive"});
+        setIsLoading(false);
+        return;
+    }
     
-    // Mock login logic since Firebase is disabled for diagnostics
     try {
-      // We set a mock cookie to satisfy the middleware.
-      await createSessionCookie("mock-id-token");
+      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      const idToken = await userCredential.user.getIdToken();
+
+      await createSessionCookie(idToken);
+      
       router.push('/dashboard');
     } catch (error: any) {
        toast({
-        title: 'Erro de Login Simulado',
-        description: 'Ocorreu um erro na simulação de login.',
+        title: 'Erro de Login',
+        description: error.message,
         variant: 'destructive',
       });
     } finally {
@@ -66,11 +74,21 @@ export default function LoginPage() {
             <CardTitle className="font-headline text-2xl">Bem-vindo de volta</CardTitle>
             <CardDescription>Digite suas credenciais para acessar seu painel.</CardDescription>
           </CardHeader>
+          {!isFirebaseConfigured && (
+            <CardContent>
+                <Alert variant="destructive">
+                    <AlertTitle>Configuração do Firebase Ausente</AlertTitle>
+                    <AlertDescription>
+                        As credenciais do cliente Firebase não foram encontradas. Por favor, adicione-as ao seu arquivo <code>.env</code> para habilitar o login.
+                    </AlertDescription>
+                </Alert>
+            </CardContent>
+          )}
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="john.doe@example.com" required {...form.register('email')} />
+                <Input id="email" type="email" placeholder="john.doe@example.com" required {...form.register('email')} disabled={!isFirebaseConfigured} />
                  {form.formState.errors.email && <p className="text-sm font-medium text-destructive">{form.formState.errors.email.message}</p>}
               </div>
               <div className="space-y-2">
@@ -80,12 +98,12 @@ export default function LoginPage() {
                           Esqueceu sua senha?
                       </Link>
                   </div>
-                <Input id="password" type="password" required {...form.register('password')} />
+                <Input id="password" type="password" required {...form.register('password')} disabled={!isFirebaseConfigured} />
                 {form.formState.errors.password && <p className="text-sm font-medium text-destructive">{form.formState.errors.password.message}</p>}
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={isLoading || !isFirebaseConfigured}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Entrar
               </Button>

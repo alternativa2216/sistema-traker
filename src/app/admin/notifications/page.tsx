@@ -13,12 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 
-// Mock data for sent notifications
-const mockSentNotifications = [
-    { id: 'notif_1', type: 'Aviso', target: 'Todos', message: 'Haverá uma manutenção programada na plataforma no próximo sábado.', sentAt: '2 horas atrás' },
-    { id: 'notif_2', type: 'Crítico', target: 'carlos.martins@example.com', message: 'Sua fatura de Julho está pendente. Por favor, regularize.', sentAt: '1 dia atrás' },
-    { id: 'notif_3', type: 'Promoção', target: 'Todos', message: 'Aproveite 20% de desconto no plano Pro nos próximos 3 dias!', sentAt: '3 dias atrás' },
-];
+// In a real app, this would be fetched from a database
+const mockSentNotifications: any[] = [];
 
 
 export default function NotificationsPage() {
@@ -128,7 +124,7 @@ export default function NotificationsPage() {
                      <Card>
                         <CardHeader>
                             <CardTitle className="font-headline">Enviados Recentemente</CardTitle>
-                            <CardDescription>Últimas 3 notificações enviadas.</CardDescription>
+                            <CardDescription>Últimas notificações enviadas.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Table>
@@ -139,14 +135,22 @@ export default function NotificationsPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {mockSentNotifications.map(n => (
-                                        <TableRow key={n.id}>
-                                            <TableCell className="font-medium truncate">{n.target}</TableCell>
-                                            <TableCell>
-                                                <Badge variant={n.type === 'Crítico' ? 'destructive' : 'secondary'}>{n.type}</Badge>
+                                    {mockSentNotifications.length > 0 ? (
+                                        mockSentNotifications.map(n => (
+                                            <TableRow key={n.id}>
+                                                <TableCell className="font-medium truncate">{n.target}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant={n.type === 'Crítico' ? 'destructive' : 'secondary'}>{n.type}</Badge>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={2} className="h-24 text-center">
+                                                Nenhuma notificação enviada.
                                             </TableCell>
                                         </TableRow>
-                                    ))}
+                                    )}
                                 </TableBody>
                             </Table>
                         </CardContent>

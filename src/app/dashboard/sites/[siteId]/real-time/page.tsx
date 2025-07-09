@@ -6,19 +6,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Laptop, Smartphone, Users } from "lucide-react";
 
-// Mock Data Generation
-const randomIp = () => `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
-const countries = [
-    { code: 'BR', name: 'Brasil', flag: '🇧🇷' },
-    { code: 'US', name: 'EUA', flag: '🇺🇸' },
-    { code: 'PT', name: 'Portugal', flag: '🇵🇹' },
-    { code: 'AR', name: 'Argentina', flag: '🇦🇷' },
-    { code: 'DE', name: 'Alemanha', flag: '🇩🇪' },
-];
-const pages = ['/home', '/produtos', '/precos', '/contato', '/blog/post-1'];
-const referrers = ['google.com', 'facebook.com', 'direct', 'twitter.com'];
-const devices = ['mobile', 'desktop'] as const;
-
 interface Visitor {
     id: number;
     ip: string;
@@ -29,20 +16,6 @@ interface Visitor {
     referrer: string;
 }
 
-let visitorIdCounter = 0;
-const createRandomVisitor = (): Visitor => {
-    visitorIdCounter++;
-    return {
-        id: visitorIdCounter,
-        ip: randomIp(),
-        country: countries[Math.floor(Math.random() * countries.length)],
-        device: devices[Math.floor(Math.random() * devices.length)],
-        currentPage: pages[Math.floor(Math.random() * pages.length)],
-        timeOnSite: 0,
-        referrer: referrers[Math.floor(Math.random() * referrers.length)],
-    };
-};
-
 const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -52,40 +25,13 @@ const formatTime = (seconds: number) => {
 
 // Main Component
 export default function RealTimeAnalyticsPage() {
-    const [visitors, setVisitors] = React.useState<Visitor[]>(() => [createRandomVisitor(), createRandomVisitor()]);
-    const [isPaused, setIsPaused] = React.useState(false);
+    const [visitors, setVisitors] = React.useState<Visitor[]>([]);
 
     React.useEffect(() => {
-        if (isPaused) return;
-
-        const interval = setInterval(() => {
-            setVisitors(currentVisitors => {
-                let newVisitors = [...currentVisitors];
-
-                // Update existing visitors
-                newVisitors = newVisitors.map(v => ({
-                    ...v,
-                    timeOnSite: v.timeOnSite + 2,
-                    // Randomly change page
-                    currentPage: Math.random() > 0.95 ? pages[Math.floor(Math.random() * pages.length)] : v.currentPage,
-                }));
-
-                // Randomly remove a visitor
-                if (Math.random() > 0.8 && newVisitors.length > 1) {
-                    newVisitors.splice(Math.floor(Math.random() * newVisitors.length), 1);
-                }
-
-                // Randomly add a new visitor
-                if (Math.random() > 0.6 && newVisitors.length < 15) {
-                    newVisitors.push(createRandomVisitor());
-                }
-
-                return newVisitors;
-            });
-        }, 2000); // Update every 2 seconds
-
-        return () => clearInterval(interval);
-    }, [isPaused]);
+        // In a real application, you would establish a WebSocket connection here
+        // to receive real-time visitor data.
+        // For now, we'll just show an empty state.
+    }, []);
     
     const summary = React.useMemo(() => {
         const pageCounts = visitors.reduce((acc, v) => {
@@ -168,7 +114,7 @@ export default function RealTimeAnalyticsPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {visitors.map(v => (
+                                {visitors.length > 0 ? visitors.map(v => (
                                     <TableRow key={v.id}>
                                         <TableCell className="font-mono text-xs">{v.ip}</TableCell>
                                         <TableCell>{v.country.flag} {v.country.name}</TableCell>
@@ -182,7 +128,13 @@ export default function RealTimeAnalyticsPage() {
                                         <TableCell className="text-muted-foreground">{v.referrer}</TableCell>
                                         <TableCell className="text-right font-mono">{formatTime(v.timeOnSite)}</TableCell>
                                     </TableRow>
-                                ))}
+                                )) : (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="h-24 text-center">
+                                            Aguardando visitantes...
+                                        </TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </Table>
                     </div>

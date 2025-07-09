@@ -1,29 +1,25 @@
+'use client'
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { DollarSign, Users, TrendingUp, TrendingDown, Database, Cpu, CheckCircle, Clock, Link as LinkIcon, Plus, Globe } from "lucide-react";
+import { DollarSign, Users, TrendingUp, TrendingDown, Database, Cpu, CheckCircle, Link as LinkIcon, Plus, Globe } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 
-const mockRecentUsers = [
-  { name: 'Gabriel Lima', email: 'gabriel.l@example.com', joined: 'há 5 minutos' },
-  { name: 'Fernanda Souza', email: 'fernanda.s@example.com', joined: 'há 2 horas' },
-  { name: 'Lucas Pereira', email: 'lucas.p@example.com', joined: 'há 8 horas' },
-];
-
-const mockRecentProjects = [
-  { name: 'loja-de-sapatos.com', user: 'Ana Silva', created: 'há 1 hora' },
-  { name: 'portfolio-dev.io', user: 'Carlos Martins', created: 'há 3 horas' },
-  { name: 'agencia-de-viagens.net', user: 'Beatriz Costa', created: 'há 1 dia' },
-];
-
-const mockTopProjects = [
-    { name: 'meu-ecommerce.com', visits: '12,402' },
-    { name: 'agencia-criativa.co', visits: '21,832' },
-    { name: 'meu-blog-pessoal.dev', visits: '8,923' },
-];
+// In a real app, this data would be fetched from the database or an analytics service.
+const initialRecentUsers: any[] = [];
+const initialRecentProjects: any[] = [];
+const initialTopProjects: any[] = [];
 
 export default function AdminDashboardPage() {
+  const [recentUsers, setRecentUsers] = useState(initialRecentUsers);
+  const [recentProjects, setRecentProjects] = useState(initialRecentProjects);
+  const [topProjects, setTopProjects] = useState(initialTopProjects);
+  
+  // useEffect to fetch data would go here
+
   return (
     <div className="space-y-8">
       <div>
@@ -38,8 +34,8 @@ export default function AdminDashboardPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$12,842.59</div>
-            <p className="text-xs text-muted-foreground">+2.5% do último mês</p>
+            <div className="text-2xl font-bold">$0.00</div>
+            <p className="text-xs text-muted-foreground">Nenhum dado ainda</p>
           </CardContent>
         </Card>
         <Card>
@@ -48,8 +44,8 @@ export default function AdminDashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">482</div>
-            <p className="text-xs text-muted-foreground">+32 desde o último mês</p>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">Nenhum dado ainda</p>
           </CardContent>
         </Card>
         <Card>
@@ -58,8 +54,8 @@ export default function AdminDashboardPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">105</div>
-            <p className="text-xs text-muted-foreground">+12% esta semana</p>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">Nenhum dado ainda</p>
           </CardContent>
         </Card>
         <Card>
@@ -68,8 +64,8 @@ export default function AdminDashboardPage() {
             <TrendingDown className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2.1%</div>
-            <p className="text-xs text-muted-foreground">-0.5% do último mês</p>
+            <div className="text-2xl font-bold">0%</div>
+            <p className="text-xs text-muted-foreground">Nenhum dado ainda</p>
           </CardContent>
         </Card>
       </div>
@@ -86,7 +82,7 @@ export default function AdminDashboardPage() {
                         <h3 className="font-semibold text-sm mb-2 flex items-center gap-2"><Plus className="h-4 w-4"/>Novos Usuários</h3>
                          <Table>
                             <TableBody>
-                                {mockRecentUsers.map(user => (
+                                {recentUsers.length > 0 ? recentUsers.map(user => (
                                     <TableRow key={user.email}>
                                         <TableCell>
                                             <div className="font-medium">{user.name}</div>
@@ -94,7 +90,11 @@ export default function AdminDashboardPage() {
                                         </TableCell>
                                         <TableCell className="text-right text-xs text-muted-foreground">{user.joined}</TableCell>
                                     </TableRow>
-                                ))}
+                                )) : (
+                                    <TableRow>
+                                        <TableCell className="h-24 text-center" colSpan={2}>Nenhum usuário recente.</TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                          </Table>
                     </div>
@@ -102,7 +102,7 @@ export default function AdminDashboardPage() {
                         <h3 className="font-semibold text-sm mb-2 flex items-center gap-2"><Globe className="h-4 w-4"/>Novos Sites</h3>
                          <Table>
                             <TableBody>
-                                {mockRecentProjects.map(project => (
+                                {recentProjects.length > 0 ? recentProjects.map(project => (
                                     <TableRow key={project.name}>
                                         <TableCell>
                                             <div className="font-medium">{project.name}</div>
@@ -110,7 +110,11 @@ export default function AdminDashboardPage() {
                                         </TableCell>
                                         <TableCell className="text-right text-xs text-muted-foreground">{project.created}</TableCell>
                                     </TableRow>
-                                ))}
+                                )) : (
+                                    <TableRow>
+                                        <TableCell className="h-24 text-center" colSpan={2}>Nenhum site recente.</TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                          </Table>
                     </div>
@@ -131,22 +135,26 @@ export default function AdminDashboardPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {mockTopProjects.map(project => (
+                            {topProjects.length > 0 ? topProjects.map(project => (
                                 <TableRow key={project.name}>
                                     <TableCell className="font-medium">{project.name}</TableCell>
                                     <TableCell className="text-right">{project.visits}</TableCell>
                                 </TableRow>
-                            ))}
+                            )) : (
+                                <TableRow>
+                                    <TableCell className="h-24 text-center" colSpan={2}>Nenhum dado disponível.</TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                      </Table>
                      <div className="mt-4 pt-4 border-t flex justify-around text-center">
                         <div>
                             <p className="text-sm text-muted-foreground">Total de Sites</p>
-                            <p className="text-2xl font-bold">1,250</p>
+                            <p className="text-2xl font-bold">0</p>
                         </div>
                          <div>
                             <p className="text-sm text-muted-foreground">Média de Visitas / Site</p>
-                            <p className="text-2xl font-bold">4,321</p>
+                            <p className="text-2xl font-bold">0</p>
                         </div>
                      </div>
                 </CardContent>
@@ -179,13 +187,6 @@ export default function AdminDashboardPage() {
                            <span className="font-medium">Serviços de IA</span>
                         </div>
                         <Badge variant="secondary" className="text-green-400 gap-1.5"><CheckCircle className="h-3 w-3" /> Operacional</Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                           <Clock className="h-5 w-5 text-muted-foreground"/>
-                           <span className="font-medium">Processos em Fila</span>
-                        </div>
-                        <span className="font-mono text-sm">0</span>
                     </div>
                      <div className="border-t pt-4 text-center">
                         <Button variant="outline" size="sm" asChild>

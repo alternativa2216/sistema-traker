@@ -1,23 +1,57 @@
 import 'server-only';
+import admin from 'firebase-admin';
 
-// Firebase Admin functionality has been temporarily disabled to diagnose a persistent build error.
-const firebaseAdminDisabledError = "Firebase Admin SDK has not been initialized. Functionality is disabled for diagnostics.";
+// Check if the app is already initialized
+if (!admin.apps.length) {
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
-const unconfiguredAction = () => {
-    throw new Error(firebaseAdminDisabledError);
-};
-
-const adminProxy = new Proxy({}, {
-    get() {
-        // Instead of throwing an error which can crash the app, 
-        // we can return a function that does nothing or returns a mock response.
-        // For this diagnostic step, returning a function that logs a warning is safer.
-        return () => {
-            console.warn(firebaseAdminDisabledError);
-            return Promise.resolve();
-        };
+    if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && privateKey) {
+        try {
+            admin.initializeApp({
+                credential: admin.credential.cert({
+                    projectId: process.env.FIREBASE_PROJECT_ID,
+                    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                    privateKey,
+                }),
+            });
+            console.log("Firebase Admin SDK initialized successfully.");
+        } catch (error: any) {
+             console.error("Firebase Admin SDK initialization error:", error.message);
+        }
+    } else {
+        console.warn("Firebase Admin SDK credentials are not fully set in .env file. Some server-side Firebase services will be unavailable.");
     }
-})
+}
 
-export const adminAuth = adminProxy as any;
-export const adminDb = adminProxy as any;
+// Create a proxy to handle cases where the SDK is not initialized
+const adminAuthProxy = new Proxy(
+  {},
+  {
+    get(_target, prop) {
+      if (!admin.apps.length) {
+        // This error will be caught by server actions, providing clear feedback to the user.
+        throw new Error(
+          'Firebase Admin SDK has not been initialized. Please check your server environment variables.'
+        );
+      }
+      return Reflect.get(admin.auth(), prop);
+    },
+  }
+) as admin.auth.Auth;
+
+const adminDbProxy = new Proxy(
+  {},
+  {
+    get(_target, prop) {
+      if (!admin.apps.length) {
+        throw new Error(
+          'Firebase Admin SDK has not been initialized. Please check your server environment variables.'
+        );
+      }
+      return Reflect.get(admin.firestore(), prop);
+    },
+  }
+) as admin.firestore.Firestore;
+
+export const adminAuth = adminAuthProxy;
+export const adminDb = adminDbProxy;

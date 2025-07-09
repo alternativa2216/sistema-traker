@@ -14,22 +14,28 @@ import { Textarea } from "@/components/ui/textarea";
 import { MoreHorizontal, UserCog, Ban, LogIn } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 
-// Mock data for users
-const initialUsers = [
-  { id: 'usr_1', name: 'Ana Silva', email: 'ana.silva@example.com', plan: 'Pro', joined: '2024-07-15', customAlert: '' },
-  { id: 'usr_2', name: 'Carlos Martins', email: 'carlos.martins@example.com', plan: 'Pro', joined: '2024-07-10', customAlert: 'Sua fatura de Julho está pendente. Por favor, regularize.' },
-  { id: 'usr_3', name: 'Beatriz Costa', email: 'beatriz.costa@example.com', plan: 'Grátis', joined: '2024-07-05', customAlert: '' },
-  { id: 'usr_4', name: 'Diogo Almeida', email: 'diogo.almeida@example.com', plan: 'Pro', joined: '2024-06-28', customAlert: '' },
-  { id: 'usr_5', name: 'Eliane Faria', email: 'eliane.faria@example.com', plan: 'Grátis', joined: '2024-06-25', customAlert: '' },
-];
+// In a real app, this data would be fetched from the database
+const initialUsers: any[] = [];
 
-type User = typeof initialUsers[0];
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  plan: string;
+  joined: string;
+  customAlert: string;
+}
 
 export default function AdminUsersPage() {
   const { toast } = useToast();
   const [users, setUsers] = React.useState<User[]>(initialUsers);
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
   const [editingUser, setEditingUser] = React.useState<User | null>(null);
+  
+  // React.useEffect(() => {
+  //   // Here you would fetch users from your database
+  //   // e.g., fetchUsersAction().then(setUsers);
+  // }, []);
 
   const handleOpenEditDialog = (user: User) => {
     setEditingUser({ ...user }); // Create a copy to edit
@@ -39,6 +45,7 @@ export default function AdminUsersPage() {
   const handleSaveChanges = () => {
     if (!editingUser) return;
     
+    // In a real app, this would be a server action to update the user
     setUsers(users.map(u => u.id === editingUser.id ? editingUser : u));
     toast({
         title: "Usuário Atualizado!",
@@ -75,47 +82,55 @@ export default function AdminUsersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>
-                        <div className="font-medium">{user.name}</div>
-                        <div className="text-sm text-muted-foreground">{user.email}</div>
-                      </TableCell>
-                       <TableCell>
-                        <Badge variant={user.plan === 'Pro' ? 'default' : 'secondary'}>
-                          {user.plan}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(user.joined).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
-                      </TableCell>
-                      <TableCell>
-                        {user.customAlert ? (
-                          <span className="text-xs text-yellow-400 italic">Sim</span>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">Não</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleOpenEditDialog(user)}>
-                                <UserCog className="mr-2 h-4 w-4" /> Editar Usuário
-                            </DropdownMenuItem>
-                            <DropdownMenuItem disabled><LogIn className="mr-2 h-4 w-4" /> Personificar</DropdownMenuItem>
-                            <DropdownMenuItem disabled className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                               <Ban className="mr-2 h-4 w-4" /> Suspender
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                  {users.length > 0 ? (
+                    users.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                          <div className="font-medium">{user.name}</div>
+                          <div className="text-sm text-muted-foreground">{user.email}</div>
+                        </TableCell>
+                         <TableCell>
+                          <Badge variant={user.plan === 'Pro' ? 'default' : 'secondary'}>
+                            {user.plan}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {new Date(user.joined).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                        </TableCell>
+                        <TableCell>
+                          {user.customAlert ? (
+                            <span className="text-xs text-yellow-400 italic">Sim</span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Não</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleOpenEditDialog(user)}>
+                                  <UserCog className="mr-2 h-4 w-4" /> Editar Usuário
+                              </DropdownMenuItem>
+                              <DropdownMenuItem disabled><LogIn className="mr-2 h-4 w-4" /> Personificar</DropdownMenuItem>
+                              <DropdownMenuItem disabled className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                                 <Ban className="mr-2 h-4 w-4" /> Suspender
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-24 text-center">
+                        Nenhum usuário encontrado.
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
             </div>

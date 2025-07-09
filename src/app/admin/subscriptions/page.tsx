@@ -9,17 +9,13 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 
-const mockSubscriptions = [
-    { id: 'sub_1', userName: 'Ana Silva', userEmail: 'ana.silva@example.com', plan: 'Pro', amount: 29.00, status: 'Ativa', nextBilling: '2024-08-15' },
-    { id: 'sub_2', userName: 'Carlos Martins', userEmail: 'carlos.martins@example.com', plan: 'Pro', amount: 29.00, status: 'Pendente', nextBilling: '2024-07-25' },
-    { id: 'sub_3', userName: 'Beatriz Costa', userEmail: 'beatriz.costa@example.com', plan: 'Grátis', amount: 0.00, status: 'Ativa', nextBilling: 'N/A' },
-    { id: 'sub_4', userName: 'Diogo Almeida', userEmail: 'diogo.almeida@example.com', plan: 'Pro', amount: 29.00, status: 'Cancelada', nextBilling: 'N/A' },
-    { id: 'sub_5', userName: 'Eliane Faria', userEmail: 'eliane.faria@example.com', plan: 'Grátis', amount: 0.00, status: 'Ativa', nextBilling: 'N/A' },
-];
+// In a real app, this data would be fetched from the database and payment gateway
+const initialSubscriptions: any[] = [];
 
 export default function AdminSubscriptionsPage() {
+    const [subscriptions, setSubscriptions] = React.useState(initialSubscriptions);
     const [searchTerm, setSearchTerm] = React.useState('');
-    const filteredSubscriptions = mockSubscriptions.filter(
+    const filteredSubscriptions = subscriptions.filter(
         sub => sub.userName.toLowerCase().includes(searchTerm.toLowerCase()) || 
                sub.userEmail.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -70,7 +66,7 @@ export default function AdminSubscriptionsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredSubscriptions.map(sub => (
+                            {filteredSubscriptions.length > 0 ? filteredSubscriptions.map(sub => (
                                 <TableRow key={sub.id}>
                                     <TableCell>
                                         <div className="font-medium">{sub.userName}</div>
@@ -101,7 +97,13 @@ export default function AdminSubscriptionsPage() {
                                         </DropdownMenu>
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            )) : (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="h-24 text-center">
+                                        Nenhuma assinatura encontrada.
+                                    </TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                       </Table>
                    </div>

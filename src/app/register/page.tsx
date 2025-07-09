@@ -15,6 +15,7 @@ import { signUpUser } from '../actions/auth';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const benefits = [
     "Análise de Funil Visual para identificar gargalos",
@@ -33,6 +34,10 @@ export default function RegisterPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Check if Firebase Admin credentials are set (inferred from auth actions).
+  // A more direct way could be a dedicated server action `isFirebaseAdminConfigured()`
+  const [isFirebaseAdminConfigured, setIsFirebaseAdminConfigured] = useState(true);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,6 +54,9 @@ export default function RegisterPage() {
       });
       router.push('/login');
     } catch (error: any) {
+      if (error.message.includes("Firebase Admin SDK has not been initialized")) {
+        setIsFirebaseAdminConfigured(false);
+      }
       toast({
         title: 'Erro ao Criar Conta',
         description: error.message,
@@ -104,6 +112,16 @@ export default function RegisterPage() {
               <CardTitle className="font-headline text-2xl">Crie sua Conta</CardTitle>
               <CardDescription>Comece seu teste gratuito de 14 dias do plano Pro. Não é necessário cartão de crédito.</CardDescription>
             </CardHeader>
+             {!isFirebaseAdminConfigured && (
+                 <CardContent>
+                    <Alert variant="destructive">
+                        <AlertTitle>Configuração do Servidor Ausente</AlertTitle>
+                        <AlertDescription>
+                            O sistema não consegue criar usuários. O administrador precisa configurar as credenciais do Firebase Admin no arquivo <code>.env</code> do servidor.
+                        </AlertDescription>
+                    </Alert>
+                </CardContent>
+            )}
             <form onSubmit={form.handleSubmit(onSubmit)}>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
@@ -123,7 +141,7 @@ export default function RegisterPage() {
                     </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-4">
-                    <Button type="submit" className="w-full" disabled={isLoading}>
+                    <Button type="submit" className="w-full" disabled={isLoading || !isFirebaseAdminConfigured}>
                         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Criar Conta e Começar o Teste
                     </Button>

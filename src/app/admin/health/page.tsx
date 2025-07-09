@@ -1,25 +1,19 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { CheckCircle, Clock, Cpu, Database, Server } from "lucide-react";
+import { CheckCircle, Clock, Cpu, Database, Server, AlertCircle } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Badge } from "@/components/ui/badge";
 
+// In a real app, this data would be fetched from a monitoring service
 const status = {
-    api: { status: 'Operacional', responseTime: 52 },
-    database: { status: 'Operacional', connections: 25, latency: 12 },
-    ai_services: { status: 'Operacional', latency: 150 },
-    background_jobs: { status: 'Operacional', queue: 0 },
+    api: { status: 'Operacional', responseTime: 0 },
+    database: { status: 'Não Conectado', connections: 0, latency: 0 },
+    ai_services: { status: 'Não Configurado', latency: 0 },
+    background_jobs: { status: 'Ocioso', queue: 0 },
 }
 
-const responseTimeData = [
-  { time: '15:00', ms: 45 },
-  { time: '15:01', ms: 50 },
-  { time: '15:02', ms: 55 },
-  { time: '15:03', ms: 48 },
-  { time: '15:04', ms: 60 },
-  { time: '15:05', ms: 52 },
-];
+const responseTimeData: any[] = [];
 
 
 export default function AdminHealthPage() {
@@ -48,7 +42,7 @@ export default function AdminHealthPage() {
                 <Database className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <Badge variant="secondary" className="text-green-400 gap-1.5 mb-2"><CheckCircle className="h-3 w-3" /> {status.database.status}</Badge>
+                <Badge variant="destructive" className="gap-1.5 mb-2"><AlertCircle className="h-3 w-3" /> {status.database.status}</Badge>
                 <p className="text-2xl font-bold">{status.database.connections} / 100</p>
                 <p className="text-xs text-muted-foreground">Conexões ativas</p>
             </CardContent>
@@ -59,7 +53,7 @@ export default function AdminHealthPage() {
                 <Cpu className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <Badge variant="secondary" className="text-green-400 gap-1.5 mb-2"><CheckCircle className="h-3 w-3" /> {status.ai_services.status}</Badge>
+                 <Badge variant="destructive" className="gap-1.5 mb-2"><AlertCircle className="h-3 w-3" /> {status.ai_services.status}</Badge>
                 <p className="text-2xl font-bold">{status.ai_services.latency}ms</p>
                 <p className="text-xs text-muted-foreground">Latência da API Gemini</p>
             </CardContent>
@@ -83,16 +77,20 @@ export default function AdminHealthPage() {
           <CardDescription>Tempo de resposta do endpoint principal da API em milissegundos.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-                 <LineChart data={responseTimeData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="time" />
-                    <YAxis unit="ms" />
-                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
-                    <Line type="monotone" dataKey="ms" stroke="hsl(var(--primary))" strokeWidth={2} dot={{r: 4}} />
-                </LineChart>
-            </ResponsiveContainer>
+          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+            {responseTimeData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={responseTimeData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="time" />
+                        <YAxis unit="ms" />
+                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
+                        <Line type="monotone" dataKey="ms" stroke="hsl(var(--primary))" strokeWidth={2} dot={{r: 4}} />
+                    </LineChart>
+                </ResponsiveContainer>
+             ) : (
+                <p>Nenhum dado de latência disponível.</p>
+             )}
           </div>
         </CardContent>
       </Card>

@@ -6,22 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DollarSign, FileText, QrCode } from "lucide-react";
-import { format, addMonths } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 
-// Dados de exemplo
-const MOCK_INVOICES = [
-    { id: 'INV-003', date: '01/06/2024', amount: 'R$ 29,00', status: 'Paga' },
-    { id: 'INV-002', date: '01/05/2024', amount: 'R$ 29,00', status: 'Paga' },
-    { id: 'INV-001', date: '01/04/2024', amount: 'R$ 29,00', status: 'Paga' },
-];
-
-const PLAN_DETAILS = {
-    name: "Pro",
-    price: 29.00,
-    priceInCents: 2900,
-    nextPayment: format(addMonths(new Date(), 1), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
-}
+const MOCK_INVOICES: any[] = [];
 
 export default function BillingPage() {
 
@@ -41,26 +27,20 @@ export default function BillingPage() {
                 <CardContent>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border rounded-lg">
                         <div>
-                            <Badge variant="secondary" className="text-base">{PLAN_DETAILS.name}</Badge>
+                            <Badge variant="secondary" className="text-base">Grátis</Badge>
                             <p className="text-muted-foreground mt-2">
-                                Sua assinatura será renovada em <span className="font-semibold text-foreground">{PLAN_DETAILS.nextPayment}</span>.
+                                Faça upgrade para o plano Pro para mais funcionalidades.
                             </p>
                         </div>
                         <div className="text-left sm:text-right">
-                            <p className="text-3xl font-bold">R$ {PLAN_DETAILS.price.toFixed(2)}</p>
+                            <p className="text-3xl font-bold">R$ 0.00</p>
                             <p className="text-sm text-muted-foreground">por mês</p>
                         </div>
                     </div>
                 </CardContent>
                 <CardFooter className="flex justify-between items-center">
-                    <div className="flex flex-col gap-2">
-                        <Button disabled>
-                             <DollarSign className="mr-2 h-4 w-4"/>
-                             Pagar Fatura Atual
-                        </Button>
-                        <p className="text-xs text-muted-foreground">Pagamentos estão temporariamente desativados.</p>
-                    </div>
-                    <Button variant="link">Trocar de Plano</Button>
+                     <p className="text-sm text-muted-foreground">Funcionalidade de faturamento em breve.</p>
+                    <Button variant="link" disabled>Trocar de Plano</Button>
                 </CardFooter>
             </Card>
 
@@ -82,24 +62,30 @@ export default function BillingPage() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {MOCK_INVOICES.map((invoice) => (
-                            <TableRow key={invoice.id}>
-                              <TableCell className="font-medium">{invoice.id}</TableCell>
-                              <TableCell>{invoice.date}</TableCell>
-                              <TableCell>{invoice.amount}</TableCell>
-                              <TableCell>
-                                <Badge variant={invoice.status === 'Paga' ? 'secondary' : 'destructive'}>
-                                  {invoice.status}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <Button variant="outline" size="sm">
-                                  <FileText className="mr-2 h-4 w-4" />
-                                  Baixar
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                            {MOCK_INVOICES.length > 0 ? MOCK_INVOICES.map((invoice) => (
+                                <TableRow key={invoice.id}>
+                                <TableCell className="font-medium">{invoice.id}</TableCell>
+                                <TableCell>{invoice.date}</TableCell>
+                                <TableCell>{invoice.amount}</TableCell>
+                                <TableCell>
+                                    <Badge variant={invoice.status === 'Paga' ? 'secondary' : 'destructive'}>
+                                    {invoice.status}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <Button variant="outline" size="sm" disabled>
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    Baixar
+                                    </Button>
+                                </TableCell>
+                                </TableRow>
+                            )) : (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="h-24 text-center">
+                                        Nenhum histórico de faturas.
+                                    </TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                       </Table>
                    </div>
@@ -111,9 +97,9 @@ export default function BillingPage() {
                 <CardTitle className="font-headline">Método de Pagamento</CardTitle>
             </CardHeader>
              <CardContent>
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
                     <div className="flex items-center gap-3">
-                         <QrCode className="h-8 w-8 text-primary" />
+                         <QrCode className="h-8 w-8 text-muted-foreground" />
                          <div>
                             <p className="font-semibold">PIX</p>
                             <p className="text-sm text-muted-foreground">Pagamento instantâneo</p>
@@ -121,7 +107,7 @@ export default function BillingPage() {
                     </div>
                 </div>
                  <p className="text-xs text-muted-foreground mt-4">
-                     No momento, aceitamos apenas PIX. Estamos trabalhando para adicionar a opção de cartão de crédito em breve.
+                     O faturamento está desativado. Estamos trabalhando para adicionar opções de pagamento em breve.
                  </p>
             </CardContent>
         </Card>

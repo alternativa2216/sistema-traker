@@ -17,12 +17,8 @@ import Image from 'next/image';
 import { CampaignPerformanceChart } from '@/components/dashboard/facebook/campaign-performance-chart';
 import { cn } from '@/lib/utils';
 
-const mockCampaigns = [
-  { id: 'C001', name: 'Promoção de Verão - Vendas', status: 'Ativa', spent: 'R$ 2.500,00', conversions: 120, roas: '4.8x' },
-  { id: 'C002', name: 'Leads Qualificados - Ebook Grátis', status: 'Ativa', spent: 'R$ 1.200,00', conversions: 450, roas: 'N/A' },
-  { id: 'C003', name: 'Remarketing - Carrinho Abandonado', status: 'Pausada', spent: 'R$ 850,00', conversions: 45, roas: '6.2x' },
-  { id: 'C004', name: 'Reconhecimento de Marca - Institucional', status: 'Finalizada', spent: 'R$ 3.000,00', conversions: 2, roas: 'N/A' },
-];
+// In a real app, this data would be fetched from the Facebook Ads API
+const mockCampaigns: any[] = [];
 
 const MetricCard = ({ title, value, icon: Icon }: { title: string, value: string, icon: React.ElementType }) => (
     <Card>
@@ -50,8 +46,12 @@ const AdGenerator = () => {
         try {
             const res = await generateAdCopyAction({ productDescription: description });
             setResult(res);
-        } catch (error) {
-            toast({ title: 'Erro', description: 'Não foi possível gerar o anúncio.', variant: 'destructive' });
+        } catch (error: any) {
+             toast({
+                title: "Erro ao Gerar Anúncio",
+                description: error.message,
+                variant: "destructive",
+            });
         } finally {
             setIsLoading(false);
         }
@@ -140,8 +140,8 @@ const AudienceBuilder = () => {
         try {
             const res = await suggestAdAudienceAction({ customerProfile: profile });
             setResult(res);
-        } catch (error) {
-            toast({ title: 'Erro', description: 'Não foi possível gerar o público.', variant: 'destructive' });
+        } catch (error: any) {
+            toast({ title: 'Erro ao Gerar Público', description: error.message, variant: 'destructive' });
         } finally {
             setIsLoading(false);
         }
@@ -291,8 +291,8 @@ const CreativeAnalyzer = () => {
         try {
             const res = await analyzeAdCreativeAction({ imageDataUri: imagePreview });
             setResult(res);
-        } catch (error) {
-            toast({ title: 'Erro', description: 'Não foi possível analisar o criativo.', variant: 'destructive' });
+        } catch (error: any) {
+            toast({ title: 'Erro ao Analisar Criativo', description: error.message, variant: 'destructive' });
         } finally {
             setIsLoading(false);
         }
@@ -323,6 +323,11 @@ const CreativeAnalyzer = () => {
                             </Button>
                         </div>
                         <div className="w-full md:w-2/3 space-y-4">
+                            {isLoading && (
+                                <div className="flex items-center justify-center h-full rounded-lg border bg-muted/50 p-4">
+                                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                                </div>
+                            )}
                             {result && (
                                 <div className="space-y-4 rounded-lg border bg-muted/50 p-4 h-full">
                                      <h4 className="font-semibold">Análise da IA:</h4>
@@ -362,10 +367,10 @@ export default function FacebookAdsPage() {
 
             <TabsContent value="overview" className="mt-4 space-y-6">
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <MetricCard title="Gasto Total" value="R$ 7.550,00" icon={DollarSign} />
-                    <MetricCard title="ROAS (Vendas)" value="5.1x" icon={Target} />
-                    <MetricCard title="CTR Médio" value="2.34%" icon={MousePointerClick} />
-                    <MetricCard title="Conversões (Total)" value="577" icon={CheckCircle} />
+                    <MetricCard title="Gasto Total" value="R$ 0,00" icon={DollarSign} />
+                    <MetricCard title="ROAS (Vendas)" value="N/A" icon={Target} />
+                    <MetricCard title="CTR Médio" value="0%" icon={MousePointerClick} />
+                    <MetricCard title="Conversões (Total)" value="0" icon={CheckCircle} />
                 </div>
                 <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
                     <CampaignPerformanceChart />
@@ -385,7 +390,7 @@ export default function FacebookAdsPage() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {mockCampaigns.map((campaign) => (
+                                        {mockCampaigns.length > 0 ? mockCampaigns.map((campaign) => (
                                             <TableRow key={campaign.id}>
                                                 <TableCell className="font-medium">
                                                     <div className='flex items-center gap-2'>
@@ -396,7 +401,11 @@ export default function FacebookAdsPage() {
                                                 <TableCell>{campaign.spent}</TableCell>
                                                 <TableCell className='text-right'>{campaign.conversions}</TableCell>
                                             </TableRow>
-                                        ))}
+                                        )) : (
+                                            <TableRow>
+                                                <TableCell colSpan={3} className="h-24 text-center">Nenhuma campanha para exibir.</TableCell>
+                                            </TableRow>
+                                        )}
                                     </TableBody>
                                 </Table>
                             </div>

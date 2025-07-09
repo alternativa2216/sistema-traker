@@ -2,6 +2,11 @@
 
 import { cookies } from 'next/headers';
 import { z } from 'zod';
+import { getDbConnection } from '@/lib/db';
+import { adminAuth } from '@/lib/firebase-admin';
+import type { DecodedIdToken } from 'firebase-admin/auth';
+import { Auth, getAuth, sendPasswordResetEmail } from 'firebase/auth';
+import { app } from '@/lib/firebase';
 
 const signUpSchema = z.object({
   name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.'),
@@ -9,7 +14,6 @@ const signUpSchema = z.object({
   password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres.'),
 });
 
-// Firebase functionality is disabled for diagnostics. This is a mock implementation.
 export async function signUpUser(formData: unknown) {
   const validation = signUpSchema.safeParse(formData);
 
@@ -17,51 +21,69 @@ export async function signUpUser(formData: unknown) {
     throw new Error(validation.error.errors.map(e => e.message).join(', '));
   }
   
-  console.log("signUpUser called, but Firebase/DB is disabled. Returning success.");
+  const { name, email, password } = validation.data;
+
+  // 1. Create user in Firebase Auth
+  const userRecord = await adminAuth.createUser({
+    email,
+    password,
+    displayName: name,
+  });
+
+  // 2. Insert user into the database
+  const connection = await getDbConnection();
+  try {
+    await connection.execute(
+      'INSERT INTO users (id, name, email) VALUES (?, ?, ?)',
+      [userRecord.uid, name, email]
+    );
+  } catch (error: any) {
+    // If database insertion fails, delete the Firebase user to keep things consistent
+    await adminAuth.deleteUser(userRecord.uid);
+    console.error("Database insertion failed:", error);
+    throw new Error("Não foi possível salvar o usuário no banco de dados.");
+  } finally {
+    await connection.end();
+  }
   
-  // The following block is temporarily disabled to diagnose a build error.
-  // const connection = await getDbConnection();
-  // await connection.execute(
-  //   'INSERT INTO users (id, name, email) VALUES (?, ?, ?)',
-  //   [userRecord.uid, name, email]
-  // );
-  // await connection.end();
-  
-  return { success: true, userId: 'mock-user-id' };
+  return { success: true, userId: userRecord.uid };
 }
 
-// Firebase functionality is disabled for diagnostics.
+
 export async function createSessionCookie(idToken: string) {
-  console.log("createSessionCookie called, but Firebase is disabled. Setting mock cookie.");
   const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
-  cookies().set('session', 'mock-session-cookie-for-diagnostics', { maxAge: expiresIn, httpOnly: true, secure: true });
+  const sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn });
+  cookies().set('session', sessionCookie, { maxAge: expiresIn, httpOnly: true, secure: true });
 }
 
-// Firebase functionality is disabled for diagnostics.
+
 export async function clearSessionCookie() {
-  console.log("clearSessionCookie called, but Firebase is disabled.");
   cookies().delete('session');
 }
 
-// Firebase functionality is disabled for diagnostics.
+
 export async function sendPasswordResetEmailAction(email: string) {
-    console.log(`Password reset for ${email} requested. To send emails, configure SMTP variables in your .env file and implement the email sending logic.`);
-    // This is now a mock action. In a real scenario, you would use a service like nodemailer
-    // to send a password reset link. The UI for this is on the /forgot-password page.
-    return;
+  if (!app) {
+    console.warn("Firebase client not initialized. Cannot send password reset email.");
+    throw new Error("A funcionalidade de e-mail não está configurada.");
+  }
+  const authClient = getAuth(app);
+  await sendPasswordResetEmail(authClient, email);
 }
 
-// Firebase functionality is disabled for diagnostics. This returns a mock user to allow UI development.
-export async function getCurrentUser() {
-    return {
-        name: 'Elon Muskads',
-        email: 'elonmskads@gmail.com',
-        uid: 'mock-admin-user-uid-12345',
-        picture: '',
-        email_verified: true,
-        auth_time: Math.floor(Date.now() / 1000),
-        iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + 3600,
-        firebase: { identities: {}, 'sign_in_provider': 'password' }
-    };
+
+export async function getCurrentUser(): Promise<DecodedIdToken | null> {
+  const sessionCookie = cookies().get('session')?.value;
+  if (!sessionCookie) {
+    return null;
+  }
+
+  try {
+    // Set checkRevoked to true, forcing a check for session revocation.
+    const decodedIdToken = await adminAuth.verifySessionCookie(sessionCookie, true);
+    return decodedIdToken;
+  } catch (error) {
+    console.log("Could not verify session cookie:", error);
+    return null;
+  }
 }

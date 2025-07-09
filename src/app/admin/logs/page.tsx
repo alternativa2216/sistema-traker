@@ -8,15 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
-const mockLogs = [
-    { timestamp: '2024-07-28 10:00:15', level: 'INFO', message: 'User admin@tracklytics.com logged in successfully.' },
-    { timestamp: '2024-07-28 10:01:22', level: 'INFO', message: 'User carlos.martins@example.com viewed dashboard.' },
-    { timestamp: '2024-07-28 10:02:30', level: 'WARN', message: 'SMTP connection test failed for user admin@tracklytics.com. Retrying...' },
-    { timestamp: '2024-07-28 10:03:45', level: 'INFO', message: 'Generated SWOT analysis for project meu-ecommerce.com' },
-    { timestamp: '2024-07-28 10:05:00', level: 'ERROR', message: 'Failed to process payment for subscription sub_123. Reason: Insufficient funds.' },
-    { timestamp: '2024-07-28 10:06:18', level: 'DEBUG', message: 'API call to /api/v1/sites took 150ms.' },
-    { timestamp: '2024-07-28 10:08:55', level: 'INFO', message: 'Admin updated user plan for ana.silva@example.com to Pro.' },
-];
+// In a real application, logs would be fetched from a logging service or database
+const mockLogs: any[] = [];
 
 export default function AdminLogsPage() {
     const [filterLevel, setFilterLevel] = React.useState('all');
@@ -81,7 +74,7 @@ export default function AdminLogsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredLogs.map((log, index) => (
+                        {filteredLogs.length > 0 ? filteredLogs.map((log, index) => (
                             <TableRow key={index} className={cn(log.level === 'ERROR' && 'bg-destructive/10')}>
                                 <TableCell className="font-mono text-xs">{log.timestamp}</TableCell>
                                 <TableCell>
@@ -89,7 +82,13 @@ export default function AdminLogsPage() {
                                 </TableCell>
                                 <TableCell className="font-mono text-xs">{log.message}</TableCell>
                             </TableRow>
-                        ))}
+                        )) : (
+                            <TableRow>
+                                <TableCell colSpan={3} className="h-24 text-center">
+                                    Nenhum log encontrado.
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </div>

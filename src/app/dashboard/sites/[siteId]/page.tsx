@@ -1,40 +1,24 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
-import { ArrowDown, ArrowUp, Bot, Copy, Eye, LogOut, MousePointerClick, TrendingDown, Users, Target, Network, Code } from 'lucide-react';
+import { ArrowDown, ArrowUp, Bot, Copy, Eye, LogOut, MousePointerClick, TrendingDown, Users, Target, Network, Code, Loader2 } from 'lucide-react';
 import { VisitsOverTimeChart } from '@/components/dashboard/site-analytics/visits-over-time-chart';
 import { TrafficSourceChart } from '@/components/dashboard/site-analytics/traffic-source-chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
-// Mock data, in a real app this would be fetched based on siteId and date range
-const MOCK_SITE_DETAILS = {
-    id: "site-1",
-    name: "meu-ecommerce.com",
-    stats: {
-        today: { visitors: "1.2k", sessions: "1.5k", bounceRate: "25.4%", sessionDuration: "3m 12s" },
-        yesterday: { visitors: "1.1k", sessions: "1.4k", bounceRate: "26.1%", sessionDuration: "3m 05s" },
-        '7d': { visitors: "8.9k", sessions: "10.2k", bounceRate: "28.9%", sessionDuration: "2m 54s" },
-        '30d': { visitors: "35.6k", sessions: "41.8k", bounceRate: "30.1%", sessionDuration: "2m 48s" },
-        all: { visitors: "128k", sessions: "155k", bounceRate: "32.5%", sessionDuration: "2m 40s" },
-    },
-    pages: {
-        top: [
-            { path: "/produto-a", visits: "5,201" },
-            { path: "/promocoes", visits: "3,123" },
-            { path: "/home", visits: "2,100" },
-        ],
-        bottom: [
-            { path: "/termos-de-servico", visits: "5" },
-            { path: "/politica-de-privacidade", visits: "12" },
-            { path: "/faq", visits: "25" },
-        ]
-    }
+const emptyStats = {
+    visitors: "0", sessions: "0", bounceRate: "0%", sessionDuration: "0m 0s"
+};
+
+const emptyPages = {
+    top: [],
+    bottom: []
 };
 
 const MetricCard = ({ title, value, change, changeType }: { title: string, value: string, change?: string, changeType?: 'increase' | 'decrease' }) => (
@@ -57,10 +41,23 @@ const MetricCard = ({ title, value, change, changeType }: { title: string, value
 export default function SiteAnalyticsPage() {
     const params = useParams() as { siteId: string };
     const [timeRange, setTimeRange] = useState('7d');
+    const [stats, setStats] = useState(emptyStats);
+    const [pages, setPages] = useState<{top: any[], bottom: any[]}>(emptyPages);
+    const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
-    // @ts-ignore
-    const data = MOCK_SITE_DETAILS.stats[timeRange];
     const trackingScript = `<script async src="https://tracklytics.ai/track.js?id=${params.siteId}"></script>`;
+
+    useEffect(() => {
+        setIsLoading(true);
+        // In a real app, you would fetch data from your API here
+        // based on `params.siteId` and `timeRange`.
+        // e.g. fetch(`/api/sites/${params.siteId}/stats?range=${timeRange}`).then(...)
+        setTimeout(() => {
+            setStats(emptyStats);
+            setPages(emptyPages);
+            setIsLoading(false);
+        }, 500); // Simulate network delay
+    }, [params.siteId, timeRange]);
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(trackingScript);
@@ -69,6 +66,41 @@ export default function SiteAnalyticsPage() {
             description: "O script de rastreamento foi copiado para sua área de transferência.",
         });
     };
+    
+    const PageTable = ({ title, data, icon: Icon }: { title: string; data: { path: string; visits: string }[], icon: React.ElementType }) => (
+        <Card>
+            <CardHeader>
+                <div className="flex items-center gap-2">
+                    <Icon className="h-5 w-5 text-primary" />
+                    <CardTitle className="font-headline text-lg">{title}</CardTitle>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Página</TableHead>
+                            <TableHead className="text-right">Visitas</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {data.length > 0 ? (
+                            data.map((page) => (
+                                <TableRow key={page.path}>
+                                    <TableCell>{page.path}</TableCell>
+                                    <TableCell className="text-right">{page.visits}</TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={2} className="h-24 text-center">Nenhum dado.</TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    );
 
     return (
         <div className="space-y-6">
@@ -107,15 +139,19 @@ export default function SiteAnalyticsPage() {
                 </Dialog>
             </div>
 
-            {/* Key Metrics */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <MetricCard title="Visitantes" value={data.visitors} change="5.2%" changeType="increase" />
-                <MetricCard title="Sessões" value={data.sessions} change="8.1%" changeType="increase" />
-                <MetricCard title="Taxa de Rejeição" value={data.bounceRate} change="2.5%" changeType="decrease" />
-                <MetricCard title="Duração da Sessão" value={data.sessionDuration} change="1.2%" changeType="increase" />
-            </div>
+            {isLoading ? (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    {[...Array(4)].map((_, i) => <Card key={i} className="h-36 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></Card>)}
+                </div>
+            ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <MetricCard title="Visitantes" value={stats.visitors} />
+                    <MetricCard title="Sessões" value={stats.sessions} />
+                    <MetricCard title="Taxa de Rejeição" value={stats.bounceRate} />
+                    <MetricCard title="Duração da Sessão" value={stats.sessionDuration} />
+                </div>
+            )}
 
-            {/* Charts and Map */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <Card className="lg:col-span-2">
                     <CardHeader>
@@ -138,58 +174,8 @@ export default function SiteAnalyticsPage() {
             </div>
             
              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
-                <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <MousePointerClick className="h-5 w-5 text-primary" />
-                            <CardTitle className="font-headline text-lg">Páginas Mais Visitadas</CardTitle>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Página</TableHead>
-                                    <TableHead className="text-right">Visitas</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {MOCK_SITE_DETAILS.pages.top.map((page) => (
-                                    <TableRow key={page.path}>
-                                        <TableCell>{page.path}</TableCell>
-                                        <TableCell className="text-right">{page.visits}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <TrendingDown className="h-5 w-5 text-primary" />
-                            <CardTitle className="font-headline text-lg">Páginas Menos Visitadas</CardTitle>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                         <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Página</TableHead>
-                                    <TableHead className="text-right">Visitas</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {MOCK_SITE_DETAILS.pages.bottom.map((page) => (
-                                    <TableRow key={page.path}>
-                                        <TableCell>{page.path}</TableCell>
-                                        <TableCell className="text-right">{page.visits}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
+                <PageTable title="Páginas Mais Visitadas" data={pages.top} icon={MousePointerClick} />
+                <PageTable title="Páginas Menos Visitadas" data={pages.bottom} icon={TrendingDown} />
                 <Card>
                     <CardHeader>
                         <div className="flex items-center gap-2">
@@ -198,8 +184,7 @@ export default function SiteAnalyticsPage() {
                         </div>
                     </CardHeader>
                     <CardContent className="text-sm text-muted-foreground space-y-3">
-                       <p><strong>Otimize o Título da Página Inicial:</strong> O título atual pode não ser cativante o suficiente. Tente algo como "Soluções Criativas para Marcas Inovadoras" para atrair mais a atenção.</p>
-                       <p><strong>Adicione um CTA na Seção de Serviços:</strong> A página de serviços não tem uma chamada para ação clara. Adicione um botão "Solicite um Orçamento" para guiar os usuários.</p>
+                       <p>Nenhuma dica disponível. Aguardando mais dados para análise.</p>
                     </CardContent>
                 </Card>
             </div>
