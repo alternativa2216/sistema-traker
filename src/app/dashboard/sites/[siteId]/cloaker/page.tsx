@@ -10,8 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { ListFilter, ServerOff, ArrowLeftRight, Fingerprint, WifiOff, Clock, ShieldAlert, Link2 } from 'lucide-react';
+import { ListFilter, ServerOff, ArrowLeftRight, Fingerprint, WifiOff, Clock, ShieldAlert, Link2, Plus, Pencil, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 
 const CloakerOption = ({ id, label, description, children }: { id: string, label: string, description: string, children?: React.ReactNode }) => (
     <div className="flex items-start sm:items-center justify-between rounded-lg border p-4 flex-col sm:flex-row gap-4">
@@ -63,8 +65,6 @@ const mockThreats = [
 
 export default function CloakerPage() {
   const { toast } = useToast();
-  const [desktopRedirectEnabled, setDesktopRedirectEnabled] = React.useState(false);
-  const [mobileRedirectEnabled, setMobileRedirectEnabled] = React.useState(false);
   const [geoFilterEnabled, setGeoFilterEnabled] = React.useState(false);
   const [osFilterEnabled, setOsFilterEnabled] = React.useState(false);
   const [ipFilterEnabled, setIpFilterEnabled] = React.useState(false);
@@ -139,61 +139,59 @@ export default function CloakerPage() {
 
         <Card>
             <CardHeader>
-                <CardTitle className="font-headline">Redirecionamento por Dispositivo</CardTitle>
-                <CardDescription>
-                    Envie visitantes para URLs diferentes com base no dispositivo. Ative individualmente para Desktop ou Mobile.
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <CardTitle className="font-headline">Regras de Redirecionamento Avançado</CardTitle>
+                        <CardDescription>
+                           Crie regras complexas para redirecionar o tráfego com base em múltiplas condições.
+                        </CardDescription>
+                    </div>
+                    <Button>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Adicionar Regra
+                    </Button>
+                </div>
             </CardHeader>
             <CardContent className="space-y-4">
-                {/* Desktop Section */}
-                <div className="space-y-4 rounded-lg border p-4">
-                    <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                            <Label htmlFor="desktop-redirect-switch" className="text-base font-semibold">
-                                Redirecionamento para Desktop
-                            </Label>
-                        </div>
-                        <Switch
-                            id="desktop-redirect-switch"
-                            checked={desktopRedirectEnabled}
-                            onCheckedChange={setDesktopRedirectEnabled}
-                        />
-                    </div>
-                     {desktopRedirectEnabled && <div className="space-y-2 pt-4 border-t mt-4">
-                        <Label htmlFor="desktop-url">
-                            URL para Desktop
-                        </Label>
-                        <Input 
-                            id="desktop-url" 
-                            placeholder="https://seusite.com/pagina-desktop" 
-                        />
-                    </div>}
-                </div>
-                
-                {/* Mobile Section */}
-                <div className="space-y-4 rounded-lg border p-4">
-                    <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                            <Label htmlFor="mobile-redirect-switch" className="text-base font-semibold">
-                                Redirecionamento para Mobile
-                            </Label>
-                        </div>
-                        <Switch
-                            id="mobile-redirect-switch"
-                            checked={mobileRedirectEnabled}
-                            onCheckedChange={setMobileRedirectEnabled}
-                        />
-                    </div>
-                    {mobileRedirectEnabled && <div className="space-y-2 pt-4 border-t mt-4">
-                        <Label htmlFor="mobile-url">
-                            URL para Mobile
-                        </Label>
-                        <Input 
-                            id="mobile-url" 
-                            placeholder="https://seusite.com/pagina-mobile" 
-                        />
-                    </div>}
-                </div>
+                 <div className="rounded-lg border">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Condições</TableHead>
+                                <TableHead>URL de Redirecionamento</TableHead>
+                                <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell>
+                                    <div className="flex flex-wrap gap-1">
+                                        <Badge variant="secondary">País: Brasil</Badge>
+                                        <Badge variant="secondary">Dispositivo: Mobile</Badge>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="font-mono">/lp/oferta-br-mobile</TableCell>
+                                <TableCell className="text-right">
+                                    <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
+                                    <Button variant="ghost" size="icon"><Trash2 className="h-4 w-4" /></Button>
+                                </TableCell>
+                            </TableRow>
+                             <TableRow>
+                                <TableCell>
+                                    <div className="flex flex-wrap gap-1">
+                                        <Badge variant="secondary">País: Portugal</Badge>
+                                        <Badge variant="secondary">S.O.: Windows</Badge>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="font-mono">/lp/oferta-pt-desktop</TableCell>
+                                <TableCell className="text-right">
+                                    <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
+                                    <Button variant="ghost" size="icon"><Trash2 className="h-4 w-4" /></Button>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                 </div>
             </CardContent>
         </Card>
         
@@ -229,6 +227,11 @@ export default function CloakerPage() {
                         id="cloner-filter"
                         label="Filtro Anti-Clonagem"
                         description="Bloqueia User-Agents de ferramentas conhecidas de clonagem de sites como HTTrack, Wget e outras."
+                    />
+                    <CloakerOption
+                        id="fingerprint-filter"
+                        label="Detecção por Impressão Digital"
+                        description="Bloqueia o acesso com base em uma análise avançada do navegador (fontes, plugins, etc.) para identificar bots e emuladores."
                     />
                 </div>
                 

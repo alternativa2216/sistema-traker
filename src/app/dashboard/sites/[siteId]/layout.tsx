@@ -4,7 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { BarChart2, Filter, Bot, Shield, Facebook, Settings } from 'lucide-react';
+import { BarChart2, Filter, Bot, Shield, Facebook, Settings, ClipboardList } from 'lucide-react';
 
 const MOCK_SITE_DETAILS = {
     id: "site-1",
@@ -27,6 +27,7 @@ export default function SiteIdLayout({
     { href: '/funnel', label: 'Funil', icon: Filter },
     { href: '/ai-analysis', label: 'Análise IA', icon: Bot },
     { href: '/cloaker', label: 'Cloaker', icon: Shield },
+    { href: '/security-logs', label: 'Logs de Segurança', icon: ClipboardList },
     { href: '/facebook-ads', label: 'Facebook Ads', icon: Facebook },
     { href: '/settings', label: 'Configurações', icon: Settings },
   ];
@@ -44,7 +45,8 @@ export default function SiteIdLayout({
         <nav className="-mb-px flex space-x-6" aria-label="Tabs">
           {navItems.map((item) => {
             const fullPath = `${basePath}${item.href || ''}`;
-            const isActive = pathname === fullPath;
+            // Handle the case where the base path itself is the active path
+            const isActive = item.href === '' ? pathname === fullPath : pathname.startsWith(fullPath);
             return (
               <Link
                 key={item.label}
