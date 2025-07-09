@@ -31,6 +31,44 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 `;
 
+async function handleConnectionError(error: any, connection: any) {
+    if (connection) {
+        await connection.end();
+    }
+
+    if (error.code === 'ECONNREFUSED') {
+        throw new Error("A conexão com o banco de dados foi recusada. Verifique se o servidor de banco de dados está em execução e as credenciais em seu arquivo .env estão corretas (host, porta).");
+    }
+    if (error.code === 'ER_ACCESS_DENIED_ERROR') {
+         throw new Error("Acesso negado ao banco de dados. Verifique o usuário e a senha no seu arquivo .env.");
+    }
+     if (error.code === 'ER_BAD_DB_ERROR') {
+         throw new Error(`O banco de dados '${process.env.DB_NAME}' não foi encontrado. Por favor, crie-o ou verifique o nome no seu arquivo .env.`);
+    }
+
+    throw new Error(error.message || "Ocorreu um erro desconhecido durante a operação do banco de dados.");
+}
+
+export async function testDbConnectionAction() {
+    let connection;
+    try {
+        connection = await getDbConnection();
+        // A simple ping to check connection
+        await connection.ping();
+        await connection.end();
+        return {
+            success: true,
+            message: "Conexão com o banco de dados bem-sucedida!",
+        };
+    } catch (error: any) {
+        console.error("Falha no teste de conexão com o banco de dados:", error);
+        // This will throw a formatted error, which will be caught by the client
+        await handleConnectionError(error, connection);
+        // Fallback return (should not be reached if handleConnectionError throws)
+        return { success: false, message: error.message };
+    }
+}
+
 
 export async function installDatabaseAction() {
     let connection;
@@ -48,22 +86,8 @@ export async function installDatabaseAction() {
         };
     } catch (error: any) {
         console.error("Falha na instalação do banco de dados:", error);
-        
-        if (connection) {
-            await connection.end();
-        }
-
-        // Fornece mensagens de erro mais específicas
-        if (error.code === 'ECONNREFUSED') {
-            throw new Error("A conexão com o banco de dados foi recusada. Verifique se o servidor de banco de dados está em execução e as credenciais em seu arquivo .env estão corretas.");
-        }
-        if (error.code === 'ER_ACCESS_DENIED_ERROR') {
-             throw new Error("Acesso negado ao banco de dados. Verifique o usuário e a senha no seu arquivo .env.");
-        }
-         if (error.code === 'ER_BAD_DB_ERROR') {
-             throw new Error(`O banco de dados '${process.env.DB_NAME}' não foi encontrado. Por favor, crie-o ou verifique o nome no seu arquivo .env.`);
-        }
-
-        throw new Error(error.message || "Ocorreu um erro desconhecido durante a instalação.");
+        await handleConnectionError(error, connection);
+        // Fallback return (should not be reached if handleConnectionError throws)
+        return { success: false, message: error.message };
     }
 }
