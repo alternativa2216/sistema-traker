@@ -16,11 +16,12 @@ const CheckTransactionInputSchema = z.object({
   transactionId: z.string(),
 });
 
+// Tornando qrcode_image opcional para uma análise mais robusta
 const NovaEraTransactionResponseSchema = z.object({
     id: z.string(),
     pix: z.object({
       qrcode: z.string(),
-      qrcode_image: z.string(),
+      qrcode_image: z.string().optional(),
     }),
 });
 
@@ -85,21 +86,31 @@ export async function createPaymentTransaction(input: z.infer<typeof CreateTrans
         }
 
         const rawData = await response.json();
-        const transactionData = NovaEraTransactionResponseSchema.parse(rawData.data);
+        
+        // Usar safeParse para um tratamento de erros robusto, semelhante às verificações do exemplo PHP.
+        const validationResult = NovaEraTransactionResponseSchema.safeParse(rawData.data);
+
+        if (!validationResult.success) {
+            console.error('Falha na validação da resposta da Nova Era:', validationResult.error.flatten());
+            console.error('Resposta bruta recebida:', JSON.stringify(rawData, null, 2));
+            throw new Error('A resposta da API de pagamento está em um formato inesperado.');
+        }
+
+        const transactionData = validationResult.data;
 
         // Salvar a transação no banco de dados
-        const connection = await getDbConnection();
+        // const connection = await getDbConnection();
         // Em uma aplicação real, você deve ter uma tabela `transactions`
         // await connection.execute(
         //     'INSERT INTO transactions (transaction_id, user_cpf, user_name, user_email, amount, pix_code, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
         //     [transactionData.id, userCpf, userName, userEmail, amountInCents / 100, transactionData.pix.qrcode, 'pending']
         // );
-        await connection.end();
+        // await connection.end();
 
         return {
             transactionId: transactionData.id,
             pixCode: transactionData.pix.qrcode,
-            pixQrCodeImage: transactionData.pix.qrcode_image
+            pixQrCodeImage: transactionData.pix.qrcode_image || '' // Retornar string vazia se não estiver presente
         };
 
     } catch (error) {
