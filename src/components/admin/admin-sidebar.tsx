@@ -10,19 +10,35 @@ import {
 } from "@/components/ui/sidebar"
 import { Logo } from "@/components/shared/logo"
 import { usePathname } from 'next/navigation'
-import { CreditCard, FileEdit, Flag, Gauge, Globe, HardDrive, Shield, SlidersHorizontal, Users } from "lucide-react"
+import { CreditCard, FileEdit, Flag, Gauge, Globe, HardDrive, Shield, SlidersHorizontal, Users, ClipboardList } from "lucide-react"
 import Link from "next/link"
 
-const menuItems = [
-  { href: "/admin", label: "Painel", icon: Gauge },
-  { href: "/admin/users", label: "Usuários", icon: Users },
-  { href: "/admin/projects", label: "Sites", icon: Globe },
-  { href: "/admin/subscriptions", label: "Assinaturas", icon: CreditCard },
-  { href: "/admin/content-management", label: "Conteúdo", icon: FileEdit },
-  { href: "/admin/settings", label: "Configurações", icon: SlidersHorizontal },
-  { href: "/admin/feature-flags", label: "Feature Flags", icon: Flag },
-  { href: "/admin/health", label: "Saúde do Sistema", icon: HardDrive },
-  { href: "/admin/security", label: "Segurança", icon: Shield },
+const menuGroups = [
+  {
+    label: "Gestão Principal",
+    items: [
+      { href: "/admin", label: "Painel", icon: Gauge },
+      { href: "/admin/users", label: "Usuários", icon: Users },
+      { href: "/admin/projects", label: "Sites", icon: Globe },
+      { href: "/admin/subscriptions", label: "Assinaturas", icon: CreditCard },
+    ]
+  },
+  {
+    label: "Configuração",
+    items: [
+      { href: "/admin/content-management", label: "Conteúdo", icon: FileEdit },
+      { href: "/admin/settings", label: "Configurações", icon: SlidersHorizontal },
+      { href: "/admin/feature-flags", label: "Feature Flags", icon: Flag },
+      { href: "/admin/security", label: "Segurança", icon: Shield },
+    ]
+  },
+  {
+    label: "Sistema",
+    items: [
+      { href: "/admin/health", label: "Saúde do Sistema", icon: HardDrive },
+      { href: "/admin/logs", label: "Logs", icon: ClipboardList },
+    ]
+  }
 ];
 
 export function AdminSidebar() {
@@ -33,23 +49,32 @@ export function AdminSidebar() {
       <SidebarHeader>
         <Logo href="/admin" />
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarMenu>
-          {menuItems.map(({ href, label, icon: Icon }) => (
-            <SidebarMenuItem key={href}>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname.startsWith(href) && (href !== "/admin" || pathname === "/admin")}
-                tooltip={{ children: label }}
-              >
-                <Link href={href}>
-                  <Icon />
-                  <span>{label}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+      <SidebarContent className="p-4">
+        <div className="space-y-4">
+          {menuGroups.map((group) => (
+            <div key={group.label}>
+              <h4 className="mb-2 px-2 text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+                {group.label}
+              </h4>
+              <SidebarMenu>
+                {group.items.map(({ href, label, icon: Icon }) => (
+                  <SidebarMenuItem key={href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={href === '/admin' ? pathname === href : pathname.startsWith(href)}
+                      tooltip={{ children: label }}
+                    >
+                      <Link href={href}>
+                        <Icon />
+                        <span>{label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </div>
           ))}
-        </SidebarMenu>
+        </div>
       </SidebarContent>
     </Sidebar>
   )
