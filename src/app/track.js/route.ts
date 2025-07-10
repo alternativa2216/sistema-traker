@@ -65,7 +65,7 @@ export async function GET() {
 
   return new NextResponse(script, {
     headers: {
-      'Content-Type': 'application/javascript',
+      'Content-Type': 'application/javascript; charset=utf-8',
       'Access-Control-Allow-Origin': '*',
       'Cache-Control': 'public, max-age=3600', // Cache por 1 hora
     },
