@@ -166,7 +166,7 @@ export default async function Home() {
       <main className="flex-1">
         <section className="container mx-auto px-4 lg:px-6 pt-16 pb-20 md:pt-24 md:pb-28 text-center flex flex-col items-center">
           <h1 className="text-4xl md:text-6xl font-bold font-headline tracking-tighter mb-4">
-            Analytics que <span className="text-primary">Transforma Dados</span> em <span className="text-primary">Decisões de Alto Impacto</span>
+            {content.homeHeadline}
           </h1>
           <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8">
             {content.homeSubheadline}
