@@ -1,35 +1,38 @@
 'use server';
+import 'server-only';
 
 import {
   generateSwotAnalysis,
-  type GenerateSwotAnalysisInput,
-  type GenerateSwotAnalysisOutput,
 } from '@/ai/flows/generate-swot-analysis';
 import {
   analyzeProjectData,
-  type AnalyzeProjectDataInput,
-  type AnalyzeProjectDataOutput,
 } from '@/ai/flows/analyze-project-data';
 import {
   generateAdCopy,
-  type GenerateAdCopyInput,
-  type GenerateAdCopyOutput,
 } from '@/ai/flows/generate-ad-copy';
 import {
   suggestAdAudience,
-  type SuggestAdAudienceInput,
-  type SuggestAdAudienceOutput,
 } from '@/ai/flows/suggest-ad-audience';
 import {
   analyzeAdCreative,
-  type AnalyzeAdCreativeInput,
-  type AnalyzeAdCreativeOutput,
 } from '@/ai/flows/analyze-ad-creative';
 import {
   generateAbTestHypothesis,
-  type GenerateAbTestHypothesisInput,
-  type GenerateAbTestHypothesisOutput,
 } from '@/ai/flows/generate-ab-test-hypothesis';
+import type { 
+    GenerateSwotAnalysisInput, 
+    GenerateSwotAnalysisOutput,
+    AnalyzeProjectDataInput,
+    AnalyzeProjectDataOutput,
+    GenerateAdCopyInput,
+    GenerateAdCopyOutput,
+    SuggestAdAudienceInput,
+    SuggestAdAudienceOutput,
+    AnalyzeAdCreativeInput,
+    AnalyzeAdCreativeOutput,
+    GenerateAbTestHypothesisInput,
+    GenerateAbTestHypothesisOutput
+} from '@/ai/schemas';
 
 // Função auxiliar para garantir que a chave da API esteja configurada antes de executar um fluxo.
 // Isso fornece uma mensagem de erro clara para o usuário final.
