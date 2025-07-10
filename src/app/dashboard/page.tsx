@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState, useEffect } from "react";
@@ -22,7 +23,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { addProjectAction, getProjectsAction, getNotificationsForUserAction } from "../actions/projects";
+import { addProjectAction, getProjectsAction } from "../actions/projects";
+import { getNotificationsForUserAction } from "../actions/notifications";
 import { cn } from "@/lib/utils";
 
 
@@ -71,14 +73,17 @@ const UserAlert = ({ alert }: { alert: any }) => {
     )
 }
 
+interface PageData { path: string; visits: string }
+interface TrafficSource { source: string; visits: string }
+
 const emptyData = {
     totalVisits: "0",
     newUsers: "0",
     conversionRate: "0%",
     avgBounceRate: "0%",
-    topVisitedPages: [],
-    topExitPages: [],
-    trafficSources: []
+    topVisitedPages: [] as PageData[],
+    topExitPages: [] as PageData[],
+    trafficSources: [] as TrafficSource[]
 };
 
 export default function DashboardPage() {
@@ -419,3 +424,5 @@ export default function DashboardPage() {
         </div>
     );
 }
+
+    
