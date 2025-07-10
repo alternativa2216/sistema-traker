@@ -10,7 +10,6 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from "@/components/ui/chart"
-import { cn } from "@/lib/utils";
 
 const chartConfig = {
   'Google': { label: 'Google', color: 'hsl(var(--chart-1))' },
