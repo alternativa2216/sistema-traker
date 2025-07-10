@@ -101,19 +101,30 @@ O Nginx direcionará o tráfego público (porta 80 e 443) para a porta onde sua 
     sudo nano /etc/nginx/sites-available/seudominio.com
     ```
 
-2.  **Cole a seguinte configuração, substituindo `seudominio.com`:**
+2.  **Cole a seguinte configuração, substituindo `seudominio.com` e `/caminho/para/seu/projeto`:**
+    O caminho do projeto geralmente é algo como `/home/seu_usuario/nome_do_projeto`.
     ```nginx
     server {
         listen 80;
         server_name seudominio.com www.seudominio.com;
 
+        # O Nginx servirá diretamente os arquivos estáticos para melhor desempenho.
+        location /_next/static {
+            alias /caminho/para/seu/projeto/.next/static;
+            expires 365d;
+            access_log off;
+        }
+
         location / {
-            proxy_pass http://localhost:9002;
+            proxy_pass http://127.0.0.1:9002;
             proxy_http_version 1.1;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection 'upgrade';
             proxy_set_header Host $host;
             proxy_cache_bypass $http_upgrade;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
         }
     }
     ```
