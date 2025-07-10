@@ -88,9 +88,12 @@ export async function getAdminDashboardStatsAction() {
     try {
         connection = await getDbConnection();
         
-        const [[{ totalUsers }]] = await connection.execute('SELECT COUNT(*) as totalUsers FROM users');
-        const [[{ totalProjects }]] = await connection.execute('SELECT COUNT(*) as totalProjects FROM projects');
-        
+        const [totalUsersRows] = await connection.execute('SELECT COUNT(*) as totalUsers FROM users');
+        const totalUsers = (totalUsersRows as any[])[0].totalUsers;
+
+        const [totalProjectsRows] = await connection.execute('SELECT COUNT(*) as totalProjects FROM projects');
+        const totalProjects = (totalProjectsRows as any[])[0].totalProjects;
+
         const [recentUsers] = await connection.execute('SELECT name, email, created_at FROM users ORDER BY created_at DESC LIMIT 5');
         const [recentProjects] = await connection.execute(`
             SELECT p.name, u.name as user_name, p.created_at 
