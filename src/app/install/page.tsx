@@ -11,6 +11,9 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+// Força a execução no runtime do Node.js para permitir o uso de APIs como 'path' e 'fs'.
+export const runtime = 'nodejs';
+
 export default function InstallPage() {
     // Form state
     const [host, setHost] = React.useState('localhost');

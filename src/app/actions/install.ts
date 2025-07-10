@@ -1,9 +1,6 @@
 
 'use server';
 
-// Força a execução no runtime do Node.js para permitir o uso de APIs como 'path' e 'fs'.
-export const runtime = 'nodejs';
-
 import { getDbConnection, type DbCredentials } from "@/lib/db";
 import { z } from "zod";
 import { promises as fs } from 'fs';
