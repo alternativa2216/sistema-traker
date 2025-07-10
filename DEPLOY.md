@@ -9,20 +9,16 @@ Antes de começar, certifique-se de que sua VPS tenha:
 2.  **Node.js** (versão 18 ou superior).
 3.  **Nginx** (ou outro servidor web para atuar como reverse proxy).
 4.  Um **domínio** apontado para o IP da sua VPS.
+5.  Seu código já enviado para um **repositório Git** (GitHub, GitLab, etc.).
 
-## Passo 1: Preparar o Código
-
-1.  **Git Repository:** Envie todo o código do seu projeto para um repositório Git (como GitHub, GitLab ou Bitbucket).
-2.  **Arquivo `.env`:** O arquivo `.env` contém suas chaves secretas e credenciais de banco de dados. **NÃO** envie este arquivo para o seu repositório Git. Você o criará manualmente no servidor.
-
-## Passo 2: Configurar o Servidor
+## Passo 1: Preparar o Servidor
 
 1.  **Conecte-se à sua VPS:**
     ```bash
     ssh seu_usuario@ip_da_vps
     ```
 
-2.  **Clone o seu projeto:**
+2.  **Clone o seu projeto do Git:**
     ```bash
     git clone https://seu_repositorio_git.com/projeto.git
     ```
@@ -32,7 +28,7 @@ Antes de começar, certifique-se de que sua VPS tenha:
     cd nome_do_projeto
     ```
 
-## Passo 3: Instalar Dependências e Construir o Projeto
+## Passo 2: Instalar Dependências e Construir o Projeto
 
 1.  **Instale as dependências:**
     ```bash
@@ -61,7 +57,7 @@ Antes de começar, certifique-se de que sua VPS tenha:
     ```
     Isso criará uma pasta `.next` otimizada para produção.
 
-## Passo 4: Executar a Aplicação com PM2
+## Passo 3: Executar a Aplicação com PM2
 
 PM2 é um gerenciador de processos que manterá sua aplicação rodando em segundo plano e a reiniciará automaticamente em caso de falhas ou reinicialização do servidor.
 
@@ -96,7 +92,7 @@ PM2 é um gerenciador de processos que manterá sua aplicação rodando em segun
 
 Sua aplicação agora está rodando na porta 9002, mas só está acessível internamente.
 
-## Passo 5: Configurar Nginx como Reverse Proxy
+## Passo 4: Configurar Nginx como Reverse Proxy
 
 O Nginx direcionará o tráfego público (porta 80 e 443) para a porta onde sua aplicação Next.js está rodando (9002).
 
@@ -139,7 +135,7 @@ O Nginx direcionará o tráfego público (porta 80 e 443) para a porta onde sua 
     sudo systemctl restart nginx
     ```
 
-## Passo 6: Habilitar SSL (HTTPS) - Recomendado
+## Passo 5: Habilitar SSL (HTTPS) - Recomendado
 
 Use o Certbot para obter um certificado SSL gratuito da Let's Encrypt.
 
@@ -155,7 +151,7 @@ Use o Certbot para obter um certificado SSL gratuito da Let's Encrypt.
     ```
     Siga as instruções na tela. O Certbot irá atualizar sua configuração do Nginx automaticamente e configurar a renovação.
 
-## Passo 7: Configuração Final da Aplicação
+## Passo 6: Configuração Final da Aplicação
 
 1.  **Acesse seu domínio** em um navegador: `https://seudominio.com`.
 2.  Navegue até `https://seudominio.com/install` para **instalar as tabelas** no seu banco de dados de produção.
