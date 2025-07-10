@@ -19,7 +19,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from 'next/navigation'
 import { clearSessionCookie, type MockUser } from "@/app/actions/auth"
 import { cn } from "@/lib/utils"
-import { getNotificationsForUserAction } from "@/app/actions/user"
+import { getNotificationsForUserAction } from "@/app/actions/projects"
 import { useToast } from "@/hooks/use-toast"
 
 const alertConfig = {
