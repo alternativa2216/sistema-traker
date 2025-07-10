@@ -4,8 +4,9 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar"
 import { AdminSidebar } from '@/components/admin/admin-sidebar'
-import { DashboardHeader } from '@/components/dashboard/dashboard-header' // Re-using header for consistency
+import { DashboardHeader } from '@/components/dashboard/dashboard-header' 
 import { getCurrentUser } from '../actions/auth'
+import { redirect } from 'next/navigation'
 
 export default async function AdminLayout({
   children,
@@ -14,8 +15,10 @@ export default async function AdminLayout({
 }) {
   const user = await getCurrentUser();
 
-  // Add logic here to check if user is an admin
-  // if (user.role !== 'admin') { redirect('/dashboard') }
+  // Middleware should handle this, but an extra layer of protection is good.
+  if (!user || user.role !== 'admin') {
+    redirect('/login');
+  }
 
   return (
     <SidebarProvider>

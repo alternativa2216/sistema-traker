@@ -6,7 +6,8 @@ import { getCurrentUser } from '@/app/actions/auth'
 export const runtime = 'nodejs';
 
 const PROTECTED_ROUTES = ['/dashboard', '/admin'];
-const PUBLIC_ONLY_ROUTES = ['/login', '/register', '/forgot-password'];
+const PUBLIC_ONLY_ROUTES = ['/login', '/register', '/forgot-password', '/install'];
+const ADMIN_ROUTES = ['/admin'];
 
 export async function middleware(request: NextRequest) {
   const currentUser = await getCurrentUser();
@@ -14,16 +15,29 @@ export async function middleware(request: NextRequest) {
 
   const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
   const isPublicOnlyRoute = PUBLIC_ONLY_ROUTES.some(route => pathname.startsWith(route));
+  const isAdminRoute = ADMIN_ROUTES.some(route => pathname.startsWith(route));
+
+  // Allow access to /install page regardless of auth status
+  if (pathname.startsWith('/install')) {
+    return NextResponse.next();
+  }
 
   // If trying to access a protected route without being logged in, redirect to login
   if (isProtectedRoute && !currentUser) {
     const absoluteURL = new URL('/login', request.nextUrl.origin);
     return NextResponse.redirect(absoluteURL.toString());
   }
+  
+  // If trying to access an admin route without being an admin, redirect to dashboard
+  if (isAdminRoute && currentUser?.role !== 'admin') {
+     const absoluteURL = new URL('/dashboard', request.nextUrl.origin);
+    return NextResponse.redirect(absoluteURL.toString());
+  }
 
-  // If logged in, redirect from public-only routes to the dashboard
+  // If logged in, redirect from public-only routes to the appropriate dashboard
   if (isPublicOnlyRoute && currentUser) {
-    const absoluteURL = new URL('/dashboard', request.nextUrl.origin);
+    const targetDashboard = currentUser.role === 'admin' ? '/admin' : '/dashboard';
+    const absoluteURL = new URL(targetDashboard, request.nextUrl.origin);
     return NextResponse.redirect(absoluteURL.toString());
   }
   

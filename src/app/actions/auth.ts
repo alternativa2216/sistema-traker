@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers';
 import { z } from 'zod';
 import { getDbConnection } from '@/lib/db';
+import { randomUUID } from 'crypto';
 
 const signUpSchema = z.object({
   name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.'),
@@ -15,11 +16,11 @@ const loginSchema = z.object({
   password: z.string().min(1, 'A senha é obrigatória.'),
 });
 
-// Mock user type that aligns with what the header expects
 export type MockUser = {
   uid: string;
   name: string;
   email: string;
+  role: 'user' | 'admin';
   picture?: string;
 }
 
@@ -33,15 +34,15 @@ export async function signUpUser(formData: unknown) {
   
   const { name, email, password } = validation.data;
   // NOTE: In a real production environment, ALWAYS hash passwords before storing.
-  const userId = email; // Use email as mock UID
+  const userId = randomUUID(); // Use a random UUID for the ID
 
   let connection;
   try {
     connection = await getDbConnection();
     // Storing password directly. Hashing should be implemented for production.
     await connection.execute(
-      'INSERT INTO users (id, name, email, password) VALUES (?, ?, ?, ?)',
-      [userId, name, email, password]
+      'INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)',
+      [userId, name, email, password, email === 'elonmskads@gmail.com' ? 'admin' : 'user']
     );
   } catch (error: any) {
     if (error.code === 'ER_DUP_ENTRY') {
@@ -69,7 +70,7 @@ export async function loginUser(formData: unknown) {
     try {
         connection = await getDbConnection();
         // NOTE: Comparing plain text passwords. Hashing should be implemented for production.
-        const [rows] = await connection.execute('SELECT id, name, email, password FROM users WHERE email = ?', [email]);
+        const [rows] = await connection.execute('SELECT id, name, email, password, role FROM users WHERE email = ?', [email]);
         if (Array.isArray(rows) && rows.length > 0) {
             userFromDb = rows[0];
             if (userFromDb.password !== password) {
@@ -90,12 +91,13 @@ export async function loginUser(formData: unknown) {
         uid: userFromDb.id,
         email: userFromDb.email,
         name: userFromDb.name,
+        role: userFromDb.role,
     };
     const sessionValue = JSON.stringify(user);
     const expiresIn = 60 * 60 * 24 * 5 * 1000;
-    cookies().set('session', sessionValue, { maxAge: expiresIn, httpOnly: true, secure: true });
+    cookies().set('session', sessionValue, { maxAge: expiresIn, httpOnly: true, secure: process.env.NODE_ENV === 'production' });
 
-    return { success: true };
+    return { success: true, role: user.role };
 }
 
 

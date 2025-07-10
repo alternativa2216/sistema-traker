@@ -36,8 +36,14 @@ export default function LoginPage() {
     setIsLoading(true);
     
     try {
-      await loginUser(values);
-      router.push('/dashboard');
+      const result = await loginUser(values);
+      if (result.success) {
+          if (result.role === 'admin') {
+              router.push('/admin');
+          } else {
+              router.push('/dashboard');
+          }
+      }
     } catch (error: any) {
        toast({
         title: 'Erro de Login',
