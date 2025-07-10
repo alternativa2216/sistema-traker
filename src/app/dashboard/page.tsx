@@ -62,9 +62,9 @@ const UserAlert = ({ alert }: { alert: any }) => {
                    </AlertDescription>
                  </div>
               </div>
-              {alert.cta && (
+              {alert.cta && alert.cta.href && (
                  <Button asChild>
-                    <Link href={alert.cta.href}>{alert.cta.text}</Link>
+                    <Link href={alert.cta.href}>{alert.cta.text || 'Clique aqui'}</Link>
                  </Button>
               )}
            </div>
@@ -423,5 +423,3 @@ export default function DashboardPage() {
         </div>
     );
 }
-
-    
