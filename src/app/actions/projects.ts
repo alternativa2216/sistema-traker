@@ -1,4 +1,5 @@
 'use server';
+import 'server-only';
 
 import { getDbConnection } from '@/lib/db';
 import { getCurrentUser } from './auth';

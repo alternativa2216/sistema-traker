@@ -1,4 +1,5 @@
 'use server';
+import 'server-only';
 
 // A funcionalidade de faturamento está sendo reativada.
 // No futuro, aqui ficarão as funções para criar assinaturas,

@@ -1,8 +1,19 @@
 'use server';
+import 'server-only';
 
 import { getDbConnection } from '@/lib/db';
 import { z } from 'zod';
-import { verifyAdmin } from './admin';
+import { getCurrentUser } from './auth';
+
+async function verifyAdmin() {
+    const user = await getCurrentUser();
+    if (!user) {
+        throw new Error('Usuário não autenticado.');
+    }
+    // Em um app real, você checaria a role do usuário no banco.
+    // if (user.role !== 'admin') throw new Error('Acesso negado.');
+    return user;
+}
 
 // Helper function to get multiple settings at once
 export async function getSettingsAction(keys: string[]) {

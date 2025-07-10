@@ -1,4 +1,5 @@
 'use server';
+import 'server-only';
 
 import { getDbConnection } from '@/lib/db';
 import { z } from 'zod';
@@ -10,7 +11,6 @@ async function verifyAdmin() {
         throw new Error('Usuário não autenticado.');
     }
     // Em um app real, você checaria a role do usuário no banco.
-    // Por enquanto, vamos assumir que se ele chegar aqui, é admin.
     // if (user.role !== 'admin') throw new Error('Acesso negado.');
     return user;
 }
@@ -105,7 +105,7 @@ export async function getAdminDashboardStatsAction() {
         const activeSubscribers = 0;
         const newTrials = 0;
         const churnRate = 0;
-        const topProjects = [];
+        const topProjects: any[] = [];
         const avgVisits = 0;
 
         return {
