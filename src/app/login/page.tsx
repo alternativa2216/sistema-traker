@@ -37,12 +37,19 @@ export default function LoginPage() {
     
     try {
       const result = await loginUser(values);
-      if (result.success) {
+      if (result?.success) {
           if (result.role === 'admin') {
               router.push('/admin');
           } else {
               router.push('/dashboard');
           }
+      } else {
+        // Handle cases where login might fail without throwing an error
+        toast({
+          title: 'Erro de Login',
+          description: 'Não foi possível fazer o login. Por favor, verifique suas credenciais.',
+          variant: 'destructive',
+        });
       }
     } catch (error: any) {
        toast({

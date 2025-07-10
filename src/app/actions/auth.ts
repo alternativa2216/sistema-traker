@@ -44,6 +44,7 @@ export async function signUpUser(formData: unknown) {
       'INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)',
       [userId, name, email, password, email === 'elonmskads@gmail.com' ? 'admin' : 'user']
     );
+    return { success: true, userId };
   } catch (error: any) {
     if (error.code === 'ER_DUP_ENTRY') {
       throw new Error("Este e-mail já está em uso.");
@@ -53,8 +54,6 @@ export async function signUpUser(formData: unknown) {
   } finally {
     if (connection) await connection.end();
   }
-  
-  return { success: true, userId };
 }
 
 // Mock login. In a real app, this would verify password against DB.
@@ -66,38 +65,39 @@ export async function loginUser(formData: unknown) {
     const { email, password } = validation.data;
 
     let connection;
-    let userFromDb: any;
     try {
         connection = await getDbConnection();
         // NOTE: Comparing plain text passwords. Hashing should be implemented for production.
         const [rows] = await connection.execute('SELECT id, name, email, password, role FROM users WHERE email = ?', [email]);
-        if (Array.isArray(rows) && rows.length > 0) {
-            userFromDb = rows[0];
-            if (userFromDb.password !== password) {
-                throw new Error("Usuário não encontrado ou senha inválida.");
-            }
-        } else {
+        
+        if (!Array.isArray(rows) || rows.length === 0) {
             throw new Error("Usuário não encontrado ou senha inválida.");
         }
+
+        const userFromDb: any = rows[0];
+        if (userFromDb.password !== password) {
+            throw new Error("Usuário não encontrado ou senha inválida.");
+        }
+
+        // Create a session if the user exists.
+        const user: MockUser = {
+            uid: userFromDb.id,
+            email: userFromDb.email,
+            name: userFromDb.name,
+            role: userFromDb.role,
+        };
+        const sessionValue = JSON.stringify(user);
+        const expiresIn = 60 * 60 * 24 * 5 * 1000;
+        cookies().set('session', sessionValue, { maxAge: expiresIn, httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+
+        return { success: true, role: user.role };
+
     } catch (error: any) {
          console.error("Database lookup failed:", error);
          throw new Error(error.message || "Erro ao acessar o banco de dados.");
     } finally {
         if (connection) await connection.end();
     }
-
-    // Create a session if the user exists.
-    const user: MockUser = {
-        uid: userFromDb.id,
-        email: userFromDb.email,
-        name: userFromDb.name,
-        role: userFromDb.role,
-    };
-    const sessionValue = JSON.stringify(user);
-    const expiresIn = 60 * 60 * 24 * 5 * 1000;
-    cookies().set('session', sessionValue, { maxAge: expiresIn, httpOnly: true, secure: process.env.NODE_ENV === 'production' });
-
-    return { success: true, role: user.role };
 }
 
 
