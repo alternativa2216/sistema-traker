@@ -23,8 +23,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { addProjectAction, getProjectsAction } from "../actions/projects";
-import { getNotificationsForUserAction } from "../actions/notifications";
+import { addProjectAction, getProjectsAction, getNotificationsForUserAction } from "../actions/projects";
 import { cn } from "@/lib/utils";
 
 
