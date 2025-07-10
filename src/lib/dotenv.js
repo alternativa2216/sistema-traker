@@ -1,7 +1,2 @@
-'use server';
-import 'server-only';
-import dotenv from 'dotenv';
-import path from 'path';
-
-// Carrega as variáveis do arquivo .env na raiz do projeto
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+// This file is no longer needed and can be deleted.
+// The logic has been moved to src/middleware.ts.

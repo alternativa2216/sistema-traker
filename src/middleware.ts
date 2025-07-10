@@ -1,29 +1,26 @@
 'use server';
 import 'server-only';
-import '@/lib/dotenv'; // Carrega as variáveis de ambiente PRIMEIRO
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/app/actions/auth'
-
-// Opt-in to the Node.js runtime.
-export const runtime = 'nodejs';
 
 const PROTECTED_ROUTES = ['/dashboard', '/admin'];
 const PUBLIC_ONLY_ROUTES = ['/login', '/register', '/forgot-password'];
 const ADMIN_ROUTES = ['/admin'];
 
 export async function middleware(request: NextRequest) {
-  const currentUser = await getCurrentUser();
   const { pathname } = request.nextUrl;
-
-  const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
-  const isPublicOnlyRoute = PUBLIC_ONLY_ROUTES.some(route => pathname.startsWith(route));
-  const isAdminRoute = ADMIN_ROUTES.some(route => pathname.startsWith(route));
+  
+  const isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+  const isAdminRoute = ADMIN_ROUTES.some((route) => pathname.startsWith(route));
+  const isPublicOnlyRoute = PUBLIC_ONLY_ROUTES.some((route) => pathname.startsWith(route));
 
   // Allow access to /install page regardless of auth status
   if (pathname.startsWith('/install')) {
     return NextResponse.next();
   }
+
+  const currentUser = await getCurrentUser();
 
   // If trying to access a protected route without being logged in, redirect to login
   if (isProtectedRoute && !currentUser) {

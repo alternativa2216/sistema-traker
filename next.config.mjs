@@ -1,20 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // a configuração de output "standalone" é desnecessária e pode causar problemas
-    // com a forma como o PM2 e o Nginx servem a aplicação.
-    // output: 'standalone', 
-    images: {
-        remotePatterns: [
-            {
-                protocol: 'https',
-                hostname: 'placehold.co',
-            },
-            {
-                protocol: 'https',
-                hostname: 'i.postimg.cc',
-            }
-        ],
-    },
+    // A configuração do dotenv foi removida daqui para simplificar.
+    // O carregamento do .env agora é tratado implicitamente pelo Next.js ou
+    // em ambientes de produção através das variáveis de ambiente do servidor.
 };
 
 export default nextConfig;
