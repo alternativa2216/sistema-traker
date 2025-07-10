@@ -27,7 +27,14 @@ export async function POST(request: NextRequest) {
 
         // Validação básica dos dados recebidos
         if (!projectId || !path) {
-            return NextResponse.json({ message: 'projectId e path são obrigatórios' }, { status: 400 });
+            return NextResponse.json({ message: 'projectId e path são obrigatórios' }, { 
+                status: 400,
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type',
+                }
+            });
         }
 
         const deviceType = getDeviceType(userAgent || '');
@@ -59,14 +66,28 @@ export async function POST(request: NextRequest) {
         
         await connection.end();
 
-        return NextResponse.json({ success: true }, { status: 200 });
+        return NextResponse.json({ success: true }, { 
+            status: 200,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type',
+            }
+        });
 
     } catch (error: any) {
         console.error('Erro na API de rastreamento:', error);
         if (connection) {
             await connection.end();
         }
-        return NextResponse.json({ message: 'Erro interno do servidor', error: error.message }, { status: 500 });
+        return NextResponse.json({ message: 'Erro interno do servidor', error: error.message }, { 
+            status: 500,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type',
+            }
+        });
     }
 }
 
@@ -77,6 +98,6 @@ export async function OPTIONS() {
     });
     response.headers.set('Access-Control-Allow-Origin', '*');
     response.headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    response.headers.set('Access-control-allow-headers', 'Content-Type');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
     return response;
 }

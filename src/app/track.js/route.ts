@@ -31,16 +31,15 @@ export async function GET() {
       // O deviceType e countryCode serão determinados no backend
     };
     
-    // Envia os dados para a API de rastreamento
-    // Usamos fetch com keepalive em vez de sendBeacon para garantir que o corpo seja JSON
-    fetch('/api/track', {
+    // Envia os dados para a API de rastreamento usando a URL absoluta
+    fetch('https://tracklytics.pro/api/track', {
       method: 'POST',
       body: JSON.stringify(data),
       headers: {
         'Content-Type': 'application/json'
       },
       keepalive: true
-    });
+    }).catch(err => console.error('Tracklytics Error:', err));
   }
   
   // Rastreia a primeira visualização de página
