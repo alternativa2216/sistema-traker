@@ -1,3 +1,6 @@
+'use server';
+import 'server-only';
+import '@/lib/dotenv'; // Carrega as variáveis de ambiente PRIMEIRO
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/app/actions/auth'
