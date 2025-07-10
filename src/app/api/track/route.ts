@@ -1,3 +1,4 @@
+
 // /src/app/api/track/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import { getDbConnection } from '@/lib/db';
@@ -71,12 +72,11 @@ export async function POST(request: NextRequest) {
 
 // Handler para preflight (CORS) se o script for hospedado em um domínio diferente da API
 export async function OPTIONS() {
-    return new NextResponse(null, {
-        status: 204,
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-        },
+    const response = new NextResponse(null, {
+        status: 204
     });
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    response.headers.set('Access-control-allow-headers', 'Content-Type');
+    return response;
 }

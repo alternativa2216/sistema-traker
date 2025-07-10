@@ -1,3 +1,4 @@
+
 // /src/app/track.js/route.ts
 import { NextResponse } from 'next/server';
 
@@ -10,7 +11,10 @@ export async function GET() {
   
   function track() {
     // Extrai o ID do projeto do atributo 'src' do script
-    var scriptSrc = document.currentScript.src;
+    var scriptElement = document.currentScript;
+    if (!scriptElement) return;
+
+    var scriptSrc = scriptElement.src;
     var urlParams = new URLSearchParams(new URL(scriptSrc).search);
     var projectId = urlParams.get('id');
     
@@ -21,14 +25,22 @@ export async function GET() {
 
     var data = {
       projectId: projectId,
-      path: window.location.pathname,
+      path: window.location.pathname + window.location.search,
       referrer: document.referrer,
       userAgent: navigator.userAgent,
       // O deviceType e countryCode serão determinados no backend
     };
     
     // Envia os dados para a API de rastreamento
-    navigator.sendBeacon('/api/track', JSON.stringify(data));
+    // Usamos fetch com keepalive em vez de sendBeacon para garantir que o corpo seja JSON
+    fetch('/api/track', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      keepalive: true
+    });
   }
   
   // Rastreia a primeira visualização de página
@@ -54,6 +66,7 @@ export async function GET() {
   return new NextResponse(script, {
     headers: {
       'Content-Type': 'application/javascript',
+      'Access-Control-Allow-Origin': '*',
       'Cache-Control': 'public, max-age=3600', // Cache por 1 hora
     },
   });
