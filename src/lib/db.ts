@@ -12,22 +12,16 @@ export interface DbCredentials {
 
 // Em um cenário de alto tráfego, esta função deve ser memoizada ou o objeto de conexão deve ser colocado em cache.
 export async function getDbConnection(credentials?: DbCredentials) {
-    const config = (credentials && credentials.host) ? {
-        host: credentials.host,
-        user: credentials.user,
-        password: credentials.password,
-        database: credentials.database,
-        port: credentials.port ? Number(credentials.port) : 3306,
-    } : {
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
-        port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
+    const config = {
+        host: credentials?.host || process.env.DB_HOST,
+        user: credentials?.user || process.env.DB_USER,
+        password: credentials?.password || process.env.DB_PASSWORD,
+        database: credentials?.database || process.env.DB_NAME,
+        port: credentials?.port ? Number(credentials.port) : (process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306),
     };
 
-    if (!config.host) {
-        throw new Error("O host do banco de dados não está configurado. Por favor, configure-o no seu arquivo .env ou forneça-o na página de instalação.");
+    if (!config.host || !config.user || !config.database) {
+        throw new Error("As credenciais do banco de dados (Host, User, Database) não estão configuradas. Por favor, configure-as no seu arquivo .env ou na página de instalação.");
     }
     
     try {
