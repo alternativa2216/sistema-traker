@@ -1,13 +1,16 @@
-import { BarChart3 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export function Logo({ href = "/" }: { href?: string }) {
   return (
     <Link href={href} className="flex items-center gap-2" aria-label="Back to homepage">
-      <BarChart3 className="h-7 w-7 text-primary" />
-      <span className="text-xl font-bold font-headline text-foreground">
-        Tracklytics
-      </span>
+      <Image
+        src="https://i.postimg.cc/7ZygPH9q/logo.png"
+        alt="Tracklytics Logo"
+        width={140}
+        height={40}
+        priority
+      />
     </Link>
   );
 }
