@@ -184,7 +184,7 @@ export default function DashboardPage() {
     }, [isAddSiteDialogOpen]);
 
 
-    const TopPagesCard = ({ title, data, icon, unit }: { title: string, data: { path: string, [key: string]: string }[], icon: React.ElementType, unit: string }) => {
+    const TopPagesCard = ({ title, data, icon, unit }: { title: string, data: { path: string, visits: string }[], icon: React.ElementType, unit: string }) => {
         const Icon = icon;
         return (
             <Card>
@@ -206,7 +206,7 @@ export default function DashboardPage() {
                             {data.length > 0 ? data.map((item) => (
                                 <TableRow key={item.path}>
                                     <TableCell className="font-medium">{item.path}</TableCell>
-                                    <TableCell className="text-right">{item[Object.keys(item)[1]]}</TableCell>
+                                    <TableCell className="text-right">{item.visits}</TableCell>
                                 </TableRow>
                             )) : (
                                 <TableRow>
