@@ -126,7 +126,7 @@ export default async function Home() {
   try {
     settings = await getSettingsAction(contentKeys);
   } catch (e) {
-      console.error("Database not ready, using default content for home page.");
+      // No-op. The page will render with default content if the database is not ready.
   }
   
   const content = { ...defaultContent, ...settings };
