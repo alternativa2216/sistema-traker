@@ -79,11 +79,12 @@ export async function loginUser(formData: unknown) {
         // NOTE: Comparing plain text passwords. Hashing should be implemented for production.
         const [rows] = await connection.execute('SELECT id, name, email, password, role FROM users WHERE email = ?', [email]);
         
-        if (!Array.isArray(rows) || rows.length === 0) {
+        const users = rows as any[];
+        if (users.length === 0) {
             throw new Error("Usuário não encontrado ou senha inválida.");
         }
 
-        const userFromDb: any = rows[0];
+        const userFromDb: any = users[0];
         if (userFromDb.password !== password) {
             throw new Error("Usuário não encontrado ou senha inválida.");
         }

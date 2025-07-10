@@ -159,13 +159,14 @@ export async function sendNotificationAction(data: unknown) {
                 );
             }
         } else if (target === 'specific' && specificUser) {
-            const [[user]] = await connection.execute('SELECT id FROM users WHERE email = ?', [specificUser]);
+            const [rows] = await connection.execute('SELECT id FROM users WHERE email = ?', [specificUser]);
+            const user = (rows as any[])[0];
             if (!user) {
                 throw new Error("Usuário específico não encontrado.");
             }
             await connection.execute(
                 'INSERT INTO notifications (user_id, type, message) VALUES (?, ?, ?)',
-                [(user as any).id, notificationType, message]
+                [user.id, notificationType, message]
             );
         } else {
              throw new Error("Destinatário da notificação inválido.");
