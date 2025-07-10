@@ -91,7 +91,7 @@ const tiers = [
       "Retenção de dados ilimitada",
     ],
     cta: "Contatar Vendas",
-    href: "mailto:sales@tracklytics.ai"
+    href: "mailto:sales@tracklytics.pro"
   },
 ];
 

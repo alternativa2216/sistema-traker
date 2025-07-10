@@ -45,7 +45,7 @@ export default function SiteAnalyticsPage() {
     const [pages, setPages] = useState<{top: any[], bottom: any[]}>(emptyPages);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
-    const trackingScript = `<script async src="https://tracklytics.ai/track.js?id=${params.siteId}"></script>`;
+    const trackingScript = `<script async src="https://tracklytics.pro/track.js?id=${params.siteId}"></script>`;
 
     useEffect(() => {
         setIsLoading(true);

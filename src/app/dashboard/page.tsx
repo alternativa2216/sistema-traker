@@ -149,7 +149,7 @@ export default function DashboardPage() {
             if (result.success) {
                 const newProject = result.project;
                 setSites(prev => [newProject, ...prev]);
-                const script = `<script async src="https://tracklytics.ai/track.js?id=${newProject.id}"></script>`;
+                const script = `<script async src="https://tracklytics.pro/track.js?id=${newProject.id}"></script>`;
                 setGeneratedScript(script);
                 setDialogStep('success');
             }
