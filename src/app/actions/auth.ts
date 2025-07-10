@@ -42,7 +42,8 @@ export async function signUpUser(formData: unknown) {
     connection = await getDbConnection();
 
     // Check if there are any users in the database
-    const [[{ count }]] = await connection.execute('SELECT COUNT(*) as count FROM users');
+    const [rows] = await connection.execute('SELECT COUNT(*) as count FROM users');
+    const count = (rows as any[])[0].count;
     
     // The first user to register becomes the admin
     const role = count === 0 ? 'admin' : 'user';
