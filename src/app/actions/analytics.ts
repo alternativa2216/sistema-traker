@@ -1,3 +1,4 @@
+
 'use server';
 import 'server-only';
 
@@ -226,9 +227,9 @@ export async function getRealTimeVisitorsAction(projectId: string): Promise<any[
             id: row.id,
             ip: row.ip,
             country: {
-                code: row.country_code,
-                name: row.country_name,
-                flag: row.country_flag
+                code: row.country_code || '??',
+                name: row.country_name || 'Desconhecido',
+                flag: row.country_flag || '🌎'
             },
             device: row.device,
             currentPage: row.currentPage,
