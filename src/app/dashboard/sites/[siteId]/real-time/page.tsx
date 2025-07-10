@@ -4,7 +4,10 @@ import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Laptop, Smartphone, Users } from "lucide-react";
+import { Laptop, Loader2, Smartphone, Users } from "lucide-react";
+import { getRealTimeVisitorsAction } from '@/app/actions/analytics';
+import { useToast } from '@/hooks/use-toast';
+import { useParams } from 'next/navigation';
 
 interface Visitor {
     id: number;
@@ -25,13 +28,32 @@ const formatTime = (seconds: number) => {
 
 // Main Component
 export default function RealTimeAnalyticsPage() {
+    const params = useParams() as { siteId: string };
+    const { toast } = useToast();
     const [visitors, setVisitors] = React.useState<Visitor[]>([]);
+    const [isLoading, setIsLoading] = React.useState(true);
+
 
     React.useEffect(() => {
-        // In a real application, you would establish a WebSocket connection here
-        // to receive real-time visitor data.
-        // For now, we'll just show an empty state.
-    }, []);
+        const fetchRealTimeData = async () => {
+            if (!params.siteId) return;
+            
+            try {
+                const result = await getRealTimeVisitorsAction(params.siteId);
+                // @ts-ignore
+                setVisitors(result);
+            } catch (error: any) {
+                toast({ title: "Erro", description: error.message, variant: 'destructive' });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchRealTimeData(); // Initial fetch
+        const intervalId = setInterval(fetchRealTimeData, 10000); // Fetch every 10 seconds
+
+        return () => clearInterval(intervalId); // Cleanup on component unmount
+    }, [params.siteId, toast]);
     
     const summary = React.useMemo(() => {
         const pageCounts = visitors.reduce((acc, v) => {
@@ -114,7 +136,13 @@ export default function RealTimeAnalyticsPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {visitors.length > 0 ? visitors.map(v => (
+                                {isLoading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="h-24 text-center">
+                                            <Loader2 className="mx-auto h-6 w-6 animate-spin" />
+                                        </TableCell>
+                                    </TableRow>
+                                ) : visitors.length > 0 ? visitors.map(v => (
                                     <TableRow key={v.id}>
                                         <TableCell className="font-mono text-xs">{v.ip}</TableCell>
                                         <TableCell>{v.country.flag} {v.country.name}</TableCell>

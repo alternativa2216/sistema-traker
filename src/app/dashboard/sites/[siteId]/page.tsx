@@ -11,15 +11,9 @@ import { TrafficSourceChart } from '@/components/dashboard/site-analytics/traffi
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { getAnalyticsForProjectAction } from '@/app/actions/analytics';
+import type { AnalyticsData } from '@/app/actions/analytics';
 
-const emptyStats = {
-    visitors: "0", sessions: "0", bounceRate: "0%", sessionDuration: "0m 0s"
-};
-
-const emptyPages = {
-    top: [],
-    bottom: []
-};
 
 const MetricCard = ({ title, value, change, changeType }: { title: string, value: string, change?: string, changeType?: 'increase' | 'decrease' }) => (
     <Card>
@@ -31,7 +25,7 @@ const MetricCard = ({ title, value, change, changeType }: { title: string, value
             {change && (
                 <div className={`text-xs flex items-center ${changeType === 'decrease' ? 'text-red-500' : 'text-green-500'}`}>
                     {changeType === 'increase' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
-                    <span>{change} em relação a ontem</span>
+                    <span>{change} em relação ao período anterior</span>
                 </div>
             )}
         </CardContent>
@@ -41,23 +35,26 @@ const MetricCard = ({ title, value, change, changeType }: { title: string, value
 export default function SiteAnalyticsPage() {
     const params = useParams() as { siteId: string };
     const [timeRange, setTimeRange] = useState('7d');
-    const [stats, setStats] = useState(emptyStats);
-    const [pages, setPages] = useState<{top: any[], bottom: any[]}>(emptyPages);
+    const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
     const trackingScript = `<script async src="https://tracklytics.pro/track.js?id=${params.siteId}"></script>`;
 
     useEffect(() => {
-        setIsLoading(true);
-        // In a real app, you would fetch data from your API here
-        // based on `params.siteId` and `timeRange`.
-        // e.g. fetch(`/api/sites/${params.siteId}/stats?range=${timeRange}`).then(...)
-        setTimeout(() => {
-            setStats(emptyStats);
-            setPages(emptyPages);
-            setIsLoading(false);
-        }, 500); // Simulate network delay
-    }, [params.siteId, timeRange]);
+        async function fetchData() {
+            if (!params.siteId) return;
+            setIsLoading(true);
+            try {
+                const data = await getAnalyticsForProjectAction({ projectId: params.siteId, range: timeRange });
+                setAnalyticsData(data);
+            } catch (error: any) {
+                toast({ title: "Erro ao buscar dados", description: error.message, variant: 'destructive' });
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        fetchData();
+    }, [params.siteId, timeRange, toast]);
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(trackingScript);
@@ -67,7 +64,7 @@ export default function SiteAnalyticsPage() {
         });
     };
     
-    const PageTable = ({ title, data, icon: Icon }: { title: string; data: { path: string; visits: string }[], icon: React.ElementType }) => (
+    const PageTable = ({ title, data, icon: Icon }: { title: string; data: { path: string; visits: number }[], icon: React.ElementType }) => (
         <Card>
             <CardHeader>
                 <div className="flex items-center gap-2">
@@ -84,11 +81,11 @@ export default function SiteAnalyticsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {data.length > 0 ? (
+                        {data && data.length > 0 ? (
                             data.map((page) => (
                                 <TableRow key={page.path}>
-                                    <TableCell>{page.path}</TableCell>
-                                    <TableCell className="text-right">{page.visits}</TableCell>
+                                    <TableCell className="truncate max-w-[200px]">{page.path}</TableCell>
+                                    <TableCell className="text-right">{page.visits.toLocaleString('pt-BR')}</TableCell>
                                 </TableRow>
                             ))
                         ) : (
@@ -145,10 +142,10 @@ export default function SiteAnalyticsPage() {
                 </div>
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <MetricCard title="Visitantes" value={stats.visitors} />
-                    <MetricCard title="Sessões" value={stats.sessions} />
-                    <MetricCard title="Taxa de Rejeição" value={stats.bounceRate} />
-                    <MetricCard title="Duração da Sessão" value={stats.sessionDuration} />
+                    <MetricCard title="Visitantes" value={analyticsData?.summary.visitors.toLocaleString('pt-BR') ?? '0'} />
+                    <MetricCard title="Sessões" value={analyticsData?.summary.sessions.toLocaleString('pt-BR') ?? '0'} />
+                    <MetricCard title="Taxa de Rejeição" value={`${analyticsData?.summary.bounceRate.toFixed(1) ?? '0.0'}%`} />
+                    <MetricCard title="Duração da Sessão" value={analyticsData?.summary.sessionDuration ?? '0m 0s'} />
                 </div>
             )}
 
@@ -159,7 +156,7 @@ export default function SiteAnalyticsPage() {
                         <CardDescription>Visualização do tráfego do site no período selecionado.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <VisitsOverTimeChart />
+                        <VisitsOverTimeChart data={analyticsData?.timeSeries ?? []} isLoading={isLoading}/>
                     </CardContent>
                 </Card>
                  <Card>
@@ -168,14 +165,14 @@ export default function SiteAnalyticsPage() {
                         <CardDescription>De onde vêm seus visitantes.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <TrafficSourceChart />
+                        <TrafficSourceChart data={analyticsData?.sources ?? []} isLoading={isLoading}/>
                     </CardContent>
                 </Card>
             </div>
             
              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
-                <PageTable title="Páginas Mais Visitadas" data={pages.top} icon={MousePointerClick} />
-                <PageTable title="Páginas Menos Visitadas" data={pages.bottom} icon={TrendingDown} />
+                <PageTable title="Páginas Mais Visitadas" data={analyticsData?.topPages ?? []} icon={MousePointerClick} />
+                <PageTable title="Páginas com Maior Saída" data={analyticsData?.exitPages ?? []} icon={TrendingDown} />
                 <Card>
                     <CardHeader>
                         <div className="flex items-center gap-2">

@@ -32,6 +32,13 @@ export async function addProjectAction(formData: { name: string; url:string; }) 
       'INSERT INTO projects (id, user_id, name, url) VALUES (?, ?, ?, ?)',
       [projectId, user.uid, name, url]
     );
+
+    // Adiciona uma configuração padrão para o projeto
+    await connection.execute(
+      'INSERT INTO project_settings (project_id, cloaker_config) VALUES (?, ?)',
+      [projectId, JSON.stringify({})]
+    );
+
     return { success: true, project: { id: projectId, name, url } };
   } catch (error: any) {
     console.error('Falha ao criar projeto:', error);
@@ -265,6 +272,57 @@ export async function getNotificationsForUserAction() {
     } catch (error) {
         console.error('Falha ao buscar notificações:', error);
         return [];
+    } finally {
+        if (connection) await connection.end();
+    }
+}
+
+export async function getCloakerSettingsAction(projectId: string) {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Usuário não autenticado.');
+
+    let connection;
+    try {
+        connection = await getDbConnection();
+        const [projectCheck] = await connection.execute('SELECT id FROM projects WHERE id = ? AND user_id = ?', [projectId, user.uid]);
+        if ((projectCheck as any[]).length === 0) throw new Error("Acesso negado ao projeto.");
+        
+        const [rows] = await connection.execute('SELECT cloaker_config FROM project_settings WHERE project_id = ?', [projectId]);
+        const settings = (rows as any[])[0];
+        if (settings && settings.cloaker_config) {
+            return JSON.parse(settings.cloaker_config);
+        }
+        return {}; // Return empty object if no settings found
+    } catch (error: any) {
+        console.error("Falha ao buscar configurações do cloaker:", error);
+        throw new Error('Não foi possível carregar as configurações do cloaker.');
+    } finally {
+        if (connection) await connection.end();
+    }
+}
+
+export async function saveCloakerSettingsAction(projectId: string, settings: any) {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Usuário não autenticado.');
+
+    let connection;
+    try {
+        connection = await getDbConnection();
+        const [projectCheck] = await connection.execute('SELECT id FROM projects WHERE id = ? AND user_id = ?', [projectId, user.uid]);
+        if ((projectCheck as any[]).length === 0) throw new Error("Acesso negado ao projeto.");
+
+        const settingsJson = JSON.stringify(settings);
+
+        await connection.execute(
+            `INSERT INTO project_settings (project_id, cloaker_config) VALUES (?, ?)
+             ON DUPLICATE KEY UPDATE cloaker_config = ?`,
+            [projectId, settingsJson, settingsJson]
+        );
+        
+        return { success: true, message: 'Configurações do cloaker salvas com sucesso!' };
+    } catch (error: any) {
+        console.error("Falha ao salvar as configurações do cloaker:", error);
+        throw new Error('Não foi possível salvar as configurações do cloaker.');
     } finally {
         if (connection) await connection.end();
     }

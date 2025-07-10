@@ -6,8 +6,7 @@ import {
   ChartContainer,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-
-const chartData: any[] = [];
+import { Loader2 } from "lucide-react";
 
 const chartConfig = {
   desktop: {
@@ -20,14 +19,18 @@ const chartConfig = {
   },
 }
 
-export function VisitsOverTimeChart() {
+export function VisitsOverTimeChart({ data, isLoading }: { data: any[], isLoading: boolean }) {
   return (
     <div className="h-[300px] w-full">
         <ChartContainer config={chartConfig} className="h-full w-full">
-            {chartData.length > 0 ? (
+            {isLoading ? (
+                 <div className="flex h-full items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            ) : data.length > 0 ? (
                 <LineChart
                     accessibilityLayer
-                    data={chartData}
+                    data={data}
                     margin={{
                     top: 5,
                     right: 10,
@@ -37,10 +40,11 @@ export function VisitsOverTimeChart() {
                 >
                     <CartesianGrid vertical={false} strokeDasharray="3 3" />
                     <XAxis
-                    dataKey="date"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
+                        dataKey="date"
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                        tickFormatter={(value) => new Date(value).toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' })}
                     />
                     <YAxis
                     tickLine={false}
@@ -52,7 +56,7 @@ export function VisitsOverTimeChart() {
                     cursor={false}
                     content={<ChartTooltipContent
                         indicator="line"
-                        hideLabel
+                        labelFormatter={(label) => new Date(label).toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                     />}
                     />
                     <Line
