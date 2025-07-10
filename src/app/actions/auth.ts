@@ -39,10 +39,17 @@ export async function signUpUser(formData: unknown) {
   let connection;
   try {
     connection = await getDbConnection();
+
+    // Check if there are any users in the database
+    const [[{ count }]] = await connection.execute('SELECT COUNT(*) as count FROM users');
+    
+    // The first user to register becomes the admin
+    const role = count === 0 ? 'admin' : 'user';
+
     // Storing password directly. Hashing should be implemented for production.
     await connection.execute(
       'INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)',
-      [userId, name, email, password, email === 'elonmskads@gmail.com' ? 'admin' : 'user']
+      [userId, name, email, password, role]
     );
     return { success: true, userId };
   } catch (error: any) {
