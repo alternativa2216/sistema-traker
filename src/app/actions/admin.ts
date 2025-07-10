@@ -95,8 +95,8 @@ export async function getAdminDashboardStatsAction() {
         const [totalProjectsRows] = await connection.execute('SELECT COUNT(*) as totalProjects FROM projects');
         const totalProjects = (totalProjectsRows as any[])[0].totalProjects;
 
-        const [recentUsers] = await connection.execute('SELECT name, email, created_at FROM users ORDER BY created_at DESC LIMIT 5');
-        const [recentProjects] = await connection.execute(`
+        const [recentUsersRows] = await connection.execute('SELECT name, email, created_at FROM users ORDER BY created_at DESC LIMIT 5');
+        const [recentProjectsRows] = await connection.execute(`
             SELECT p.name, u.name as user_name, p.created_at 
             FROM projects p 
             JOIN users u ON p.user_id = u.id 
@@ -119,8 +119,8 @@ export async function getAdminDashboardStatsAction() {
             churnRate,
             totalUsers,
             totalProjects,
-            recentUsers,
-            recentProjects,
+            recentUsers: recentUsersRows as any[],
+            recentProjects: recentProjectsRows as any[],
             topProjects,
             avgVisits
         };
