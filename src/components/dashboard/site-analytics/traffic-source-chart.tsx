@@ -13,9 +13,6 @@ import {
 import { cn } from "@/lib/utils";
 
 const chartConfig = {
-  visitors: {
-    label: "Visitantes",
-  },
   'Google': { label: 'Google', color: 'hsl(var(--chart-1))' },
   'Facebook': { label: 'Facebook', color: 'hsl(var(--chart-2))' },
   'Direto': { label: 'Direto', color: 'hsl(var(--chart-3))' },
