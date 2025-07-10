@@ -5,14 +5,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'i.postimg.cc',
-        port: '',
-        pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'placehold.co',
-        port: '',
-        pathname: '/**',
       },
     ],
   },
