@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getCurrentUser } from '@/app/actions/auth'
 
+export const runtime = 'nodejs';
+
 const PROTECTED_ROUTES = ['/dashboard', '/admin'];
 const PUBLIC_ONLY_ROUTES = ['/login', '/register', '/forgot-password'];
 const ADMIN_ROUTES = ['/admin'];
