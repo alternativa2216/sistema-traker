@@ -45,13 +45,14 @@ export async function signUpUser(formData: unknown) {
     const count = (rows as any[])[0].count;
     
     // The first user to register becomes the admin
-    const role = count === 0 ? 'admin' : 'user';
+    const isFirstUser = count === 0;
+    const role = isFirstUser ? 'admin' : 'user';
 
     await connection.execute(
       'INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)',
       [userId, name, email, hashedPassword, role]
     );
-    return { success: true, userId };
+    return { success: true, userId, isFirstUser };
   } catch (error: any) {
     if (error.code === 'ER_DUP_ENTRY') {
       throw new Error("Este e-mail já está em uso.");

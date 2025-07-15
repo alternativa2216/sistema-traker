@@ -62,11 +62,18 @@ export default function RegisterPage() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      await signUpUser(values);
-      toast({
-        title: "Conta Criada com Sucesso!",
-        description: "Você será redirecionado para a página de login.",
-      });
+      const result = await signUpUser(values);
+      if (result.isFirstUser) {
+        toast({
+          title: "Conta de Administrador Criada!",
+          description: "Você foi o primeiro a se registrar e agora é o administrador. Redirecionando para login.",
+        });
+      } else {
+         toast({
+          title: "Conta Criada com Sucesso!",
+          description: "Você será redirecionado para a página de login.",
+        });
+      }
       router.push('/login');
     } catch (error: any) {
       toast({
@@ -161,4 +168,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-
