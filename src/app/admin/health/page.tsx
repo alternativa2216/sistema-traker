@@ -1,22 +1,51 @@
 'use client'
 
+import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { CheckCircle, Clock, Cpu, Database, Server, AlertCircle } from "lucide-react";
+import { CheckCircle, Clock, Cpu, Database, Server, AlertCircle, Loader2 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Badge } from "@/components/ui/badge";
+import { getSystemHealthAction } from '@/app/actions/admin';
+import { useToast } from '@/hooks/use-toast';
 
-// In a real app, this data would be fetched from a monitoring service
-const status = {
-    api: { status: 'Operacional', responseTime: 0 },
-    database: { status: 'Não Conectado', connections: 0, latency: 0 },
-    ai_services: { status: 'Não Configurado', latency: 0 },
-    background_jobs: { status: 'Ocioso', queue: 0 },
-}
-
-const responseTimeData: any[] = [];
-
+type HealthStatus = {
+  api: { status: 'Operacional' | 'Indisponível', responseTime: number };
+  database: { status: 'Conectado' | 'Não Conectado', latency: number };
+  ai_services: { status: 'Operacional' | 'Não Configurado' | 'Indisponível', latency: number };
+  background_jobs: { status: 'Ocioso' | 'Ocupado', queue: number };
+};
 
 export default function AdminHealthPage() {
+  const [status, setStatus] = React.useState<HealthStatus | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const { toast } = useToast();
+
+  React.useEffect(() => {
+    const fetchHealth = async () => {
+      try {
+        const healthData = await getSystemHealthAction();
+        // @ts-ignore
+        setStatus(healthData);
+      } catch (error: any) {
+        toast({ title: "Erro ao buscar saúde do sistema", description: error.message, variant: "destructive" });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchHealth();
+  }, [toast]);
+
+  if (isLoading || !status) {
+    return <div className="flex h-64 w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  }
+  
+  const StatusBadge = ({ condition, text }: { condition: boolean, text: { ok: string, bad: string }}) => (
+    <Badge variant={condition ? "secondary" : "destructive"} className={`gap-1.5 mb-2 ${condition ? 'text-green-400' : ''}`}>
+      {condition ? <CheckCircle className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
+      {condition ? text.ok : text.bad}
+    </Badge>
+  );
+
   return (
     <div className="space-y-8">
       <div className="mb-8">
@@ -31,7 +60,7 @@ export default function AdminHealthPage() {
                 <Server className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <Badge variant="secondary" className="text-green-400 gap-1.5 mb-2"><CheckCircle className="h-3 w-3" /> {status.api.status}</Badge>
+                <StatusBadge condition={status.api.status === 'Operacional'} text={{ ok: 'Operacional', bad: 'Indisponível'}} />
                 <p className="text-2xl font-bold">{status.api.responseTime}ms</p>
                 <p className="text-xs text-muted-foreground">Tempo de resposta médio</p>
             </CardContent>
@@ -42,9 +71,9 @@ export default function AdminHealthPage() {
                 <Database className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <Badge variant="destructive" className="gap-1.5 mb-2"><AlertCircle className="h-3 w-3" /> {status.database.status}</Badge>
-                <p className="text-2xl font-bold">{status.database.connections} / 100</p>
-                <p className="text-xs text-muted-foreground">Conexões ativas</p>
+                <StatusBadge condition={status.database.status === 'Conectado'} text={{ ok: 'Conectado', bad: 'Não Conectado'}} />
+                <p className="text-2xl font-bold">{status.database.latency} ms</p>
+                <p className="text-xs text-muted-foreground">Latência da consulta</p>
             </CardContent>
         </Card>
          <Card>
@@ -53,7 +82,7 @@ export default function AdminHealthPage() {
                 <Cpu className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                 <Badge variant="destructive" className="gap-1.5 mb-2"><AlertCircle className="h-3 w-3" /> {status.ai_services.status}</Badge>
+                 <StatusBadge condition={status.ai_services.status === 'Operacional'} text={{ ok: 'Operacional', bad: status.ai_services.status }} />
                 <p className="text-2xl font-bold">{status.ai_services.latency}ms</p>
                 <p className="text-xs text-muted-foreground">Latência da API Gemini</p>
             </CardContent>
@@ -64,33 +93,21 @@ export default function AdminHealthPage() {
                 <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                 <Badge variant="secondary" className="text-green-400 gap-1.5 mb-2"><CheckCircle className="h-3 w-3" /> {status.background_jobs.status}</Badge>
+                 <StatusBadge condition={status.background_jobs.status === 'Ocioso'} text={{ ok: 'Ocioso', bad: 'Ocupado' }} />
                 <p className="text-2xl font-bold">{status.background_jobs.queue}</p>
-                <p className="text-xs text-muted-foreground">Trabalhos na fila</p>
+                <p className="text-xs text-muted-foreground">Trabalhos na fila (simulado)</p>
             </CardContent>
         </Card>
       </div>
 
-      <Card>
+       <Card>
         <CardHeader>
           <CardTitle className="font-headline">Latência da API (Últimos 5 minutos)</CardTitle>
-          <CardDescription>Tempo de resposta do endpoint principal da API em milissegundos.</CardDescription>
+          <CardDescription>Esta funcionalidade ainda não está implementada.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-            {responseTimeData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={responseTimeData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="time" />
-                        <YAxis unit="ms" />
-                        <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}/>
-                        <Line type="monotone" dataKey="ms" stroke="hsl(var(--primary))" strokeWidth={2} dot={{r: 4}} />
-                    </LineChart>
-                </ResponsiveContainer>
-             ) : (
-                <p>Nenhum dado de latência disponível.</p>
-             )}
+            <p>Nenhum dado de latência disponível.</p>
           </div>
         </CardContent>
       </Card>

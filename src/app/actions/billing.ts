@@ -4,6 +4,7 @@ import 'server-only';
 import { getSettingsAction, saveSettingsAction } from './settings';
 import { z } from 'zod';
 import { getCurrentUser } from './auth';
+import { getDbConnection } from '@/lib/db';
 
 // Funções para o lado do cliente (usuário final)
 export async function getBillingInfoAction() {
@@ -11,14 +12,43 @@ export async function getBillingInfoAction() {
     if (!user) {
         throw new Error("Usuário não autenticado.");
     }
-    // Lógica para buscar o status da assinatura do usuário no banco de dados.
-    // Retornando dados mockados por enquanto.
-    return {
-        plan: 'Grátis', // ou 'Pro'
-        status: 'Ativa',
-        nextBillingDate: null,
-        // ... outras informações
-    };
+    
+    let connection;
+    try {
+        connection = await getDbConnection();
+        const [rows] = await connection.execute(
+            'SELECT plan_name, status, next_billing_date, plan_price FROM subscriptions WHERE user_id = ? ORDER BY created_at DESC LIMIT 1',
+            [user.uid]
+        );
+
+        const subscription = (rows as any[])[0];
+
+        if (subscription) {
+            return {
+                plan: subscription.plan_name,
+                status: subscription.status === 'active' ? 'Ativa' : 'Inativa',
+                nextBillingDate: subscription.next_billing_date,
+                price: subscription.plan_price,
+            };
+        }
+        
+        // Fallback for users without a subscription entry (e.g. on free plan)
+        const [userRow] = await connection.execute('SELECT plan FROM users WHERE id = ?', [user.uid]);
+        const userPlan = (userRow as any[])[0]?.plan || 'free';
+        
+        return {
+            plan: userPlan.charAt(0).toUpperCase() + userPlan.slice(1),
+            status: 'Ativa',
+            nextBillingDate: null,
+            price: '0.00',
+        };
+
+    } catch (error: any) {
+        console.error("Falha ao buscar informações de faturamento:", error);
+        throw new Error("Não foi possível carregar as informações de faturamento.");
+    } finally {
+        if (connection) await connection.end();
+    }
 }
 
 export async function getInvoicesAction() {

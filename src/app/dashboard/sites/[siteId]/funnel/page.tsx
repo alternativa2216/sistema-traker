@@ -13,13 +13,6 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { getFunnelStepsAction, saveFunnelStepsAction } from '@/app/actions/projects';
 
-
-const analyticsData: Record<string, number> = {};
-const trendData: any[] = [];
-const dropOffs: any[] = [];
-const mockUnusedPages: any[] = [];
-
-
 interface FunnelStep {
     id: number;
     name: string;
@@ -100,11 +93,10 @@ export default function FunnelPage() {
     // Generate funnel data for visualization based on the builder
     const funnelDataForVisualization = {
         stages: funnelSteps.map((step, index, arr) => {
-            const count = analyticsData[step.url] || 0;
+            const count = 0; // No real data yet
             let conversion = 0;
             if (index > 0) {
-                const prevCount = analyticsData[arr[index - 1].url] || 0;
-                conversion = prevCount > 0 ? parseFloat(((count / prevCount) * 100).toFixed(1)) : 0;
+                conversion = 0;
             }
             return {
                 name: step.name,
@@ -189,22 +181,9 @@ export default function FunnelPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {mockUnusedPages.length > 0 ? mockUnusedPages.map((page) => (
-                            <TableRow key={page.path}>
-                                <TableCell className="font-mono">{page.path}</TableCell>
-                                <TableCell>{page.visits.toLocaleString('pt-BR')}</TableCell>
-                                <TableCell className="text-right">
-                                    <Button size="sm" variant="outline" onClick={() => handleAddUnusedPage(page.path)}>
-                                        <PlusCircle className="mr-2 h-4 w-4" />
-                                        Adicionar
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        )) : (
-                           <TableRow>
-                               <TableCell colSpan={3} className="h-24 text-center">Nenhuma página não utilizada detectada.</TableCell>
-                           </TableRow> 
-                        )}
+                        <TableRow>
+                            <TableCell colSpan={3} className="h-24 text-center">Nenhuma página não utilizada detectada.</TableCell>
+                        </TableRow> 
                     </TableBody>
                 </Table>
             </CardContent>
@@ -217,61 +196,9 @@ export default function FunnelPage() {
             </CardHeader>
             <CardContent>
                 {isLoading ? <div className='flex justify-center items-center h-48'><Loader2 className='h-8 w-8 animate-spin' /></div> :
-                funnelDataForVisualization.stages.every(s => s.count === '0') ? (
+                (
                      <div className="text-center text-muted-foreground p-8">
                         <p>Nenhum dado de funil para exibir. Configure suas etapas e aguarde os visitantes.</p>
-                    </div>
-                ) : (
-                    <div className="max-w-2xl mx-auto">
-                        <div className="relative flex flex-col items-center">
-                            {funnelDataForVisualization.stages.map((stage, index) => {
-                                const Icon = stage.icon;
-                                const isLastStage = index === funnelDataForVisualization.stages.length - 1;
-                                
-                                const baseWidth = 100;
-                                const widthDecrement = 15;
-                                const width = baseWidth - (index * widthDecrement);
-
-                                return (
-                                    <React.Fragment key={stage.name}>
-                                        <div
-                                            className="bg-primary/10 border-x-2 border-t-2 border-primary/20 p-6 text-center shadow-inner"
-                                            style={{ width: `${width}%` }}
-                                        >
-                                            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                                                <div className="bg-background rounded-full p-3 border-2 border-primary/20">
-                                                    <Icon className="h-8 w-8 text-primary" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-lg font-semibold text-foreground">{stage.name}</p>
-                                                    <p className="text-4xl font-bold font-headline text-foreground">{stage.count}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        {!isLastStage && (
-                                            <div 
-                                                className="flex flex-col items-center justify-center h-24 bg-gradient-to-b from-primary/10 to-transparent"
-                                                style={{ width: `${width - (widthDecrement / 2)}%` }}
-                                            >
-                                                <ArrowDown className="h-6 w-6 text-muted-foreground" />
-                                                <Badge variant="secondary" className="mt-2 text-base">
-                                                    {funnelDataForVisualization.stages[index + 1].conversion}%
-                                                </Badge>
-                                                <p className="text-xs text-muted-foreground mt-1">Conversão</p>
-                                            </div>
-                                        )}
-
-                                        {isLastStage && (
-                                            <div 
-                                                className="border-x-2 border-b-2 border-primary/20"
-                                                style={{ width: `${width}%` }}
-                                            ></div>
-                                        )}
-                                    </React.Fragment>
-                                );
-                            })}
-                        </div>
                     </div>
                 )}
             </CardContent>

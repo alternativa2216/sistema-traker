@@ -5,11 +5,39 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DollarSign, FileText, QrCode } from "lucide-react";
+import { DollarSign, FileText, QrCode, Loader2 } from "lucide-react";
+import { getBillingInfoAction, getInvoicesAction } from '@/app/actions/billing';
+import { useToast } from '@/hooks/use-toast';
 
 const MOCK_INVOICES: any[] = [];
 
+type BillingInfo = {
+    plan: string;
+    status: string;
+    nextBillingDate: string | null;
+    price: string;
+}
+
 export default function BillingPage() {
+    const [billingInfo, setBillingInfo] = React.useState<BillingInfo | null>(null);
+    const [isLoading, setIsLoading] = React.useState(true);
+    const { toast } = useToast();
+
+    React.useEffect(() => {
+        const fetchBillingInfo = async () => {
+            setIsLoading(true);
+            try {
+                const info = await getBillingInfoAction();
+                // @ts-ignore
+                setBillingInfo(info);
+            } catch (error: any) {
+                toast({ title: "Erro ao carregar dados", description: error.message, variant: "destructive" });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchBillingInfo();
+    }, [toast]);
 
   return (
     <div className="space-y-8">
@@ -25,18 +53,26 @@ export default function BillingPage() {
                     <CardTitle className="font-headline">Plano Atual</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border rounded-lg">
-                        <div>
-                            <Badge variant="secondary" className="text-base">Grátis</Badge>
-                            <p className="text-muted-foreground mt-2">
-                                Faça upgrade para o plano Pro para mais funcionalidades.
-                            </p>
+                    {isLoading ? (
+                        <div className="flex justify-center items-center h-24">
+                            <Loader2 className="h-8 w-8 animate-spin" />
                         </div>
-                        <div className="text-left sm:text-right">
-                            <p className="text-3xl font-bold">R$ 0.00</p>
-                            <p className="text-sm text-muted-foreground">por mês</p>
+                    ) : billingInfo ? (
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border rounded-lg">
+                            <div>
+                                <Badge variant="secondary" className="text-base">{billingInfo.plan}</Badge>
+                                <p className="text-muted-foreground mt-2">
+                                    {billingInfo.plan.toLowerCase() === 'grátis' ? 'Faça upgrade para o plano Pro para mais funcionalidades.' : `Próxima cobrança em ${billingInfo.nextBillingDate ? new Date(billingInfo.nextBillingDate).toLocaleDateString('pt-BR') : 'N/A'}`}
+                                </p>
+                            </div>
+                            <div className="text-left sm:text-right">
+                                <p className="text-3xl font-bold">R$ {Number(billingInfo.price || 0).toFixed(2)}</p>
+                                <p className="text-sm text-muted-foreground">por mês</p>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <p className='text-muted-foreground'>Não foi possível carregar as informações do plano.</p>
+                    )}
                 </CardContent>
                 <CardFooter className="flex justify-between items-center">
                      <p className="text-sm text-muted-foreground">Funcionalidade de faturamento em breve.</p>

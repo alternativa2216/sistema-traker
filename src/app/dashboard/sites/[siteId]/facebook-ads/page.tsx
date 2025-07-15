@@ -17,8 +17,6 @@ import Image from 'next/image';
 import { CampaignPerformanceChart } from '@/components/dashboard/facebook/campaign-performance-chart';
 import { cn } from '@/lib/utils';
 
-const mockCampaigns: any[] = [];
-
 const MetricCard = ({ title, value, icon: Icon }: { title: string, value: string, icon: React.ElementType }) => (
     <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -389,22 +387,9 @@ export default function FacebookAdsPage() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {mockCampaigns.length > 0 ? mockCampaigns.map((campaign) => (
-                                            <TableRow key={campaign.id}>
-                                                <TableCell className="font-medium">
-                                                    <div className='flex items-center gap-2'>
-                                                        <span className={cn('w-2 h-2 rounded-full', campaign.status === 'Ativa' ? 'bg-green-500' : campaign.status === 'Pausada' ? 'bg-yellow-500' : 'bg-gray-500')} />
-                                                        {campaign.name}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>{campaign.spent}</TableCell>
-                                                <TableCell className='text-right'>{campaign.conversions}</TableCell>
-                                            </TableRow>
-                                        )) : (
-                                            <TableRow>
-                                                <TableCell colSpan={3} className="h-24 text-center">Nenhuma campanha para exibir.</TableCell>
-                                            </TableRow>
-                                        )}
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="h-24 text-center">Nenhuma campanha para exibir.</TableCell>
+                                        </TableRow>
                                     </TableBody>
                                 </Table>
                             </div>
