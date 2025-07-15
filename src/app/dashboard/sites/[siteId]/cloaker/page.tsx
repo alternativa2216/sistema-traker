@@ -213,7 +213,7 @@ export default function CloakerPage() {
                 </div>
                  <div className="space-y-4 rounded-lg border p-4">
                      <div className="flex items-center justify-between"><div className="flex items-start gap-4"><Laptop className="h-6 w-6 text-primary mt-1 hidden sm:block" /><div className="space-y-0.5"><Label htmlFor="desktop-redirect-switch" className="text-base font-semibold">Redirecionamento Desktop</Label><p className="text-sm text-muted-foreground">Ative para redirecionar usuários de computadores.</p></div></div><Switch id="desktop-redirect-switch" checked={state.redirectDesktopEnabled} onCheckedChange={(v) => handleStateChange('redirectDesktopEnabled', v)} /></div>
-                    {state.desktopRedirectEnabled && (<div className="pt-4 border-t mt-4"><div className="space-y-2"><Label htmlFor="desktop-url">URL Desktop</Label><Input id="desktop-url" value={state.desktopRedirectUrl} onChange={(e) => handleStateChange('desktopRedirectUrl', e.target.value)} placeholder="https://seusite.com/lp-desktop" /></div></div>)}
+                    {state.redirectDesktopEnabled && (<div className="pt-4 border-t mt-4"><div className="space-y-2"><Label htmlFor="desktop-url">URL Desktop</Label><Input id="desktop-url" value={state.desktopRedirectUrl} onChange={(e) => handleStateChange('desktopRedirectUrl', e.target.value)} placeholder="https://seusite.com/lp-desktop" /></div></div>)}
                 </div>
             </CardContent>
         </Card>
