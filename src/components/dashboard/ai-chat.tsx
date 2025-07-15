@@ -17,7 +17,7 @@ interface Message {
 }
 
 interface AiChatProps {
-    projectId?: string | null;
+    projectId?: string;
 }
 
 export function AiChat({ projectId }: AiChatProps) {
@@ -38,7 +38,16 @@ export function AiChat({ projectId }: AiChatProps) {
   
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading || !projectId) return;
+    if (!input.trim() || isLoading || !projectId) {
+        if (!projectId) {
+             toast({
+                title: "Erro",
+                description: "ID do projeto não encontrado. Por favor, atualize a página.",
+                variant: "destructive",
+            });
+        }
+        return;
+    };
 
     const userMessage: Message = { sender: 'user', text: input };
     setMessages((prev) => [...prev, userMessage]);
@@ -78,7 +87,7 @@ export function AiChat({ projectId }: AiChatProps) {
                     <Bot className="h-12 w-12 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold">Chat com Analista de IA</h3>
                     {isChatDisabled ? (
-                        <p className="text-destructive">Selecione um projeto para habilitar o chat.</p>
+                        <p className="text-destructive">ID do projeto não encontrado. Não é possível usar o chat.</p>
                     ) : (
                         <p>Pergunte-me qualquer coisa sobre os dados do seu projeto. <br /> ex: "Quais foram minhas principais fontes de tráfego este mês?"</p>
                     )}
@@ -132,7 +141,7 @@ export function AiChat({ projectId }: AiChatProps) {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={isChatDisabled ? "Selecione um projeto para começar" : "Pergunte sobre seus dados..."}
+            placeholder={isChatDisabled ? "ID do projeto não encontrado" : "Pergunte sobre seus dados..."}
             disabled={isLoading || isChatDisabled}
             autoComplete="off"
           />

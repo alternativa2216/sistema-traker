@@ -1,4 +1,3 @@
-
 // /src/app/track.js/route.ts
 import { NextResponse } from 'next/server';
 
@@ -13,8 +12,33 @@ export async function GET(request: Request) {
     return;
   }
   
+  var tracklyticsData = {
+    blockRightClick: false,
+    blockDevTools: false,
+    redirectUrl: ''
+  };
+
+  function applyProtections() {
+    if (tracklyticsData.blockRightClick) {
+      document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+    }
+    if (tracklyticsData.blockDevTools) {
+      function detectDevTools() {
+        if ((window.innerHeight - window.outerHeight) > 150 || (window.innerWidth - window.outerWidth) > 150) {
+          window.location.href = tracklyticsData.redirectUrl || 'https://google.com';
+        }
+      }
+      setInterval(detectDevTools, 1000);
+      
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C'))) {
+          e.preventDefault();
+        }
+      });
+    }
+  }
+
   function track() {
-    // Extrai o ID do projeto do atributo 'src' do script
     var scriptElement = document.currentScript;
     if (!scriptElement) return;
 
@@ -32,33 +56,40 @@ export async function GET(request: Request) {
       path: window.location.pathname + window.location.search,
       referrer: document.referrer,
       userAgent: navigator.userAgent,
+      screenWidth: window.screen.width,
+      screenHeight: window.screen.height,
     };
     
-    // Envia os dados para a API de rastreamento usando a URL absoluta
+    // Envia os dados para a API e lida com a resposta
     fetch('${baseUrl}/api/track', {
       method: 'POST',
       body: JSON.stringify(data),
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       keepalive: true
-    }).catch(err => console.error('Tracklytics Error:', err));
+    })
+    .then(response => response.json())
+    .then(result => {
+      if (result.redirectTo) {
+        window.location.href = result.redirectTo;
+      }
+      if (result.config) {
+         Object.assign(tracklyticsData, result.config);
+         applyProtections();
+      }
+    })
+    .catch(err => console.error('Tracklytics Error:', err));
   }
   
-  // Rastreia a primeira visualização de página
   track();
   
-  // Substitui pushState para rastrear mudanças de rota no lado do cliente (SPA)
   var originalPushState = history.pushState;
   history.pushState = function() {
     originalPushState.apply(this, arguments);
     track();
   };
   
-  // Ouve o evento popstate para rastrear navegação de voltar/avançar
   window.addEventListener('popstate', track);
   
-  // Expor uma função global caso seja necessário no futuro
   window.tracklytics = {
       track: track
   };
@@ -73,5 +104,3 @@ export async function GET(request: Request) {
     },
   });
 }
-
-    

@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
@@ -34,11 +34,17 @@ export default function SiteAnalyticsPage() {
     const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
-    const trackingScript = `<script async src="${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002'}/track.js?id=${params.siteId}"></script>`;
+    const router = useRouter();
+
+    const trackingScript = `<script async src="${typeof window !== 'undefined' ? window.location.origin : ''}/track.js?id=${params.siteId}"></script>`;
 
     useEffect(() => {
         async function fetchData() {
-            if (!params.siteId) return;
+            if (!params.siteId) {
+                toast({ title: "Erro", description: "ID do projeto não encontrado.", variant: "destructive" });
+                router.push('/dashboard');
+                return;
+            };
             setIsLoading(true);
             try {
                 const data = await getAnalyticsForProjectAction({ projectId: params.siteId, range: timeRange as any });
@@ -50,7 +56,7 @@ export default function SiteAnalyticsPage() {
             }
         }
         fetchData();
-    }, [params.siteId, timeRange, toast]);
+    }, [params.siteId, timeRange, toast, router]);
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(trackingScript);
@@ -140,7 +146,7 @@ export default function SiteAnalyticsPage() {
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <MetricCard title="Visitantes Únicos" icon={Users} value={analyticsData?.summary.visitors.toLocaleString('pt-BR') ?? '0'} />
                     <MetricCard title="Total de Visitas" icon={Eye} value={analyticsData?.summary.sessions.toLocaleString('pt-BR') ?? '0'} />
-                    <MetricCard title="Taxa de Rejeição" icon={Target} value={`${analyticsData?.summary.bounceRate.toFixed(1) ?? '0.0'}%`} />
+                    <MetricCard title="Taxa de Rejeição" icon={TrendingDown} value={`${analyticsData?.summary.bounceRate.toFixed(1) ?? '0.0'}%`} />
                     <MetricCard title="Duração da Sessão" icon={LogOut} value={analyticsData?.summary.sessionDuration ?? '0m 0s'} />
                 </div>
             )}
@@ -168,7 +174,7 @@ export default function SiteAnalyticsPage() {
             
              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
                 <PageTable title="Páginas Mais Visitadas" data={analyticsData?.topPages ?? []} icon={MousePointerClick} />
-                <PageTable title="Páginas com Maior Saída" data={analyticsData?.exitPages ?? []} icon={TrendingDown} />
+                <PageTable title="Páginas com Maior Saída" data={analyticsData?.exitPages ?? []} icon={Target} />
                 <Card>
                     <CardHeader>
                         <div className="flex items-center gap-2">

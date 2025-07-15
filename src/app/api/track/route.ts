@@ -4,11 +4,11 @@ import { getDbConnection } from '@/lib/db';
 import { UAParser } from 'ua-parser-js';
 
 // Função para determinar o tipo de dispositivo a partir do User-Agent
-function getDeviceType(userAgent: string): string {
+function getDeviceType(userAgent: string): 'mobile' | 'tablet' | 'desktop' {
     const parser = new UAParser(userAgent);
     const device = parser.getDevice();
-    if (device.type) {
-        return device.type; // 'mobile', 'tablet', 'smarttv', etc.
+    if (device.type === 'mobile' || device.type === 'tablet') {
+        return device.type;
     }
     const os = parser.getOS();
     if (['iOS', 'Android'].includes(os.name || '')) {
@@ -23,7 +23,9 @@ const botUserAgents = [
     'googlebot',
     'bingbot',
     'linkedinbot',
-    'twitterbot'
+    'twitterbot',
+    'ahrefsbot',
+    'semrushbot',
 ];
 
 async function logSecurityEvent(connection: any, projectId: string, ipAddress: string | null, countryCode: string | null, userAgent: string | null, reason: string) {
@@ -33,14 +35,14 @@ async function logSecurityEvent(connection: any, projectId: string, ipAddress: s
     );
 }
 
+// Função principal para o endpoint POST
 export async function POST(request: NextRequest) {
     let connection;
     try {
         const body = await request.json();
-        
-        const { projectId, path, referrer, userAgent } = body;
+        const { projectId, path, referrer, userAgent, screenWidth, screenHeight } = body;
 
-        // Validação básica dos dados recebidos
+        // Validação básica
         if (!projectId || !path) {
             return NextResponse.json({ message: 'projectId e path são obrigatórios' }, { 
                 status: 400,
@@ -59,20 +61,35 @@ export async function POST(request: NextRequest) {
 
         connection = await getDbConnection();
 
-        // Checar se é um bot conhecido
-        const isBot = botUserAgents.some(bot => userAgent.toLowerCase().includes(bot));
-        if(isBot) {
-            await logSecurityEvent(connection, projectId, ipAddress, countryCode, userAgent, 'Bot Detectado');
-             return NextResponse.json({ success: true, message: 'Bot detected and logged' }, { 
-                status: 200,
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type',
+        // 1. Verificar regras de cloaker
+        const [settingsRows] = await connection.execute('SELECT cloaker_config FROM project_settings WHERE project_id = ?', [projectId]);
+        const settings = (settingsRows as any[])[0];
+
+        if (settings && settings.cloaker_config) {
+            const config = JSON.parse(settings.cloaker_config);
+            
+            // Lógica de redirecionamento por dispositivo
+            if (config.redirectMobileEnabled && deviceType === 'mobile' && config.mobileRedirectUrl) {
+                await logSecurityEvent(connection, projectId, ipAddress, countryCode, userAgent, 'Redirecionamento Mobile');
+                return NextResponse.json({ redirectTo: config.mobileRedirectUrl }, { status: 200, headers: corsHeaders() });
+            }
+            if (config.redirectDesktopEnabled && deviceType === 'desktop' && config.desktopRedirectUrl) {
+                await logSecurityEvent(connection, projectId, ipAddress, countryCode, userAgent, 'Redirecionamento Desktop');
+                return NextResponse.json({ redirectTo: config.desktopRedirectUrl }, { status: 200, headers: corsHeaders() });
+            }
+
+            // Lógica de bot
+            if (config.antiBotFilter) {
+                const isBot = botUserAgents.some(bot => userAgent.toLowerCase().includes(bot.toLowerCase()));
+                if (isBot) {
+                    await logSecurityEvent(connection, projectId, ipAddress, countryCode, userAgent, 'Bot Detectado');
+                    return NextResponse.json({ redirectTo: config.redirectOnInspectUrl || 'https://google.com' }, { status: 200, headers: corsHeaders() });
                 }
-            });
+            }
+            // Adicionar mais lógicas de filtro aqui (geo, IP, etc.) conforme necessário
         }
         
+        // 2. Se nenhuma regra de cloaker corresponder, registrar a visita
         await connection.execute(
             `INSERT INTO analytics_visits 
             (project_id, session_id, path, referrer, user_agent, country_code, device_type) 
@@ -84,36 +101,28 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ success: true }, { 
             status: 200,
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type',
-            }
+            headers: corsHeaders()
         });
 
     } catch (error: any) {
         console.error('Erro na API de rastreamento:', error);
-        if (connection) {
-            await connection.end();
-        }
+        if (connection) await connection.end();
         return NextResponse.json({ message: 'Erro interno do servidor', error: error.message }, { 
             status: 500,
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type',
-            }
+            headers: corsHeaders()
         });
     }
 }
 
-// Handler para preflight (CORS) se o script for hospedado em um domínio diferente da API
+// Handler para preflight (CORS)
 export async function OPTIONS() {
-    const response = new NextResponse(null, {
-        status: 204
-    });
-    response.headers.set('Access-Control-Allow-Origin', '*');
-    response.headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
-    return response;
+    return new NextResponse(null, { status: 204, headers: corsHeaders() });
+}
+
+function corsHeaders() {
+    return {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+    };
 }

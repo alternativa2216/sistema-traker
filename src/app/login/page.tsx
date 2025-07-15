@@ -12,7 +12,7 @@ import Link from "next/link";
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 import { loginUser } from '../actions/auth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -26,6 +26,7 @@ export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -34,6 +35,7 @@ export default function LoginPage() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
+    setError(null);
     
     try {
       const result = await loginUser(values);
@@ -45,18 +47,10 @@ export default function LoginPage() {
           }
       } else {
         // Handle cases where login might fail without throwing an error
-        toast({
-          title: 'Erro de Login',
-          description: 'Não foi possível fazer o login. Por favor, verifique suas credenciais.',
-          variant: 'destructive',
-        });
+         setError("Não foi possível fazer o login. Por favor, verifique suas credenciais.");
       }
     } catch (error: any) {
-       toast({
-        title: 'Erro de Login',
-        description: error.message,
-        variant: 'destructive',
-      });
+       setError(error.message);
     } finally {
         setIsLoading(false);
     }
@@ -77,6 +71,15 @@ export default function LoginPage() {
           </CardHeader>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardContent className="space-y-4">
+              {error && (
+                  <Alert variant="destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle>Erro de Login</AlertTitle>
+                      <AlertDescription>
+                          {error}
+                      </AlertDescription>
+                  </Alert>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" placeholder="john.doe@example.com" required {...form.register('email')} />

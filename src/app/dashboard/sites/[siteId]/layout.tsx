@@ -43,14 +43,14 @@ export default function SiteIdLayout({
   }, [params.siteId, toast]);
 
   const navItems = [
-    { href: '', label: 'Analytics', icon: BarChart2 },
-    { href: '/real-time', label: 'Tempo Real', icon: Activity },
-    { href: '/funnel', label: 'Funil', icon: Filter },
-    { href: '/ai-analysis', label: 'Análise IA', icon: Bot },
-    { href: '/cloaker', label: 'Cloaker', icon: Shield },
-    { href: '/security-logs', label: 'Logs de Segurança', icon: ClipboardList },
-    { href: '/facebook-ads', label: 'Facebook Ads', icon: Facebook },
-    { href: '/settings', label: 'Configurações', icon: Settings },
+    { href: basePath, label: 'Analytics', icon: BarChart2, exact: true },
+    { href: `${basePath}/real-time`, label: 'Tempo Real', icon: Activity },
+    { href: `${basePath}/funnel`, label: 'Funil', icon: Filter },
+    { href: `${basePath}/ai-analysis`, label: 'Análise IA', icon: Bot },
+    { href: `${basePath}/cloaker`, label: 'Cloaker', icon: Shield },
+    { href: `${basePath}/security-logs`, label: 'Logs de Segurança', icon: ClipboardList },
+    { href: `${basePath}/facebook-ads`, label: 'Facebook Ads', icon: Facebook },
+    { href: `${basePath}/settings`, label: 'Configurações', icon: Settings },
   ];
 
   return (
@@ -74,12 +74,11 @@ export default function SiteIdLayout({
       <div className="border-b overflow-x-auto scrollbar-hide">
         <nav className="-mb-px flex space-x-6" aria-label="Tabs">
           {navItems.map((item) => {
-            const fullPath = `${basePath}${item.href || ''}`;
-            const isActive = item.href === '' ? pathname === fullPath : pathname.startsWith(fullPath);
+            const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             return (
               <Link
                 key={item.label}
-                href={fullPath}
+                href={item.href}
                 className={cn(
                   'flex items-center gap-2 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm',
                   isActive
