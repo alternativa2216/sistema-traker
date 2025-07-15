@@ -2,9 +2,10 @@
 import 'server-only';
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+// We only import getCurrentUser which is safe for the edge
 import { getCurrentUser } from '@/app/actions/auth'
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 const PROTECTED_ROUTES = ['/dashboard', '/admin'];
 const PUBLIC_ONLY_ROUTES = ['/login', '/register', '/forgot-password'];
@@ -66,7 +67,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - track.js (tracking script)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|track.js).*)',
   ],
 }

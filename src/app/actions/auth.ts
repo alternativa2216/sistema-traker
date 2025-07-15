@@ -5,16 +5,13 @@ import { cookies } from 'next/headers';
 import { z } from 'zod';
 import { getDbConnection } from '@/lib/db';
 import { randomUUID } from 'crypto';
+import bcrypt from 'bcrypt';
+import { verifyPasswordAndCreateSession } from './auth-helpers';
 
 const signUpSchema = z.object({
   name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.'),
   email: z.string().email('Por favor, insira um e-mail válido.'),
   password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres.'),
-});
-
-const loginSchema = z.object({
-  email: z.string().email('Por favor, insira um e-mail válido.'),
-  password: z.string().min(1, 'A senha é obrigatória.'),
 });
 
 export type MockUser = {
@@ -34,8 +31,10 @@ export async function signUpUser(formData: unknown) {
   }
   
   const { name, email, password } = validation.data;
-  // NOTE: In a real production environment, ALWAYS hash passwords before storing.
-  const userId = randomUUID(); // Use a random UUID for the ID
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+  const userId = randomUUID(); 
 
   let connection;
   try {
@@ -48,10 +47,9 @@ export async function signUpUser(formData: unknown) {
     // The first user to register becomes the admin
     const role = count === 0 ? 'admin' : 'user';
 
-    // Storing password directly. Hashing should be implemented for production.
     await connection.execute(
       'INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)',
-      [userId, name, email, password, role]
+      [userId, name, email, hashedPassword, role]
     );
     return { success: true, userId };
   } catch (error: any) {
@@ -67,47 +65,20 @@ export async function signUpUser(formData: unknown) {
 
 // Mock login. In a real app, this would verify password against DB.
 export async function loginUser(formData: unknown) {
-    const validation = loginSchema.safeParse(formData);
-    if (!validation.success) {
-        throw new Error(validation.error.errors.map(e => e.message).join(', '));
+    const result = await verifyPasswordAndCreateSession(formData);
+    
+    if (!result.success) {
+        throw new Error(result.message);
     }
-    const { email, password } = validation.data;
 
-    let connection;
-    try {
-        connection = await getDbConnection();
-        // NOTE: Comparing plain text passwords. Hashing should be implemented for production.
-        const [rows] = await connection.execute('SELECT id, name, email, password, role FROM users WHERE email = ?', [email]);
-        
-        const users = rows as any[];
-        if (users.length === 0) {
-            throw new Error("Usuário não encontrado ou senha inválida.");
-        }
+    const { user, role } = result;
 
-        const userFromDb: any = users[0];
-        if (userFromDb.password !== password) {
-            throw new Error("Usuário não encontrado ou senha inválida.");
-        }
+    // Create a session if the user exists.
+    const sessionValue = JSON.stringify(user);
+    const expiresIn = 60 * 60 * 24 * 5 * 1000;
+    cookies().set('session', sessionValue, { maxAge: expiresIn, httpOnly: true, secure: process.env.NODE_ENV === 'production' });
 
-        // Create a session if the user exists.
-        const user: MockUser = {
-            uid: userFromDb.id,
-            email: userFromDb.email,
-            name: userFromDb.name,
-            role: userFromDb.role,
-        };
-        const sessionValue = JSON.stringify(user);
-        const expiresIn = 60 * 60 * 24 * 5 * 1000;
-        cookies().set('session', sessionValue, { maxAge: expiresIn, httpOnly: true, secure: process.env.NODE_ENV === 'production' });
-
-        return { success: true, role: user.role };
-
-    } catch (error: any) {
-         console.error("Database lookup failed:", error);
-         throw new Error(error.message || "Erro ao acessar o banco de dados.");
-    } finally {
-        if (connection) await connection.end();
-    }
+    return { success: true, role };
 }
 
 

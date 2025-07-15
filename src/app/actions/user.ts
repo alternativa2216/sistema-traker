@@ -4,6 +4,7 @@ import 'server-only';
 import { getDbConnection } from '@/lib/db';
 import { z } from 'zod';
 import { getCurrentUser } from './auth';
+import bcrypt from 'bcrypt';
 
 export async function getCurrentUserAction() {
     const user = await getCurrentUser();
@@ -95,14 +96,21 @@ export async function updateUserPasswordAction(data: unknown) {
         const [rows] = await connection.execute('SELECT password FROM users WHERE id = ?', [user.uid]);
         const userFromDb = (rows as any[])[0];
 
-        if (!userFromDb || userFromDb.password !== currentPassword) {
+        if (!userFromDb) {
+             throw new Error('Usuário não encontrado.');
+        }
+
+        const passwordMatch = await bcrypt.compare(currentPassword, userFromDb.password);
+        if (!passwordMatch) {
             throw new Error('A senha atual está incorreta.');
         }
 
         // 2. Update to new password
+        const saltRounds = 10;
+        const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
         await connection.execute(
             'UPDATE users SET password = ? WHERE id = ?',
-            [newPassword, user.uid]
+            [hashedNewPassword, user.uid]
         );
         return { success: true };
     } catch (error: any) {
