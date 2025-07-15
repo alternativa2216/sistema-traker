@@ -215,12 +215,12 @@ export async function getRealTimeVisitorsAction(projectId: string): Promise<any[
         JOIN (
             SELECT session_id, MIN(created_at) as session_start
             FROM analytics_visits
-            WHERE project_id = ? AND created_at >= ?
+            WHERE project_id = ?
             GROUP BY session_id
         ) s ON lv.session_id = s.session_id
         LEFT JOIN countries c ON lv.country_code = c.code
         WHERE lv.rn = 1;
-        `, [projectId, fiveMinutesAgo, projectId, fiveMinutesAgo]
+        `, [projectId, fiveMinutesAgo, projectId]
         );
 
         return rows.map(row => ({

@@ -1,4 +1,3 @@
-
 // /src/app/api/track/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import { getDbConnection } from '@/lib/db';
@@ -16,6 +15,22 @@ function getDeviceType(userAgent: string): string {
       return 'mobile';
     }
     return 'desktop';
+}
+
+const botUserAgents = [
+    'facebookexternalhit',
+    'facebot',
+    'googlebot',
+    'bingbot',
+    'linkedinbot',
+    'twitterbot'
+];
+
+async function logSecurityEvent(connection: any, projectId: string, ipAddress: string | null, countryCode: string | null, userAgent: string | null, reason: string) {
+    await connection.execute(
+        `INSERT INTO security_logs (project_id, ip_address, country_code, user_agent, reason, is_critical) VALUES (?, ?, ?, ?, ?, ?)`,
+        [projectId, ipAddress, countryCode, userAgent, reason, false]
+    );
 }
 
 export async function POST(request: NextRequest) {
@@ -38,30 +53,31 @@ export async function POST(request: NextRequest) {
         }
 
         const deviceType = getDeviceType(userAgent || '');
-        
-        // Obter informações de geolocalização do cabeçalho da Vercel/Netlify ou similar
         const countryCode = request.headers.get('x-vercel-ip-country') || null;
         const ipAddress = request.headers.get('x-forwarded-for') || request.ip;
-        
-        // Cria um ID de sessão simples (ex: IP + User Agent). Em uma aplicação real, seria algo mais robusto.
         const sessionId = `${ipAddress}-${userAgent}`;
 
         connection = await getDbConnection();
+
+        // Checar se é um bot conhecido
+        const isBot = botUserAgents.some(bot => userAgent.toLowerCase().includes(bot));
+        if(isBot) {
+            await logSecurityEvent(connection, projectId, ipAddress, countryCode, userAgent, 'Bot Detectado');
+             return NextResponse.json({ success: true, message: 'Bot detected and logged' }, { 
+                status: 200,
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type',
+                }
+            });
+        }
         
-        // Insere a visita no banco de dados
         await connection.execute(
             `INSERT INTO analytics_visits 
             (project_id, session_id, path, referrer, user_agent, country_code, device_type) 
             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [
-                projectId,
-                sessionId,
-                path,
-                referrer || null,
-                userAgent || null,
-                countryCode,
-                deviceType,
-            ]
+            [projectId, sessionId, path, referrer || null, userAgent || null, countryCode, deviceType]
         );
         
         await connection.end();

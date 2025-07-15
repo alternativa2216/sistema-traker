@@ -68,7 +68,7 @@ const defaultState = {
     geoLocations: '',
     osFilterEnabled: false,
     osFilterAction: 'block',
-    selectedOs: {},
+    selectedOs: {} as Record<string, boolean>,
     ipFilterEnabled: false,
     ipFilterAction: 'block',
     ipList: '',
@@ -82,10 +82,10 @@ const defaultState = {
     ispFilterAction: 'block',
     ispList: '',
     timeFilterEnabled: false,
-    selectedDays: {},
+    selectedDays: {} as Record<string, boolean>,
     startTime: '09:00',
     endTime: '18:00',
-    rules: [],
+    rules: [] as Rule[],
 };
 
 type CloakerState = typeof defaultState;
@@ -96,6 +96,7 @@ export default function CloakerPage() {
   const [state, setState] = React.useState<CloakerState>(defaultState);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSaving, setIsSaving] = React.useState(false);
+  const [isAddRuleDialogOpen, setIsAddRuleDialogOpen] = React.useState(false);
 
   React.useEffect(() => {
     async function loadSettings() {
@@ -137,7 +138,6 @@ export default function CloakerPage() {
   const totalPages = Math.ceil(state.rules.length / RULES_PER_PAGE);
   const paginatedRules = state.rules.slice((currentPage - 1) * RULES_PER_PAGE, currentPage * RULES_PER_PAGE);
   
-  const [isAddRuleDialogOpen, setIsAddRuleDialogOpen] = React.useState(false);
   const [newRuleCountry, setNewRuleCountry] = React.useState('');
   const [newRuleDevice, setNewRuleDevice] = React.useState('');
   const [newRuleOs, setNewRuleOs] = React.useState('');
@@ -198,8 +198,7 @@ export default function CloakerPage() {
         </Card>
 
         <Card>
-            <CardHeader>
-                <div className="flex items-center gap-3"><ShieldAlert className="h-6 w-6 text-destructive" /><CardTitle className="font-headline">Monitoramento de Ameaças Ativas</CardTitle></div>
+            <CardHeader><div className="flex items-center gap-3"><ShieldAlert className="h-6 w-6 text-destructive" /><CardTitle className="font-headline">Monitoramento de Ameaças Ativas</CardTitle></div>
                 <CardDescription>Nossa IA monitora e bloqueia automaticamente atividades suspeitas em tempo real para proteger seu site.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4"><div className="text-center text-muted-foreground p-8">Nenhuma ameaça ativa detectada. Vá para os <Link href={`/dashboard/sites/${params.siteId}/security-logs`} className="text-primary hover:underline">Logs de Segurança</Link> para ver o histórico.</div></CardContent>
