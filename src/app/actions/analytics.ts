@@ -26,15 +26,16 @@ export interface AnalyticsData {
 
 function getStartAndEndDates(range: 'today' | 'yesterday' | '7d' | '30d' | 'all'): { startDate: Date; endDate: Date } {
     const now = new Date();
-    const endDate = endOfDay(now);
     let startDate: Date;
+    const endDate = endOfDay(now);
 
     switch (range) {
         case 'today':
             startDate = startOfDay(now);
             break;
         case 'yesterday':
-            startDate = startOfDay(subDays(now, 1));
+            const yesterday = subDays(now, 1);
+            startDate = startOfDay(yesterday);
             break;
         case '7d':
             startDate = startOfDay(subDays(now, 6)); // Including today
@@ -71,54 +72,62 @@ export async function getAnalyticsForProjectAction({ projectId, range }: Analyti
         }
 
         const { startDate, endDate } = getStartAndEndDates(range);
-
-        const dateFilter = 'created_at >= ? AND created_at <= ?';
+        
+        let dateFilter = range !== 'all' ? 'created_at >= ? AND created_at <= ?' : '1=1';
+        const params: (string|Date)[] = [projectId];
+        if (range !== 'all') {
+            params.push(startDate, endDate);
+        }
+        
+        const executeParams = (query: string) => {
+             let qParams: (string|Date)[] = [projectId];
+            if (range !== 'all') {
+                qParams.push(startDate, endDate);
+            }
+            return connection!.execute(query, qParams);
+        }
 
         // Summary Metrics
-        const [summaryRows]: [any[], any] = await connection.execute(
+        const [summaryRows]: [any[], any] = await executeParams(
             `SELECT
                 COUNT(DISTINCT session_id) as sessions
-             FROM analytics_visits WHERE project_id = ? AND ${dateFilter}`,
-            [projectId, startDate, endDate]
+             FROM analytics_visits WHERE project_id = ? AND ${dateFilter}`
         );
         const sessions = summaryRows[0].sessions || 0;
 
-        const [totalVisitsRows]: [any[], any] = await connection.execute(
-            `SELECT COUNT(*) as visits FROM analytics_visits WHERE project_id = ? AND ${dateFilter}`,
-            [projectId, startDate, endDate]
+        const [totalVisitsRows]: [any[], any] = await executeParams(
+            `SELECT COUNT(*) as visits FROM analytics_visits WHERE project_id = ? AND ${dateFilter}`
         );
         const visits = totalVisitsRows[0].visits || 0;
 
         let bounceRate = 0;
         if (sessions > 0) {
-            const [bouncedSessionsRows]: [any[], any] = await connection.execute(
+            const [bouncedSessionsRows]: [any[], any] = await executeParams(
                 `SELECT COUNT(*) as bouncedCount FROM (
                     SELECT session_id FROM analytics_visits
                     WHERE project_id = ? AND ${dateFilter}
                     GROUP BY session_id
                     HAVING COUNT(*) = 1
-                ) as single_page_sessions`,
-                [projectId, startDate, endDate]
+                ) as single_page_sessions`
             );
             const bouncedSessions = bouncedSessionsRows[0].bouncedCount || 0;
             bounceRate = (bouncedSessions / sessions) * 100;
         }
 
-        const [sessionDurations]: [any[], any] = await connection.execute(
+        const [sessionDurations]: [any[], any] = await executeParams(
             `SELECT AVG(duration) as avg_duration FROM (
                 SELECT TIMESTAMPDIFF(SECOND, MIN(created_at), MAX(created_at)) as duration
                 FROM analytics_visits
                 WHERE project_id = ? AND ${dateFilter}
                 GROUP BY session_id
                 HAVING COUNT(*) > 1
-             ) as durations`,
-            [projectId, startDate, endDate]
+             ) as durations`
         );
 
         const avgDuration = sessionDurations[0].avg_duration || 0;
         
         // Time Series Data
-        const [timeSeriesRows]: [any[], any] = await connection.execute(
+        const [timeSeriesRows]: [any[], any] = await executeParams(
             `SELECT
                 DATE(created_at) as date,
                 SUM(CASE WHEN device_type = 'desktop' THEN 1 ELSE 0 END) as desktop,
@@ -126,12 +135,11 @@ export async function getAnalyticsForProjectAction({ projectId, range }: Analyti
              FROM analytics_visits
              WHERE project_id = ? AND ${dateFilter}
              GROUP BY DATE(created_at)
-             ORDER BY date ASC`,
-            [projectId, startDate, endDate]
+             ORDER BY date ASC`
         );
 
         // Top Sources
-        const [sourceRows]: [any[], any] = await connection.execute(
+        const [sourceRows]: [any[], any] = await executeParams(
             `SELECT
                 CASE
                     WHEN referrer LIKE '%google.com%' THEN 'Google'
@@ -143,20 +151,18 @@ export async function getAnalyticsForProjectAction({ projectId, range }: Analyti
              FROM analytics_visits
              WHERE project_id = ? AND ${dateFilter}
              GROUP BY source
-             ORDER BY visitors DESC`,
-            [projectId, startDate, endDate]
+             ORDER BY visitors DESC`
         );
         
         // Top & Exit Pages
-        const [topPagesRows]: [any[], any] = await connection.execute(
+        const [topPagesRows]: [any[], any] = await executeParams(
             `SELECT path, COUNT(*) as visits
              FROM analytics_visits
              WHERE project_id = ? AND ${dateFilter}
-             GROUP BY path ORDER BY visits DESC LIMIT 5`,
-            [projectId, startDate, endDate]
+             GROUP BY path ORDER BY visits DESC LIMIT 5`
         );
 
-        const [exitPagesRows]: [any[], any] = await connection.execute(
+        const [exitPagesRows]: [any[], any] = await executeParams(
             `WITH LastVisits AS (
                 SELECT session_id, path, ROW_NUMBER() OVER(PARTITION BY session_id ORDER BY created_at DESC) as rn
                 FROM analytics_visits
@@ -167,8 +173,7 @@ export async function getAnalyticsForProjectAction({ projectId, range }: Analyti
             WHERE rn = 1
             GROUP BY path
             ORDER BY visits DESC
-            LIMIT 5;`,
-            [projectId, startDate, endDate]
+            LIMIT 5;`
         );
 
 
@@ -210,30 +215,34 @@ export async function getRealTimeVisitorsAction(projectId: string): Promise<any[
         `
         WITH LastVisits AS (
             SELECT 
-                *,
-                ROW_NUMBER() OVER(PARTITION BY session_id ORDER BY created_at DESC) as rn
+                session_id,
+                MAX(created_at) as last_seen
             FROM analytics_visits
             WHERE project_id = ? AND created_at >= ?
+            GROUP BY session_id
         )
         SELECT 
-            lv.id,
-            SUBSTRING_INDEX(lv.session_id, '-', 1) as ip,
+            v.id,
+            SUBSTRING_INDEX(v.session_id, '-', 1) as ip,
             c.name as country_name,
             c.code as country_code,
             c.emoji as country_flag,
-            lv.device_type as device,
-            lv.path as currentPage,
-            COALESCE(NULLIF(lv.referrer, ''), 'Direct') as referrer,
+            v.device_type as device,
+            v.path as currentPage,
+            CASE
+                WHEN v.referrer IS NULL OR v.referrer = '' THEN 'Direct'
+                ELSE v.referrer
+            END as referrer,
             TIMESTAMPDIFF(SECOND, s.session_start, NOW()) as timeOnSite
-        FROM LastVisits lv
+        FROM analytics_visits v
+        JOIN LastVisits lv ON v.session_id = lv.session_id AND v.created_at = lv.last_seen
         JOIN (
             SELECT session_id, MIN(created_at) as session_start
             FROM analytics_visits
             WHERE project_id = ?
             GROUP BY session_id
-        ) s ON lv.session_id = s.session_id
-        LEFT JOIN countries c ON lv.country_code = c.code
-        WHERE lv.rn = 1;
+        ) s ON v.session_id = s.session_id
+        LEFT JOIN countries c ON v.country_code = c.code
         `, [projectId, fiveMinutesAgo, projectId]
         );
 
@@ -258,5 +267,3 @@ export async function getRealTimeVisitorsAction(projectId: string): Promise<any[
         if (connection) await connection.end();
     }
 }
-
-    
