@@ -12,40 +12,33 @@ import {
   Shield,
   Facebook,
   Activity,
+  ChevronRight,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getSettingsAction } from "./actions/settings";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const features = [
   {
     icon: Filter,
     title: "Análise de Funil Visual",
-    description: "Construa funis de conversão personalizados para entender a jornada do seu cliente e identificar com precisão os pontos de abandono para otimizar suas vendas.",
-  },
-  {
-    icon: Bot,
-    title: "Insights Proativos com IA",
-    description: "Receba alertas e oportunidades geradas por IA diretamente no seu painel. Deixe nossa inteligência artificial trabalhar para você, sugerindo melhorias e destacando tendências.",
+    description: "Construa funis de conversão para entender a jornada do seu cliente e identificar com precisão os pontos de abandono.",
+    image: "https://placehold.co/1024x768.png",
+    imageHint: "funnel chart"
   },
   {
     icon: Shield,
-    title: "Cloaker e Suíte de Segurança",
-    description: "Proteja suas páginas com filtros anti-bot, anti-spy, geográficos e bloqueio de inspeção. Garanta que apenas seu público certo veja suas ofertas estratégicas.",
+    title: "Suíte de Segurança Completa",
+    description: "Proteja suas páginas com filtros anti-bot, anti-spy e geográficos. Garanta que apenas seu público certo veja suas ofertas.",
+    image: "https://placehold.co/1024x768.png",
+    imageHint: "security dashboard"
   },
   {
-    icon: Facebook,
-    title: "Ferramentas para Facebook Ads",
-    description: "Gere textos de anúncio (copy), sugira públicos-alvo e analise a eficácia de seus criativos. Uma suíte completa para turbinar suas campanhas.",
-  },
-  {
-    icon: Activity,
-    title: "Analytics em Tempo Real",
-    description: "Acompanhe os visitantes no seu site em tempo real. Veja de onde eles vêm, quais páginas estão visitando e entenda o fluxo de usuários ao vivo.",
-  },
-  {
-    icon: BarChart,
-    title: "Dashboards Intuitivos",
-    description: "Todos os seus dados importantes, como fontes de tráfego e páginas mais visitadas, apresentados em gráficos e tabelas fáceis de entender.",
+    icon: Bot,
+    title: "Insights com Inteligência Artificial",
+    description: "Receba alertas e oportunidades geradas por IA. Deixe nossa inteligência trabalhar para você, sugerindo melhorias e destacando tendências.",
+    image: "https://placehold.co/1024x768.png",
+    imageHint: "AI chatbot interface"
   },
 ];
 
@@ -85,7 +78,7 @@ const tiers = [
     description: "Para aplicações e agências de grande escala.",
     features: [
       "Projetos Ilimitados",
-      "Limites de visualização de página personalizados",
+      "Visualizações de página personalizadas",
       "Acesso à API",
       "Suporte Dedicado",
       "Retenção de dados ilimitada",
@@ -110,20 +103,46 @@ const testimonials = [
     quote: "A análise de funil é simplesmente a melhor do mercado. Consegui identificar um gargalo que estava me custando milhares e o corrigi em um dia. Recomendo fortemente!",
     avatar: "https://placehold.co/40x40.png",
     avatarHint: "man portrait"
+  },
+  {
+    name: "Juliana Costa",
+    title: "Gerente de Mídia Paga",
+    quote: "As ferramentas para Facebook Ads são um divisor de águas. O gerador de públicos e a análise de criativos economizam horas de trabalho e melhoram nosso ROAS.",
+    avatar: "https://placehold.co/40x40.png",
+    avatarHint: "woman headshot"
   }
+];
+
+const faqs = [
+    {
+        question: "O que é o Tracklytics?",
+        answer: "O Tracklytics é uma plataforma de web analytics que vai além dos dados básicos. Combinamos rastreamento completo, uma suíte de segurança avançada com cloaker, e ferramentas de IA para fornecer insights acionáveis e otimizar suas estratégias de marketing digital."
+    },
+    {
+        question: "Preciso de conhecimentos técnicos para usar?",
+        answer: "Não! A plataforma foi projetada para ser intuitiva. A instalação é uma única linha de código, e nossos painéis e ferramentas são fáceis de usar, mesmo para quem não é desenvolvedor. As ferramentas de IA, como o gerador de anúncios, são feitas para simplificar seu trabalho."
+    },
+    {
+        question: "Como o cloaker funciona?",
+        answer: "Nosso cloaker (ou suíte de segurança) permite que você crie regras para filtrar o tráfego. Você pode bloquear bots, ferramentas de espionagem, visitantes de certos países, ou até mesmo redirecionar tráfego com base em regras complexas, garantindo que apenas seu público ideal veja suas ofertas estratégicas."
+    },
+    {
+        question: "Posso cancelar meu plano a qualquer momento?",
+        answer: "Sim, você pode cancelar ou alterar seu plano a qualquer momento diretamente no seu painel de faturamento. Não há contratos de longo prazo ou taxas de cancelamento."
+    }
 ]
 
 const defaultContent = {
-    homeHeadline: 'Analytics que Transforma Dados em Decisões de Alto Impacto',
-    homeSubheadline: 'O Tracklytics é a única plataforma de web analytics que combina rastreamento completo, insights proativos com IA, uma suíte de segurança avançada e ferramentas visuais para você dominar sua estratégia digital.',
-    dashboardImageUrl: 'https://placehold.co/1200x600.png',
+    homeHeadline: 'Transforme Dados Brutos em Crescimento Real',
+    homeSubheadline: 'O Tracklytics é a plataforma de web analytics que combina rastreamento completo, insights proativos com IA e uma suíte de segurança avançada para você dominar sua estratégia digital.',
+    dashboardImageUrl: 'https://placehold.co/1200x800.png',
 };
 
 
 export default async function Home() {
-  const contentKeys = ['homeHeadline', 'homeSubheadline', 'dashboardImageUrl'];
   let settings = {};
   try {
+    const contentKeys = ['homeHeadline', 'homeSubheadline', 'dashboardImageUrl'];
     settings = await getSettingsAction(contentKeys);
   } catch (e) {
       // No-op. The page will render with default content if the database is not ready.
@@ -165,25 +184,38 @@ export default async function Home() {
 
       <main className="flex-1">
         <section className="container mx-auto px-4 lg:px-6 pt-16 pb-20 md:pt-24 md:pb-28 text-center flex flex-col items-center">
-          <h1 className="text-4xl md:text-6xl font-bold font-headline tracking-tighter mb-4">
+          <h1 className="text-4xl md:text-6xl font-bold font-headline tracking-tighter mb-4 max-w-4xl">
             {content.homeHeadline}
           </h1>
           <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8">
             {content.homeSubheadline}
           </p>
-          <div className="flex justify-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
             <Button size="lg" asChild>
-              <Link href="/register">Começar Gratuitamente por 14 dias</Link>
+              <Link href="/register">Começar Gratuitamente <ArrowRight className="ml-2 h-5 w-5"/></Link>
+            </Button>
+             <Button size="lg" variant="outline" asChild>
+                <Link href="#features">Ver Funcionalidades <ChevronRight className="ml-2 h-5 w-5"/></Link>
             </Button>
           </div>
         </section>
 
         <section className="container mx-auto px-4 lg:px-6 -mt-12">
+             <div className="text-center mb-8">
+                <p className="text-sm font-semibold text-muted-foreground tracking-wider uppercase">CONFIADO POR EMPRESAS LÍDERES</p>
+                <div className="mt-4 flex justify-center items-center gap-8 opacity-60">
+                    <p className="font-headline text-lg">NexusCorp</p>
+                    <p className="font-headline text-lg">QuantumLeap</p>
+                    <p className="font-headline text-lg">Zenith Solutions</p>
+                    <p className="font-headline text-lg hidden sm:block">Apex Industries</p>
+                    <p className="font-headline text-lg hidden md:block">NovaWave</p>
+                </div>
+            </div>
             <Card className="p-2 shadow-2xl shadow-primary/10 border-border/50 bg-card/50 backdrop-blur-sm">
                 <Image
                     src={content.dashboardImageUrl}
                     width={1200}
-                    height={600}
+                    height={800}
                     alt="Dashboard preview"
                     className="rounded-md"
                     data-ai-hint="dashboard analytics"
@@ -192,63 +224,45 @@ export default async function Home() {
         </section>
 
         <section id="features" className="container mx-auto px-4 lg:px-6 py-20 md:py-28">
-            <div className="text-center mb-12">
+            <div className="text-center mb-16">
                 <h2 className="text-3xl md:text-5xl font-bold font-headline tracking-tighter">
-                    Por que o <span className="text-primary">Tracklytics</span> é diferente?
+                    Uma suíte de ferramentas, <span className="text-primary">um objetivo: seu crescimento.</span>
                 </h2>
                 <p className="max-w-3xl mx-auto text-lg text-muted-foreground mt-4">
                     Fomos além do básico para entregar um conjunto de ferramentas que resolvem problemas reais e impulsionam o crescimento.
                 </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {features.map((feature) => (
-                    <Card key={feature.title} className="bg-card/50 border-border/50 p-6 flex flex-col items-start text-left">
-                        <div className="bg-primary/10 p-3 rounded-lg mb-4">
-                           <feature.icon className="h-8 w-8 text-primary" />
+            <div className="space-y-24">
+                {features.map((feature, index) => (
+                    <div key={feature.title} className={`grid grid-cols-1 md:grid-cols-2 gap-12 items-center`}>
+                        <div className={`space-y-4 ${index % 2 === 1 ? 'md:order-2' : ''}`}>
+                            <div className="inline-flex items-center gap-3 bg-primary/10 text-primary py-1 px-3 rounded-full">
+                                <feature.icon className="h-5 w-5" />
+                                <h3 className="font-semibold">{feature.title}</h3>
+                            </div>
+                            <p className="text-2xl font-bold font-headline">{feature.description}</p>
+                            <Button variant="link" asChild className="p-0 h-auto">
+                                <Link href="/register">Saber Mais <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                            </Button>
                         </div>
-                        <CardTitle className="font-headline text-xl mb-2">{feature.title}</CardTitle>
-                        <CardDescription className="text-base flex-grow">{feature.description}</CardDescription>
-                    </Card>
+                        <div className={`rounded-lg bg-muted/50 p-4 border ${index % 2 === 1 ? 'md:order-1' : ''}`}>
+                             <Image
+                                src={feature.image}
+                                width={1024}
+                                height={768}
+                                alt={`Preview da funcionalidade ${feature.title}`}
+                                className="rounded-md shadow-lg"
+                                data-ai-hint={feature.imageHint}
+                            />
+                        </div>
+                    </div>
                 ))}
             </div>
         </section>
-        
-        <section id="how-it-works" className="bg-muted/50 py-20 md:py-28">
-          <div className="container mx-auto px-4 lg:px-6">
-              <div className="text-center mb-12">
-                  <h2 className="text-3xl md:text-5xl font-bold font-headline tracking-tighter">Comece a Otimizar em Minutos</h2>
-                  <p className="max-w-2xl mx-auto text-lg text-muted-foreground mt-4">
-                      Nosso processo é simples e direto ao ponto.
-                  </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                  <div className="flex flex-col items-center">
-                      <div className="flex items-center justify-center bg-card border rounded-full h-16 w-16 mb-4">
-                          <span className="text-2xl font-bold font-headline text-primary">1</span>
-                      </div>
-                      <h3 className="text-xl font-headline font-semibold mb-2">Instale o Script</h3>
-                      <p className="text-muted-foreground">Adicione uma única linha de código no cabeçalho do seu site para começar a coletar dados.</p>
-                  </div>
-                   <div className="flex flex-col items-center">
-                      <div className="flex items-center justify-center bg-card border rounded-full h-16 w-16 mb-4">
-                          <span className="text-2xl font-bold font-headline text-primary">2</span>
-                      </div>
-                      <h3 className="text-xl font-headline font-semibold mb-2">Configure suas Ferramentas</h3>
-                      <p className="text-muted-foreground">Defina seu funil, ative a segurança e conecte suas contas de marketing com poucos cliques.</p>
-                  </div>
-                   <div className="flex flex-col items-center">
-                      <div className="flex items-center justify-center bg-card border rounded-full h-16 w-16 mb-4">
-                          <span className="text-2xl font-bold font-headline text-primary">3</span>
-                      </div>
-                      <h3 className="text-xl font-headline font-semibold mb-2">Receba Insights e Cresça</h3>
-                      <p className="text-muted-foreground">Acompanhe os resultados, use os insights da IA e veja suas conversões aumentarem.</p>
-                  </div>
-              </div>
-          </div>
-        </section>
 
-        <section id="pricing" className="container mx-auto px-4 lg:px-6 py-20 md:py-28">
-           <div className="text-center mb-12">
+        <section id="pricing" className="bg-muted/50 py-20 md:py-28">
+           <div className="container mx-auto px-4 lg:px-6">
+            <div className="text-center mb-12">
               <h2 className="text-3xl md:text-5xl font-bold font-headline tracking-tighter">
                 Encontre o plano perfeito para você
               </h2>
@@ -259,7 +273,7 @@ export default async function Home() {
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start max-w-5xl mx-auto">
               {tiers.map((tier) => (
-                <Card key={tier.name} className={`flex flex-col text-left ${tier.featured ? 'border-primary ring-2 ring-primary shadow-lg' : ''}`}>
+                <Card key={tier.name} className={`flex flex-col text-left bg-card ${tier.featured ? 'border-primary ring-2 ring-primary shadow-lg' : ''}`}>
                   <CardHeader>
                     <CardTitle className="font-headline text-2xl">{tier.name}</CardTitle>
                     <CardDescription>{tier.description}</CardDescription>
@@ -286,9 +300,10 @@ export default async function Home() {
                 </Card>
               ))}
             </div>
+           </div>
         </section>
 
-        <section id="testimonials" className="bg-muted/50 py-20 md:py-28">
+        <section id="testimonials" className="py-20 md:py-28">
             <div className="container mx-auto px-4 lg:px-6">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl md:text-4xl font-bold font-headline tracking-tighter">
@@ -298,14 +313,14 @@ export default async function Home() {
                         Veja por que os líderes da indústria escolhem o Tracklytics para impulsionar seus resultados.
                     </p>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {testimonials.map((testimonial) => (
-                        <Card key={testimonial.name} className="p-6 text-left">
-                            <CardContent className="p-0">
-                                <blockquote className="text-lg text-foreground mb-4">
+                        <Card key={testimonial.name} className="p-6 text-left bg-card">
+                            <CardContent className="p-0 flex flex-col h-full">
+                                <blockquote className="text-lg text-foreground mb-4 flex-grow">
                                     "{testimonial.quote}"
                                 </blockquote>
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-4 pt-4 border-t">
                                     <Avatar>
                                         <AvatarImage src={testimonial.avatar} alt={testimonial.name} data-ai-hint={testimonial.avatarHint} />
                                         <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
@@ -322,12 +337,35 @@ export default async function Home() {
             </div>
         </section>
 
-        <section className="container mx-auto px-4 lg:px-6 py-20 md:py-28">
+        <section id="faq" className="container mx-auto px-4 lg:px-6 py-20 md:py-28">
+            <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-5xl font-bold font-headline tracking-tighter">
+                    Perguntas Frequentes
+                </h2>
+                <p className="max-w-xl mx-auto text-lg text-muted-foreground mt-4">
+                    Tem alguma dúvida? Encontre suas respostas aqui.
+                </p>
+            </div>
+            <div className="max-w-3xl mx-auto">
+                <Accordion type="single" collapsible className="w-full">
+                    {faqs.map((faq, index) => (
+                        <AccordionItem key={index} value={`item-${index}`}>
+                            <AccordionTrigger className="text-lg text-left">{faq.question}</AccordionTrigger>
+                            <AccordionContent className="text-base text-muted-foreground">
+                                {faq.answer}
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
+            </div>
+        </section>
+
+        <section className="container mx-auto px-4 lg:px-6 pb-20 md:pb-28">
             <div className="bg-card border rounded-lg p-8 md:p-12 flex flex-col lg:flex-row items-center justify-between gap-8">
                 <div className="text-center lg:text-left">
                     <h2 className="text-3xl font-bold font-headline">Pronto para Desbloquear seus Insights?</h2>
                     <p className="text-muted-foreground mt-2 max-w-xl">
-                        Junte-se a centenas de empresas que já estão tomando decisões baseadas em dados reais. Comece seu teste gratuito de 14 dias hoje mesmo.
+                        Junte-se a centenas de empresas que já estão tomando decisões baseadas em dados reais. Comece seu teste gratuito hoje mesmo.
                     </p>
                 </div>
                 <Button size="lg" asChild className="shrink-0">
