@@ -1,29 +1,32 @@
 'use server';
+
 import 'server-only';
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 // We only import getCurrentUser which is safe for the edge
-import { getCurrentUser } from '@/app/actions/auth'
+import { getCurrentUser } from '@/app/actions/auth';
 
 export const runtime = 'edge';
 
 const PROTECTED_ROUTES = ['/dashboard', '/admin'];
-const PUBLIC_ONLY_ROUTES = ['/login', '/register', '/forgot-password'];
+const PUBLIC_ONLY_ROUTES = ['/login', '/register', '/forgot-password', '/'];
 const ADMIN_ROUTES = ['/admin'];
+const USER_ROUTES = ['/dashboard'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  const isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
-  const isAdminRoute = ADMIN_ROUTES.some((route) => pathname.startsWith(route));
-  const isPublicOnlyRoute = PUBLIC_ONLY_ROUTES.some((route) => pathname.startsWith(route));
-
-  // Allow access to /install page regardless of auth status
-  if (pathname.startsWith('/install')) {
+  // Allow access to /install and static assets needed for it.
+  if (pathname.startsWith('/install') || pathname.startsWith('/_next/') || pathname.startsWith('/favicon.ico')) {
     return NextResponse.next();
   }
 
   const currentUser = await getCurrentUser();
+
+  const isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+  const isAdminRoute = ADMIN_ROUTES.some((route) => pathname.startsWith(route));
+  const isUserRoute = USER_ROUTES.some((route) => pathname.startsWith(route));
+  const isPublicOnlyRoute = PUBLIC_ONLY_ROUTES.some((route) => pathname === route);
 
   // If trying to access a protected route without being logged in, redirect to login
   if (isProtectedRoute && !currentUser) {
@@ -37,19 +40,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(absoluteURL.toString());
   }
 
-  // If a regular user tries to access /admin, redirect them to /dashboard
-  if (currentUser && currentUser.role !== 'admin' && pathname.startsWith('/admin')) {
+  // If a regular user tries to access an admin route, redirect them to their dashboard
+  if (currentUser && currentUser.role !== 'admin' && isAdminRoute) {
       const absoluteURL = new URL('/dashboard', request.nextUrl.origin);
       return NextResponse.redirect(absoluteURL.toString());
   }
   
-  // If an admin user tries to access /dashboard, redirect them to /admin
-  if (currentUser && currentUser.role === 'admin' && pathname.startsWith('/dashboard')) {
+  // If an admin user tries to access a user-only route, redirect them to the admin panel
+  if (currentUser && currentUser.role === 'admin' && isUserRoute) {
       const absoluteURL = new URL('/admin', request.nextUrl.origin);
       return NextResponse.redirect(absoluteURL.toString());
   }
 
-  // If logged in, redirect from public-only routes to the appropriate dashboard
+  // If a logged-in user tries to access a public-only page (like login/register), redirect them
   if (isPublicOnlyRoute && currentUser) {
     const targetDashboard = currentUser.role === 'admin' ? '/admin' : '/dashboard';
     const absoluteURL = new URL(targetDashboard, request.nextUrl.origin);

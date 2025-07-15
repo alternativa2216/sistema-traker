@@ -1,6 +1,6 @@
 'use server';
-import 'server-only';
 
+import 'server-only';
 import { getDbConnection } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import type { MockUser } from './auth';

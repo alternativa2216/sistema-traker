@@ -1,6 +1,6 @@
 'use server';
-import 'server-only';
 
+import 'server-only';
 import {
   generateSwotAnalysis,
 } from '@/ai/flows/generate-swot-analysis';

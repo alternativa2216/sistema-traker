@@ -1,6 +1,6 @@
 'use server';
-import 'server-only';
 
+import 'server-only';
 import nodemailer from 'nodemailer';
 import { z } from 'zod';
 

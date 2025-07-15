@@ -1,6 +1,6 @@
 'use server';
-import 'server-only';
 
+import 'server-only';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
 import { getDbConnection } from '@/lib/db';

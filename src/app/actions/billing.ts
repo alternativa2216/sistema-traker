@@ -1,6 +1,6 @@
 'use server';
-import 'server-only';
 
+import 'server-only';
 import { getSettingsAction, saveSettingsAction } from './settings';
 import { z } from 'zod';
 import { getCurrentUser } from './auth';

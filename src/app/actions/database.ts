@@ -1,4 +1,5 @@
 'use server';
+
 import 'server-only';
 
 // A funcionalidade de setup dinâmico foi movida para a página /install
