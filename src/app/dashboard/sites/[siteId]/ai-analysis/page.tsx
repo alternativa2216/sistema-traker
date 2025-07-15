@@ -13,6 +13,7 @@ import { FileText, Lightbulb, Loader2, Search, Sparkles } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { generateAbTestHypothesisAction } from '@/app/actions/ai';
 import type { GenerateAbTestHypothesisOutput } from '@/ai/schemas';
+import { useParams } from 'next/navigation';
 
 const AbTestGenerator = () => {
     const [pageUrl, setPageUrl] = React.useState('');
@@ -84,6 +85,12 @@ const AbTestGenerator = () => {
                     </Button>
                 </form>
 
+                {isLoading && (
+                    <div className="border-t pt-4 mt-6 flex items-center justify-center h-40">
+                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                )}
+
                 {result && (
                     <div className="border-t pt-4 mt-6 space-y-4">
                         <h4 className="font-semibold text-lg">Hipóteses Geradas:</h4>
@@ -107,13 +114,15 @@ const AbTestGenerator = () => {
 
 
 export default function AiAnalysisPage() {
+    const params = useParams() as { siteId?: string };
+
     return (
         <Tabs defaultValue="chat" className="w-full">
             <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
                 <TabsTrigger value="chat">Chat com IA</TabsTrigger>
+                <TabsTrigger value="ab_testing">Testes A/B</TabsTrigger>
                 <TabsTrigger value="reports" disabled>Gerador de Relatórios</TabsTrigger>
                 <TabsTrigger value="predictive" disabled>Análise Preditiva</TabsTrigger>
-                <TabsTrigger value="ab_testing">Testes A/B</TabsTrigger>
                 <TabsTrigger value="competitor" disabled>Análise Competitiva</TabsTrigger>
             </TabsList>
             
@@ -126,9 +135,13 @@ export default function AiAnalysisPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <AiChat />
+                        <AiChat projectId={params.siteId}/>
                     </CardContent>
                 </Card>
+            </TabsContent>
+
+            <TabsContent value="ab_testing" className="mt-4">
+                 <AbTestGenerator />
             </TabsContent>
 
             <TabsContent value="reports" className="mt-4">
@@ -174,10 +187,6 @@ export default function AiAnalysisPage() {
                 </Card>
             </TabsContent>
             
-            <TabsContent value="ab_testing" className="mt-4">
-                 <AbTestGenerator />
-            </TabsContent>
-
             <TabsContent value="competitor" className="mt-4">
                  <Card>
                     <CardHeader>

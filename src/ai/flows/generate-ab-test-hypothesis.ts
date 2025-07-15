@@ -27,8 +27,10 @@ Para a página em '{{pageUrl}}', gere de 3 a 5 hipóteses de teste A/B claras e 
 
 Cada hipótese deve ser específica e mensurável. Para cada hipótese, forneça também uma sugestão clara de como implementá-la.
 
-Exemplo de Hipótese: Mudar a cor do botão de CTA principal de azul para laranja aumentará a taxa de cliques em 15% porque a nova cor tem mais contraste com o fundo da página.
-Exemplo de Sugestão: Variante A (Controle): Botão azul. Variante B: Botão laranja. Meça os cliques em cada variante por 2 semanas.`,
+Seja criativo, mas mantenha as sugestões realistas e focadas no objetivo.
+
+Exemplo de Hipótese: "Mudar a cor do botão de CTA principal de azul para laranja aumentará a taxa de cliques em 15%, porque a nova cor tem mais contraste com o fundo da página."
+Exemplo de Sugestão: "Variante A (Controle): Botão azul. Variante B: Botão laranja. Meça os cliques em cada variante por 2 semanas."`,
 });
 
 const generateAbTestHypothesisFlow = ai.defineFlow(
