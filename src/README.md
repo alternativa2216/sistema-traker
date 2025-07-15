@@ -12,6 +12,7 @@ Bem-vindo à documentação técnica do Tracklytics. Este documento fornece uma 
 - **Banco de Dados:** [MySQL](https://www.mysql.com/) (com o driver `mysql2`)
 - **Validação de Formulários:** [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
 - **Gráficos:** [Recharts](https://recharts.org/)
+- **Segurança de Senha:** [Bcrypt.js](https://github.com/dcodeIO/bcrypt.js)
 
 ## Estrutura de Pastas
 
@@ -98,3 +99,5 @@ Bem-vindo à documentação técnica do Tracklytics. Este documento fornece uma 
 - `npm run start`: Inicia o servidor de produção após o build.
 - `npm run lint`: Executa o linter para verificar a qualidade do código.
 - `npm run typecheck`: Verifica os tipos do TypeScript sem emitir arquivos.
+
+    

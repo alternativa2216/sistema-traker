@@ -1,12 +1,12 @@
 
 'use client'
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowUpRight, Eye, MousePointerClick, PlusCircle, Sparkles, LogOut, Loader2, Target, Users, Network, AlertTriangle, Lightbulb, TrendingUp, Copy, Megaphone, X } from "lucide-react";
+import { Eye, MousePointerClick, PlusCircle, Sparkles, LogOut, Loader2, Target, Users, Network, AlertTriangle, Lightbulb, TrendingUp, Copy, Megaphone, X, Code } from "lucide-react";
 import Link from "next/link";
 import { analyzeProjectDataAction } from "../actions/ai";
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +25,8 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { addProjectAction, getProjectsAction, getNotificationsForUserAction, markNotificationAsReadAction } from "../actions/projects";
 import { cn } from "@/lib/utils";
+import type { AnalyticsData } from "../actions/analytics";
+import { getAnalyticsForProjectAction } from "../actions/analytics";
 
 
 const UserAlert = ({ alert, onDismiss }: { alert: any, onDismiss: (id: number) => void }) => {
@@ -79,27 +81,13 @@ const UserAlert = ({ alert, onDismiss }: { alert: any, onDismiss: (id: number) =
     )
 }
 
-interface PageData { path: string; visits: string }
-interface TrafficSource { source: string; visits: string }
-
-const emptyData = {
-    totalVisits: "0",
-    newUsers: "0",
-    conversionRate: "0%",
-    avgBounceRate: "0%",
-    topVisitedPages: [] as PageData[],
-    topExitPages: [] as PageData[],
-    trafficSources: [] as TrafficSource[]
-};
-
 export default function DashboardPage() {
     const [sites, setSites] = useState<any[]>([]);
     const [alerts, setAlerts] = useState<any[]>([]);
-    const [selectedSiteId, setSelectedSiteId] = useState('all');
-    const [displayData, setDisplayData] = useState(emptyData);
-    const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+    const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
+    const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [isAiLoading, setIsAiLoading] = useState(false);
+    const [isAnalyticsLoading, setIsAnalyticsLoading] = useState(false);
     const { toast } = useToast();
 
     // State for Add Site Dialog
@@ -109,8 +97,13 @@ export default function DashboardPage() {
     const [newSiteName, setNewSiteName] = useState('');
     const [newSiteUrl, setNewSiteUrl] = useState('');
     const [generatedScript, setGeneratedScript] = useState('');
+    const [baseUrl, setBaseUrl] = useState('');
 
-    const fetchDashboardData = React.useCallback(async () => {
+    useEffect(() => {
+        setBaseUrl(window.location.origin);
+    }, []);
+
+    const fetchInitialData = useCallback(async () => {
         setIsLoading(true);
         try {
             const [fetchedSites, fetchedAlerts] = await Promise.all([
@@ -119,6 +112,9 @@ export default function DashboardPage() {
             ]);
             setSites(fetchedSites);
             setAlerts(fetchedAlerts);
+            if (fetchedSites.length > 0) {
+                setSelectedSiteId(fetchedSites[0].id);
+            }
         } catch (error) {
             console.error("Failed to fetch dashboard data:", error);
             toast({
@@ -133,8 +129,27 @@ export default function DashboardPage() {
 
 
     useEffect(() => {
-        fetchDashboardData();
-    }, [fetchDashboardData]);
+        fetchInitialData();
+    }, [fetchInitialData]);
+    
+    useEffect(() => {
+        const fetchAnalytics = async () => {
+            if (!selectedSiteId) {
+                setAnalyticsData(null);
+                return;
+            }
+            setIsAnalyticsLoading(true);
+            try {
+                const data = await getAnalyticsForProjectAction({ projectId: selectedSiteId, range: '7d' as any });
+                setAnalyticsData(data);
+            } catch (error: any) {
+                toast({ title: 'Erro ao buscar analytics', description: error.message, variant: 'destructive' });
+            } finally {
+                setIsAnalyticsLoading(false);
+            }
+        };
+        fetchAnalytics();
+    }, [selectedSiteId, toast]);
 
     const handleDismissAlert = async (id: number) => {
         setAlerts(prevAlerts => prevAlerts.filter(alert => alert.id !== id));
@@ -142,20 +157,9 @@ export default function DashboardPage() {
             await markNotificationAsReadAction(id);
         } catch (error: any) {
             toast({ title: 'Erro', description: error.message, variant: 'destructive' });
-            // If the action fails, refetch the data to show the alert again
-            fetchDashboardData();
+            fetchInitialData();
         }
     };
-
-    useEffect(() => {
-        // This effect would re-fetch data when the selected site changes
-        // For now, it just resets the data to empty
-        setDisplayData(emptyData);
-        setAiAnalysis(null);
-        if (selectedSiteId !== 'all') {
-            // handleAiAnalysis(selectedSiteId, {}); // Pass empty data for now
-        }
-    }, [selectedSiteId]);
 
     const handleAddSiteSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -173,7 +177,8 @@ export default function DashboardPage() {
             if (result.success) {
                 const newProject = result.project;
                 setSites(prev => [newProject, ...prev]);
-                const script = `<script async src="https://tracklytics.pro/track.js?id=${newProject.id}"></script>`;
+                setSelectedSiteId(newProject.id); // Select the new site
+                const script = `<script async src="${baseUrl}/track.js?id=${newProject.id}"></script>`;
                 setGeneratedScript(script);
                 setDialogStep('success');
             }
@@ -204,7 +209,7 @@ export default function DashboardPage() {
     }, [isAddSiteDialogOpen]);
 
 
-    const TopPagesCard = ({ title, data, icon, unit }: { title: string, data: { path: string, visits: string }[], icon: React.ElementType, unit: string }) => {
+    const TopPagesCard = ({ title, data, icon, unit }: { title: string, data: { path: string; visits: number }[] | undefined, icon: React.ElementType, unit: string }) => {
         const Icon = icon;
         return (
             <Card>
@@ -223,10 +228,10 @@ export default function DashboardPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {data.length > 0 ? data.map((item) => (
+                            {data && data.length > 0 ? data.map((item) => (
                                 <TableRow key={item.path}>
-                                    <TableCell className="font-medium">{item.path}</TableCell>
-                                    <TableCell className="text-right">{item.visits}</TableCell>
+                                    <TableCell className="font-medium truncate max-w-[150px]">{item.path}</TableCell>
+                                    <TableCell className="text-right">{item.visits.toLocaleString('pt-BR')}</TableCell>
                                 </TableRow>
                             )) : (
                                 <TableRow>
@@ -256,19 +261,18 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between space-y-2">
                 <div>
                     <h1 className="text-3xl font-bold font-headline">
-                        {selectedSiteId === 'all' ? 'Painel Geral' : sites.find(s => s.id === selectedSiteId)?.name}
+                        {sites.length === 0 ? 'Painel Principal' : selectedSiteId ? sites.find(s => s.id === selectedSiteId)?.name : 'Painel Geral'}
                     </h1>
                     <p className="text-muted-foreground">
-                        {selectedSiteId === 'all' ? 'Uma visão geral de todos os seus projetos.' : 'Análise detalhada do site selecionado.'}
+                        {sites.length === 0 ? 'Adicione um site para começar.' : 'Visão geral do desempenho do seu projeto nos últimos 7 dias.'}
                     </p>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <Select onValueChange={setSelectedSiteId} defaultValue="all" disabled={sites.length === 0}>
+                    <Select onValueChange={setSelectedSiteId} value={selectedSiteId ?? ''} disabled={sites.length === 0}>
                         <SelectTrigger className="w-[200px]">
                             <SelectValue placeholder="Selecione um site" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">Todos os Sites</SelectItem>
                             {sites.map(site => (
                                 <SelectItem key={site.id} value={site.id}>{site.name}</SelectItem>
                             ))}
@@ -343,103 +347,113 @@ export default function DashboardPage() {
                     </Button>
                 </Card>
             ) : (
-                <>
-                    {selectedSiteId === 'all' && (
-                        <OverviewChart />
-                    )}
+                isAnalyticsLoading ? (
+                    <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin" /></div>
+                ) : analyticsData ? (
+                    <>
+                        <OverviewChart data={analyticsData.timeSeries} />
 
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Total de Visitas</CardTitle>
-                                <Eye className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{displayData.totalVisits}</div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Novos Usuários</CardTitle>
-                                <Users className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{displayData.newUsers}</div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Taxa de Conversão</CardTitle>
-                                <Target className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{displayData.conversionRate}</div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Taxa de Rejeição Média</CardTitle>
-                                <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{displayData.avgBounceRate}</div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                        <TopPagesCard title="Top 5 Páginas Visitadas" data={displayData.topVisitedPages} icon={MousePointerClick} unit="Visitas" />
-                        <TopPagesCard title="Top 5 Páginas de Saída" data={displayData.topExitPages} icon={LogOut} unit="Saídas" />
-                         <Card>
-                            <CardHeader>
-                                <div className="flex items-center gap-2">
-                                    <Network className="h-5 w-5 text-primary" />
-                                    <CardTitle className="font-headline text-lg">Fontes de Tráfego</CardTitle>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Fonte</TableHead>
-                                            <TableHead className="text-right">Visitas</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {displayData.trafficSources.length > 0 ? displayData.trafficSources.map((source) => (
-                                            <TableRow key={source.source}>
-                                                <TableCell className="font-medium">{source.source}</TableCell>
-                                                <TableCell className="text-right">{source.visits}</TableCell>
-                                            </TableRow>
-                                        )) : (
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                             <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Visitantes Únicos</CardTitle>
+                                    <Users className="h-4 w-4 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent><div className="text-2xl font-bold">{analyticsData.summary.visitors.toLocaleString('pt-BR')}</div></CardContent>
+                            </Card>
+                             <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Total de Visitas</CardTitle>
+                                    <Eye className="h-4 w-4 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent><div className="text-2xl font-bold">{analyticsData.summary.sessions.toLocaleString('pt-BR')}</div></CardContent>
+                            </Card>
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Taxa de Rejeição</CardTitle>
+                                    <Target className="h-4 w-4 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent><div className="text-2xl font-bold">{analyticsData.summary.bounceRate.toFixed(1)}%</div></CardContent>
+                            </Card>
+                           <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Duração da Sessão</CardTitle>
+                                    <LogOut className="h-4 w-4 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent><div className="text-2xl font-bold">{analyticsData.summary.sessionDuration}</div></CardContent>
+                            </Card>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                            <TopPagesCard title="Top 5 Páginas Visitadas" data={analyticsData.topPages} icon={MousePointerClick} unit="Visitas" />
+                            <TopPagesCard title="Top 5 Páginas de Saída" data={analyticsData.exitPages} icon={LogOut} unit="Saídas" />
+                             <Card>
+                                <CardHeader>
+                                    <div className="flex items-center gap-2">
+                                        <Network className="h-5 w-5 text-primary" />
+                                        <CardTitle className="font-headline text-lg">Fontes de Tráfego</CardTitle>
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <Table>
+                                        <TableHeader>
                                             <TableRow>
-                                                <TableCell colSpan={2} className="h-24 text-center">Nenhum dado.</TableCell>
+                                                <TableHead>Fonte</TableHead>
+                                                <TableHead className="text-right">Visitantes</TableHead>
                                             </TableRow>
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {selectedSiteId !== 'all' && (
-                        <Card>
-                            <CardHeader>
-                                <div className="flex items-center gap-2">
-                                    <Sparkles className="h-5 w-5 text-primary" />
-                                    <CardTitle className="font-headline text-lg">Análise de IA para Conversão</CardTitle>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {analyticsData.sources.length > 0 ? analyticsData.sources.map((source) => (
+                                                <TableRow key={source.source}>
+                                                    <TableCell className="font-medium">{source.source}</TableCell>
+                                                    <TableCell className="text-right">{source.visitors.toLocaleString('pt-BR')}</TableCell>
+                                                </TableRow>
+                                            )) : (
+                                                <TableRow>
+                                                    <TableCell colSpan={2} className="h-24 text-center">Nenhum dado.</TableCell>
+                                                </TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </>
+                ) : (
+                     <Card className="flex flex-col items-center justify-center text-center p-12">
+                        <CardTitle className="font-headline">Aguardando Dados</CardTitle>
+                        <CardDescription className="mt-2 mb-6 max-w-md">
+                            Ainda não recebemos nenhuma visita para este site. Certifique-se de que o script de rastreamento foi instalado corretamente em todas as páginas.
+                        </CardDescription>
+                         <Dialog>
+                            <DialogTrigger asChild>
+                                <Button variant="outline"><Code className="mr-2 h-4 w-4"/>Ver Script de Rastreamento</Button>
+                            </DialogTrigger>
+                             <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Script de Rastreamento</DialogTitle>
+                                    <DialogDescription>
+                                        Copie e cole este script na tag <code>&lt;head&gt;</code> do seu site.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="bg-muted p-4 rounded-md font-mono text-sm text-foreground break-all">
+                                    {`<script async src="${baseUrl}/track.js?id=${selectedSiteId}"></script>`}
                                 </div>
-                                <CardDescription>Recomendações geradas pelo Gemini para melhorar os resultados do seu site.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="text-sm text-muted-foreground min-h-[100px]">
-                                {isAiLoading && <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Gerando insights...</div>}
-                                {aiAnalysis && !isAiLoading && <p className="whitespace-pre-wrap">{aiAnalysis}</p>}
-                                {!aiAnalysis && !isAiLoading && <p>Nenhuma análise de IA disponível para este site ainda.</p>}
-                            </CardContent>
-                        </Card>
-                    )}
-                </>
+                                <DialogFooter>
+                                    <Button onClick={() => {
+                                        navigator.clipboard.writeText(`<script async src="${baseUrl}/track.js?id=${selectedSiteId}"></script>`);
+                                        toast({title: "Copiado!"});
+                                    }}>
+                                        <Copy className="mr-2 h-4 w-4" />Copiar
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+                    </Card>
+                )
             )}
         </div>
     );
 }
+
+    

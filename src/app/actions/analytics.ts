@@ -1,12 +1,14 @@
+
 'use server';
 
 import 'server-only';
 import { getDbConnection } from '@/lib/db';
 import { getCurrentUser } from './auth';
+import { startOfDay, subDays, endOfDay } from 'date-fns';
 
 interface AnalyticsParams {
     projectId: string;
-    range: 'today' | 'yesterday' | '7d' | '30d' | 'all' | string;
+    range: 'today' | 'yesterday' | '7d' | '30d' | 'all';
 }
 
 export interface AnalyticsData {
@@ -22,27 +24,32 @@ export interface AnalyticsData {
     exitPages: { path: string; visits: number }[];
 }
 
-function getStartDate(range: string): Date {
+function getStartAndEndDates(range: 'today' | 'yesterday' | '7d' | '30d' | 'all'): { startDate: Date; endDate: Date } {
     const now = new Date();
+    const endDate = endOfDay(now);
+    let startDate: Date;
+
     switch (range) {
         case 'today':
-            now.setHours(0, 0, 0, 0);
-            return now;
+            startDate = startOfDay(now);
+            break;
         case 'yesterday':
-            now.setDate(now.getDate() - 1);
-            now.setHours(0, 0, 0, 0);
-            return now;
+            startDate = startOfDay(subDays(now, 1));
+            break;
         case '7d':
-            now.setDate(now.getDate() - 7);
-            return now;
+            startDate = startOfDay(subDays(now, 6)); // Including today
+            break;
         case '30d':
-            now.setDate(now.getDate() - 30);
-            return now;
+            startDate = startOfDay(subDays(now, 29)); // Including today
+            break;
         case 'all':
         default:
-            return new Date(0); // The beginning of time
+            startDate = new Date(0); // The beginning of time
+            break;
     }
+    return { startDate, endDate };
 }
+
 
 function formatDuration(seconds: number) {
     if (isNaN(seconds) || seconds === 0) return '0m 0s';
@@ -63,44 +70,52 @@ export async function getAnalyticsForProjectAction({ projectId, range }: Analyti
             throw new Error("Acesso negado ao projeto.");
         }
 
-        const startDate = getStartDate(range);
+        const { startDate, endDate } = getStartAndEndDates(range);
+
+        const dateFilter = 'created_at >= ? AND created_at <= ?';
 
         // Summary Metrics
         const [summaryRows]: [any[], any] = await connection.execute(
             `SELECT
-                COUNT(DISTINCT session_id) as sessions,
-                COUNT(*) as visits
-             FROM analytics_visits WHERE project_id = ? AND created_at >= ?`,
-            [projectId, startDate]
+                COUNT(DISTINCT session_id) as sessions
+             FROM analytics_visits WHERE project_id = ? AND ${dateFilter}`,
+            [projectId, startDate, endDate]
         );
-        const { sessions, visits } = summaryRows[0];
+        const sessions = summaryRows[0].sessions || 0;
 
-        const [sessionDurations]: [any[], any] = await connection.execute(
-            `SELECT session_id, TIMESTAMPDIFF(SECOND, MIN(created_at), MAX(created_at)) as duration
-             FROM analytics_visits
-             WHERE project_id = ? AND created_at >= ?
-             GROUP BY session_id`,
-            [projectId, startDate]
+        const [totalVisitsRows]: [any[], any] = await connection.execute(
+            `SELECT COUNT(*) as visits FROM analytics_visits WHERE project_id = ? AND ${dateFilter}`,
+            [projectId, startDate, endDate]
         );
-        
-        let singleVisitSessions = 0;
-        if(sessionDurations.length > 0) {
-            const [singleVisitRows]: [any[], any] = await connection.execute(
-                `SELECT COUNT(*) as singleVisitCount FROM (
-                    SELECT session_id
-                    FROM analytics_visits
-                    WHERE project_id = ? AND created_at >= ?
+        const visits = totalVisitsRows[0].visits || 0;
+
+        let bounceRate = 0;
+        if (sessions > 0) {
+            const [bouncedSessionsRows]: [any[], any] = await connection.execute(
+                `SELECT COUNT(*) as bouncedCount FROM (
+                    SELECT session_id FROM analytics_visits
+                    WHERE project_id = ? AND ${dateFilter}
                     GROUP BY session_id
                     HAVING COUNT(*) = 1
-                ) as single_visits`,
-                [projectId, startDate]
+                ) as single_page_sessions`,
+                [projectId, startDate, endDate]
             );
-            singleVisitSessions = singleVisitRows[0].singleVisitCount;
+            const bouncedSessions = bouncedSessionsRows[0].bouncedCount || 0;
+            bounceRate = (bouncedSessions / sessions) * 100;
         }
 
-        const totalDuration = sessionDurations.reduce((acc: number, row: any) => acc + row.duration, 0);
-        const avgDuration = sessions > 0 ? totalDuration / sessions : 0;
-        const bounceRate = sessions > 0 ? (singleVisitSessions / sessions) * 100 : 0;
+        const [sessionDurations]: [any[], any] = await connection.execute(
+            `SELECT AVG(duration) as avg_duration FROM (
+                SELECT TIMESTAMPDIFF(SECOND, MIN(created_at), MAX(created_at)) as duration
+                FROM analytics_visits
+                WHERE project_id = ? AND ${dateFilter}
+                GROUP BY session_id
+                HAVING COUNT(*) > 1
+             ) as durations`,
+            [projectId, startDate, endDate]
+        );
+
+        const avgDuration = sessionDurations[0].avg_duration || 0;
         
         // Time Series Data
         const [timeSeriesRows]: [any[], any] = await connection.execute(
@@ -109,10 +124,10 @@ export async function getAnalyticsForProjectAction({ projectId, range }: Analyti
                 SUM(CASE WHEN device_type = 'desktop' THEN 1 ELSE 0 END) as desktop,
                 SUM(CASE WHEN device_type != 'desktop' THEN 1 ELSE 0 END) as mobile
              FROM analytics_visits
-             WHERE project_id = ? AND created_at >= ?
+             WHERE project_id = ? AND ${dateFilter}
              GROUP BY DATE(created_at)
              ORDER BY date ASC`,
-            [projectId, startDate]
+            [projectId, startDate, endDate]
         );
 
         // Top Sources
@@ -126,26 +141,26 @@ export async function getAnalyticsForProjectAction({ projectId, range }: Analyti
                 END as source,
                 COUNT(DISTINCT session_id) as visitors
              FROM analytics_visits
-             WHERE project_id = ? AND created_at >= ?
+             WHERE project_id = ? AND ${dateFilter}
              GROUP BY source
              ORDER BY visitors DESC`,
-            [projectId, startDate]
+            [projectId, startDate, endDate]
         );
         
         // Top & Exit Pages
         const [topPagesRows]: [any[], any] = await connection.execute(
             `SELECT path, COUNT(*) as visits
              FROM analytics_visits
-             WHERE project_id = ? AND created_at >= ?
+             WHERE project_id = ? AND ${dateFilter}
              GROUP BY path ORDER BY visits DESC LIMIT 5`,
-            [projectId, startDate]
+            [projectId, startDate, endDate]
         );
 
         const [exitPagesRows]: [any[], any] = await connection.execute(
             `WITH LastVisits AS (
                 SELECT session_id, path, ROW_NUMBER() OVER(PARTITION BY session_id ORDER BY created_at DESC) as rn
                 FROM analytics_visits
-                WHERE project_id = ? AND created_at >= ?
+                WHERE project_id = ? AND ${dateFilter}
             )
             SELECT path, COUNT(*) as visits
             FROM LastVisits
@@ -153,7 +168,7 @@ export async function getAnalyticsForProjectAction({ projectId, range }: Analyti
             GROUP BY path
             ORDER BY visits DESC
             LIMIT 5;`,
-            [projectId, startDate]
+            [projectId, startDate, endDate]
         );
 
 
@@ -243,3 +258,5 @@ export async function getRealTimeVisitorsAction(projectId: string): Promise<any[
         if (connection) await connection.end();
     }
 }
+
+    

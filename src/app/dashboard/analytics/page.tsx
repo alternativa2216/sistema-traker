@@ -1,3 +1,5 @@
+
+'use client';
 import {
     Card,
     CardContent,
@@ -12,8 +14,11 @@ import {
     TabsTrigger,
   } from "@/components/ui/tabs"
   import { AiChat } from "@/components/dashboard/ai-chat"
+import { useParams } from "next/navigation";
   
   export default function AnalyticsPage() {
+    const params = useParams() as { siteId?: string };
+
     return (
       <div>
         <div className="mb-8">
@@ -23,25 +28,9 @@ import {
         
         <Tabs defaultValue="ai_analysis" className="w-full">
           <TabsList>
-            <TabsTrigger value="overview">Visão Geral</TabsTrigger>
             <TabsTrigger value="ai_analysis">Análise com IA</TabsTrigger>
-            <TabsTrigger value="real_time" disabled>Tempo Real</TabsTrigger>
             <TabsTrigger value="heatmaps" disabled>Mapas de Calor</TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="overview">
-            <Card>
-              <CardHeader>
-                <CardTitle className="font-headline">Visão Geral das Análises</CardTitle>
-                <CardDescription>
-                  Um resumo detalhado do desempenho do seu projeto. Esta seção está em construção.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <p>Gráficos e tabelas detalhados serão exibidos aqui.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
           
           <TabsContent value="ai_analysis">
             <Card>
@@ -52,7 +41,7 @@ import {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <AiChat />
+                    <AiChat projectId={params.siteId}/>
                 </CardContent>
             </Card>
           </TabsContent>
@@ -60,4 +49,5 @@ import {
       </div>
     )
   }
-  
+
+    

@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -5,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
-import { ArrowDown, ArrowUp, Bot, Copy, Eye, LogOut, MousePointerClick, TrendingDown, Users, Target, Network, Code, Loader2 } from 'lucide-react';
+import { Bot, Code, Copy, Eye, Loader2, LogOut, MousePointerClick, Network, Target, TrendingDown, Users } from 'lucide-react';
 import { VisitsOverTimeChart } from '@/components/dashboard/site-analytics/visits-over-time-chart';
 import { TrafficSourceChart } from '@/components/dashboard/site-analytics/traffic-source-chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -15,19 +16,14 @@ import { getAnalyticsForProjectAction } from '@/app/actions/analytics';
 import type { AnalyticsData } from '@/app/actions/analytics';
 
 
-const MetricCard = ({ title, value, change, changeType }: { title: string, value: string, change?: string, changeType?: 'increase' | 'decrease' }) => (
+const MetricCard = ({ title, value, icon: Icon }: { title: string, value: string, icon: React.ElementType }) => (
     <Card>
-        <CardHeader className="pb-2">
-            <CardDescription>{title}</CardDescription>
-            <CardTitle className="text-4xl font-bold font-headline">{value}</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{title}</CardTitle>
+            <Icon className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-            {change && (
-                <div className={`text-xs flex items-center ${changeType === 'decrease' ? 'text-red-500' : 'text-green-500'}`}>
-                    {changeType === 'increase' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
-                    <span>{change} em relação ao período anterior</span>
-                </div>
-            )}
+            <div className="text-2xl font-bold">{value}</div>
         </CardContent>
     </Card>
 );
@@ -38,14 +34,14 @@ export default function SiteAnalyticsPage() {
     const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
-    const trackingScript = `<script async src="https://tracklytics.pro/track.js?id=${params.siteId}"></script>`;
+    const trackingScript = `<script async src="${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002'}/track.js?id=${params.siteId}"></script>`;
 
     useEffect(() => {
         async function fetchData() {
             if (!params.siteId) return;
             setIsLoading(true);
             try {
-                const data = await getAnalyticsForProjectAction({ projectId: params.siteId, range: timeRange });
+                const data = await getAnalyticsForProjectAction({ projectId: params.siteId, range: timeRange as any });
                 setAnalyticsData(data);
             } catch (error: any) {
                 toast({ title: "Erro ao buscar dados", description: error.message, variant: 'destructive' });
@@ -142,10 +138,10 @@ export default function SiteAnalyticsPage() {
                 </div>
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <MetricCard title="Visitantes" value={analyticsData?.summary.visitors.toLocaleString('pt-BR') ?? '0'} />
-                    <MetricCard title="Sessões" value={analyticsData?.summary.sessions.toLocaleString('pt-BR') ?? '0'} />
-                    <MetricCard title="Taxa de Rejeição" value={`${analyticsData?.summary.bounceRate.toFixed(1) ?? '0.0'}%`} />
-                    <MetricCard title="Duração da Sessão" value={analyticsData?.summary.sessionDuration ?? '0m 0s'} />
+                    <MetricCard title="Visitantes Únicos" icon={Users} value={analyticsData?.summary.visitors.toLocaleString('pt-BR') ?? '0'} />
+                    <MetricCard title="Total de Visitas" icon={Eye} value={analyticsData?.summary.sessions.toLocaleString('pt-BR') ?? '0'} />
+                    <MetricCard title="Taxa de Rejeição" icon={Target} value={`${analyticsData?.summary.bounceRate.toFixed(1) ?? '0.0'}%`} />
+                    <MetricCard title="Duração da Sessão" icon={LogOut} value={analyticsData?.summary.sessionDuration ?? '0m 0s'} />
                 </div>
             )}
 
@@ -188,3 +184,5 @@ export default function SiteAnalyticsPage() {
         </div>
     );
 }
+
+    

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect, FormEvent } from 'react';
@@ -15,7 +16,11 @@ interface Message {
   text: string;
 }
 
-export function AiChat() {
+interface AiChatProps {
+    projectId?: string | null;
+}
+
+export function AiChat({ projectId }: AiChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +38,7 @@ export function AiChat() {
   
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || !projectId) return;
 
     const userMessage: Message = { sender: 'user', text: input };
     setMessages((prev) => [...prev, userMessage]);
@@ -42,24 +47,26 @@ export function AiChat() {
 
     try {
       const response = await analyzeProjectDataAction({
-        projectId: 'project-1', // In a real app, this would be dynamic
+        projectId: projectId,
         query: input,
       });
 
       const aiMessage: Message = { sender: 'ai', text: response.analysis };
       setMessages((prev) => [...prev, aiMessage]);
-    } catch (error) {
-      const errorMessage: Message = { sender: 'ai', text: "Desculpe, não consegui processar essa solicitação. Por favor, tente novamente." };
+    } catch (error: any) {
+      const errorMessage: Message = { sender: 'ai', text: error.message || "Desculpe, não consegui processar essa solicitação. Por favor, tente novamente." };
       setMessages((prev) => [...prev, errorMessage]);
       toast({
-        title: "Erro",
-        description: "Falha ao obter a análise da IA.",
+        title: "Erro de Análise",
+        description: error.message,
         variant: "destructive",
       })
     } finally {
       setIsLoading(false);
     }
   };
+
+  const isChatDisabled = !projectId;
 
   return (
     <div className="flex flex-col h-[60vh]">
@@ -70,7 +77,11 @@ export function AiChat() {
                 <div>
                     <Bot className="h-12 w-12 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold">Chat com Analista de IA</h3>
-                    <p>Pergunte-me qualquer coisa sobre os dados do seu projeto. <br /> ex: "Quais foram minhas principais fontes de tráfego este mês?"</p>
+                    {isChatDisabled ? (
+                        <p className="text-destructive">Selecione um projeto para habilitar o chat.</p>
+                    ) : (
+                        <p>Pergunte-me qualquer coisa sobre os dados do seu projeto. <br /> ex: "Quais foram minhas principais fontes de tráfego este mês?"</p>
+                    )}
                 </div>
             </div>
           )}
@@ -95,7 +106,7 @@ export function AiChat() {
                     : 'bg-muted'
                 )}
               >
-                <p>{message.text}</p>
+                <p className="whitespace-pre-wrap">{message.text}</p>
               </div>
               {message.sender === 'user' && (
                  <Avatar className="h-8 w-8">
@@ -121,11 +132,11 @@ export function AiChat() {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Pergunte sobre seus dados..."
-            disabled={isLoading}
+            placeholder={isChatDisabled ? "Selecione um projeto para começar" : "Pergunte sobre seus dados..."}
+            disabled={isLoading || isChatDisabled}
             autoComplete="off"
           />
-          <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+          <Button type="submit" size="icon" disabled={isLoading || !input.trim() || isChatDisabled}>
             <Send className="h-4 w-4" />
             <span className="sr-only">Enviar mensagem</span>
           </Button>
@@ -134,3 +145,5 @@ export function AiChat() {
     </div>
   );
 }
+
+    

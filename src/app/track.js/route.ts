@@ -2,7 +2,11 @@
 // /src/app/track.js/route.ts
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const host = request.headers.get('host');
+  const protocol = host?.includes('localhost') ? 'http' : 'https';
+  const baseUrl = `${protocol}://${host}`;
+
   const script = `
 (function() {
   if (window.tracklytics) {
@@ -28,11 +32,10 @@ export async function GET() {
       path: window.location.pathname + window.location.search,
       referrer: document.referrer,
       userAgent: navigator.userAgent,
-      // O deviceType e countryCode serão determinados no backend
     };
     
     // Envia os dados para a API de rastreamento usando a URL absoluta
-    fetch('https://tracklytics.pro/api/track', {
+    fetch('${baseUrl}/api/track', {
       method: 'POST',
       body: JSON.stringify(data),
       headers: {
@@ -70,3 +73,5 @@ export async function GET() {
     },
   });
 }
+
+    
