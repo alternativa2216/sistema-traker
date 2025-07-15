@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import { getAdminDashboardStatsAction } from "../actions/admin";
+import { getAdminDashboardStatsAction } from "@/app/actions/admin";
 import { useToast } from "@/hooks/use-toast";
 
 

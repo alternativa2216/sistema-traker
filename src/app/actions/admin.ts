@@ -1,4 +1,3 @@
-
 'use server';
 
 import 'server-only';
@@ -90,11 +89,15 @@ export async function getAdminDashboardStatsAction() {
         connection = await getDbConnection();
         
         const [totalUsersRows] = await connection.execute('SELECT COUNT(*) as totalUsers FROM users');
-        const totalUsers = (totalUsersRows as any[])[0].totalUsers;
-
         const [totalProjectsRows] = await connection.execute('SELECT COUNT(*) as totalProjects FROM projects');
-        const totalProjects = (totalProjectsRows as any[])[0].totalProjects;
+        const [totalSubscriptionsRows] = await connection.execute("SELECT COUNT(*) as totalSubscriptions FROM subscriptions WHERE status = 'active'");
+        const [mrrRows] = await connection.execute("SELECT SUM(REPLACE(s.plan_price, ',', '.')) as mrr FROM subscriptions s JOIN users u ON s.user_id = u.id WHERE s.status = 'active'");
 
+        const totalUsers = (totalUsersRows as any[])[0].totalUsers || 0;
+        const totalProjects = (totalProjectsRows as any[])[0].totalProjects || 0;
+        const activeSubscribers = (totalSubscriptionsRows as any[])[0].totalSubscriptions || 0;
+        const mrr = (mrrRows as any[])[0].mrr || 0;
+        
         const [recentUsersRows] = await connection.execute('SELECT name, email, created_at FROM users ORDER BY created_at DESC LIMIT 5');
         const [recentProjectsRows] = await connection.execute(`
             SELECT p.name, u.name as user_name, p.created_at 
@@ -105,8 +108,6 @@ export async function getAdminDashboardStatsAction() {
         `);
         
         // Mocked data as these tables aren't populated yet by a real service
-        const mrr = 0;
-        const activeSubscribers = 0;
         const newTrials = 0;
         const churnRate = 0;
         const topProjects: any[] = [];
@@ -214,6 +215,88 @@ export async function deleteNotificationAction(id: number) {
     } catch (error: any) {
         console.error("Falha ao excluir notificação:", error);
         throw new Error("Não foi possível excluir a notificação.");
+    } finally {
+        if (connection) await connection.end();
+    }
+}
+
+
+export async function getSystemHealthAction() {
+  await verifyAdmin();
+  let connection;
+
+  // API Check (simple, just measures response time of this action)
+  const apiStart = Date.now();
+
+  // Database Check
+  let dbLatency = 0;
+  let dbStatus: 'Conectado' | 'Não Conectado' = 'Não Conectado';
+  try {
+    connection = await getDbConnection();
+    const start = Date.now();
+    await connection.ping();
+    dbLatency = Date.now() - start;
+    dbStatus = 'Conectado';
+  } catch (e) {
+    // Error is handled, status will remain 'Not Connected'
+  } finally {
+    if (connection) await connection.end();
+  }
+
+  // AI Services Check
+  let aiLatency = 0;
+  let aiStatus: 'Operacional' | 'Não Configurado' | 'Indisponível' = 'Não Configurado';
+  if (process.env.GOOGLE_API_KEY) {
+      try {
+        const start = Date.now();
+        // A simple, fast AI call to test connectivity
+        const { ai } = await import('@/ai/genkit');
+        await ai.generate({
+            model: 'googleai/gemini-pro',
+            prompt: 'teste',
+            config: { temperature: 0 }
+        });
+        aiLatency = Date.now() - start;
+        aiStatus = 'Operacional';
+      } catch (e) {
+        aiStatus = 'Indisponível';
+      }
+  }
+
+  // Final API response time
+  const apiResponseTime = Date.now() - apiStart;
+
+  return {
+    api: { status: 'Operacional', responseTime: apiResponseTime },
+    database: { status: dbStatus, latency: dbLatency },
+    ai_services: { status: aiStatus, latency: aiLatency },
+    background_jobs: { status: 'Ocioso', queue: 0 }, // Mocked
+  };
+}
+
+
+export async function getAllSubscriptionsAction() {
+    await verifyAdmin();
+    let connection;
+    try {
+        connection = await getDbConnection();
+        const [rows] = await connection.execute(`
+            SELECT 
+                s.id,
+                u.name as user_name,
+                u.email as user_email,
+                s.plan_name,
+                s.status,
+                s.plan_price,
+                s.next_billing_date
+            FROM subscriptions s
+            JOIN users u ON s.user_id = u.id
+            ORDER BY s.created_at DESC
+        `);
+        return rows as any[];
+    } catch (error: any) {
+        console.error("Falha ao buscar assinaturas:", error);
+        throw new Error("Não foi possível buscar as assinaturas.");
     } finally {
         if (connection) await connection.end();
     }
