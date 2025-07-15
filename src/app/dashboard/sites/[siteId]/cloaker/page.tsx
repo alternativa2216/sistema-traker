@@ -146,7 +146,7 @@ export default function CloakerPage() {
   const handleDeleteRule = (ruleId: string) => {
     handleStateChange('rules', state.rules.filter(rule => rule.id !== ruleId));
     toast({ title: "Regra Removida", description: "A regra de redirecionamento foi removida." });
-  };
+  }
 
   const handleAddRule = (e: React.FormEvent) => {
       e.preventDefault();
