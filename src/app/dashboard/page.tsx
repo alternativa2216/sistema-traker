@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowUpRight, Eye, MousePointerClick, PlusCircle, Sparkles, LogOut, Loader2, Target, Users, Network, AlertTriangle, Lightbulb, TrendingUp, Copy, Megaphone } from "lucide-react";
+import { ArrowUpRight, Eye, MousePointerClick, PlusCircle, Sparkles, LogOut, Loader2, Target, Users, Network, AlertTriangle, Lightbulb, TrendingUp, Copy, Megaphone, X } from "lucide-react";
 import Link from "next/link";
 import { analyzeProjectDataAction } from "../actions/ai";
 import { useToast } from "@/hooks/use-toast";
@@ -23,11 +23,11 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { addProjectAction, getProjectsAction, getNotificationsForUserAction } from "../actions/projects";
+import { addProjectAction, getProjectsAction, getNotificationsForUserAction, markNotificationAsReadAction } from "../actions/projects";
 import { cn } from "@/lib/utils";
 
 
-const UserAlert = ({ alert }: { alert: any }) => {
+const UserAlert = ({ alert, onDismiss }: { alert: any, onDismiss: (id: number) => void }) => {
     const alertConfig = {
         info: {
             icon: Megaphone,
@@ -51,10 +51,10 @@ const UserAlert = ({ alert }: { alert: any }) => {
     const Icon = config.icon;
 
     return (
-        <Alert variant={config.variant} className={config.className}>
-           <div className="flex w-full items-center justify-between gap-4">
-              <div className="flex items-center">
-                 <Icon className={`h-4 w-4 ${config.iconClassName}`} />
+        <Alert variant={config.variant} className={cn("relative pr-10", config.className)}>
+           <div className="flex w-full items-start justify-between gap-4">
+              <div className="flex items-start">
+                 <Icon className={`h-4 w-4 mt-1 ${config.iconClassName}`} />
                  <div className="ml-4">
                    <AlertTitle className={config.titleClassName}>{alert.title}</AlertTitle>
                    <AlertDescription>
@@ -63,11 +63,18 @@ const UserAlert = ({ alert }: { alert: any }) => {
                  </div>
               </div>
               {alert.cta && alert.cta.href && (
-                 <Button asChild>
+                 <Button asChild size="sm" className="shrink-0">
                     <Link href={alert.cta.href}>{alert.cta.text || 'Clique aqui'}</Link>
                  </Button>
               )}
            </div>
+            <button 
+                onClick={() => onDismiss(alert.id)} 
+                className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-foreground"
+                aria-label="Dispensar aviso"
+            >
+                <X className="h-4 w-4" />
+            </button>
         </Alert>
     )
 }
@@ -103,29 +110,42 @@ export default function DashboardPage() {
     const [newSiteUrl, setNewSiteUrl] = useState('');
     const [generatedScript, setGeneratedScript] = useState('');
 
-    useEffect(() => {
-        async function fetchData() {
-            setIsLoading(true);
-            try {
-                const [fetchedSites, fetchedAlerts] = await Promise.all([
-                    getProjectsAction(),
-                    getNotificationsForUserAction()
-                ]);
-                setSites(fetchedSites);
-                setAlerts(fetchedAlerts);
-            } catch (error) {
-                console.error("Failed to fetch dashboard data:", error);
-                toast({
-                    title: "Erro ao Carregar Dados",
-                    description: "Não foi possível buscar seus projetos e notificações.",
-                    variant: "destructive",
-                });
-            } finally {
-                setIsLoading(false);
-            }
+    const fetchDashboardData = React.useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const [fetchedSites, fetchedAlerts] = await Promise.all([
+                getProjectsAction(),
+                getNotificationsForUserAction()
+            ]);
+            setSites(fetchedSites);
+            setAlerts(fetchedAlerts);
+        } catch (error) {
+            console.error("Failed to fetch dashboard data:", error);
+            toast({
+                title: "Erro ao Carregar Dados",
+                description: "Não foi possível buscar seus projetos e notificações.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsLoading(false);
         }
-        fetchData();
     }, [toast]);
+
+
+    useEffect(() => {
+        fetchDashboardData();
+    }, [fetchDashboardData]);
+
+    const handleDismissAlert = async (id: number) => {
+        setAlerts(prevAlerts => prevAlerts.filter(alert => alert.id !== id));
+        try {
+            await markNotificationAsReadAction(id);
+        } catch (error: any) {
+            toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+            // If the action fails, refetch the data to show the alert again
+            fetchDashboardData();
+        }
+    };
 
     useEffect(() => {
         // This effect would re-fetch data when the selected site changes
@@ -229,7 +249,7 @@ export default function DashboardPage() {
         <div className="space-y-8">
              <div className="space-y-4 mb-6">
                 {alerts.map(alert => (
-                    <UserAlert key={alert.id} alert={alert} />
+                    <UserAlert key={alert.id} alert={alert} onDismiss={handleDismissAlert} />
                 ))}
             </div>
             

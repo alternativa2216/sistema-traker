@@ -1,3 +1,4 @@
+
 'use client'
 
 import * as React from 'react';
@@ -7,12 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Megaphone, Send, Users, User, Loader2 } from 'lucide-react';
+import { Megaphone, Send, Users, User, Loader2, Trash2 } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { sendNotificationAction, getSentNotificationsAction } from '@/app/actions/admin';
+import { sendNotificationAction, getSentNotificationsAction, deleteNotificationAction } from '@/app/actions/admin';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 export default function NotificationsPage() {
     const { toast } = useToast();
@@ -22,7 +24,7 @@ export default function NotificationsPage() {
     const [message, setMessage] = React.useState('');
     
     const [sentNotifications, setSentNotifications] = React.useState<any[]>([]);
-    const [isLoading, setIsLoading] = React.useState(false);
+    const [isLoading, setIsLoading] = React.useState(true);
     const [isSending, setIsSending] = React.useState(false);
 
     const fetchSentNotifications = React.useCallback(async () => {
@@ -41,6 +43,15 @@ export default function NotificationsPage() {
         fetchSentNotifications();
     }, [fetchSentNotifications]);
 
+    const handleDelete = async (id: number) => {
+        try {
+            await deleteNotificationAction(id);
+            toast({ title: "Sucesso", description: "A notificação foi excluída." });
+            fetchSentNotifications();
+        } catch (error: any) {
+            toast({ title: "Erro ao Excluir", description: error.message, variant: "destructive" });
+        }
+    };
 
     const handleSendNotification = async () => {
         if (!message.trim()) {
@@ -77,7 +88,7 @@ export default function NotificationsPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2">
+                <div className="lg:col-span-1">
                     <Card>
                         <CardHeader>
                             <CardTitle className="font-headline">Compor Mensagem</CardTitle>
@@ -88,11 +99,11 @@ export default function NotificationsPage() {
                                 <RadioGroup value={target} onValueChange={setTarget} className="flex gap-4">
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem value="all" id="all" />
-                                        <Label htmlFor="all" className="flex items-center gap-2 font-normal"><Users className="h-4 w-4" /> Todos os Usuários</Label>
+                                        <Label htmlFor="all" className="flex items-center gap-2 font-normal"><Users className="h-4 w-4" /> Todos</Label>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem value="specific" id="specific" />
-                                        <Label htmlFor="specific" className="flex items-center gap-2 font-normal"><User className="h-4 w-4" /> Usuário Específico</Label>
+                                        <Label htmlFor="specific" className="flex items-center gap-2 font-normal"><User className="h-4 w-4" /> Específico</Label>
                                     </div>
                                 </RadioGroup>
                             </div>
@@ -116,7 +127,6 @@ export default function NotificationsPage() {
                                         <SelectItem value="critical">Crítico (Vermelho)</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                 <p className="text-xs text-muted-foreground">A cor do alerta que o usuário verá no painel.</p>
                             </div>
 
                             <div className="space-y-2">
@@ -132,41 +142,65 @@ export default function NotificationsPage() {
                         </CardContent>
                     </Card>
                 </div>
-                 <div className="lg:col-span-1">
+                 <div className="lg:col-span-2">
                      <Card>
                         <CardHeader>
-                            <CardTitle className="font-headline">Enviados Recentemente</CardTitle>
-                            <CardDescription>Últimas notificações enviadas.</CardDescription>
+                            <CardTitle className="font-headline">Histórico de Envios</CardTitle>
+                            <CardDescription>Últimas notificações enviadas para os usuários.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Destino</TableHead>
-                                        <TableHead>Tipo</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {isLoading ? (
-                                        <TableRow><TableCell colSpan={2} className='text-center'><Loader2 className='mx-auto h-5 w-5 animate-spin'/></TableCell></TableRow>
-                                    ) : sentNotifications.length > 0 ? (
-                                        sentNotifications.map(n => (
-                                            <TableRow key={n.id}>
-                                                <TableCell className="font-medium truncate">{n.target}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant={n.type === 'critical' ? 'destructive' : 'secondary'}>{n.type}</Badge>
+                            <div className='rounded-lg border'>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Destinatário</TableHead>
+                                            <TableHead>Mensagem</TableHead>
+                                            <TableHead>Tipo</TableHead>
+                                            <TableHead className='text-right'>Ação</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {isLoading ? (
+                                            <TableRow><TableCell colSpan={4} className='text-center h-24'><Loader2 className='mx-auto h-5 w-5 animate-spin'/></TableCell></TableRow>
+                                        ) : sentNotifications.length > 0 ? (
+                                            sentNotifications.map(n => (
+                                                <TableRow key={n.id}>
+                                                    <TableCell className="font-medium truncate max-w-[150px]">{n.target}</TableCell>
+                                                    <TableCell className="text-muted-foreground truncate max-w-[200px]">{n.message}</TableCell>
+                                                    <TableCell>
+                                                        <Badge variant={n.type === 'critical' ? 'destructive' : 'secondary'}>{n.type}</Badge>
+                                                    </TableCell>
+                                                    <TableCell className='text-right'>
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    Esta ação não pode ser desfeita. Isso excluirá a notificação para este usuário.
+                                                                </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => handleDelete(n.id)} className='bg-destructive hover:bg-destructive/90'>Excluir</AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={4} className="h-24 text-center">
+                                                    Nenhuma notificação enviada.
                                                 </TableCell>
                                             </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell colSpan={2} className="h-24 text-center">
-                                                Nenhuma notificação enviada.
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         </CardContent>
                      </Card>
                  </div>

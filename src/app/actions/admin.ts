@@ -192,12 +192,28 @@ export async function getSentNotificationsAction() {
             FROM notifications n
             JOIN users u ON n.user_id = u.id
             ORDER BY n.created_at DESC
-            LIMIT 10
+            LIMIT 100
         `);
         return rows as any[];
     } catch (error: any) {
         console.error("Falha ao buscar notificações enviadas:", error);
         throw new Error("Não foi possível buscar as notificações.");
+    } finally {
+        if (connection) await connection.end();
+    }
+}
+
+
+export async function deleteNotificationAction(id: number) {
+    await verifyAdmin();
+    let connection;
+    try {
+        connection = await getDbConnection();
+        await connection.execute('DELETE FROM notifications WHERE id = ?', [id]);
+        return { success: true, message: "Notificação excluída com sucesso." };
+    } catch (error: any) {
+        console.error("Falha ao excluir notificação:", error);
+        throw new Error("Não foi possível excluir a notificação.");
     } finally {
         if (connection) await connection.end();
     }

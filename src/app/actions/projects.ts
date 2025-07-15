@@ -1,3 +1,4 @@
+
 'use server';
 import 'server-only';
 
@@ -276,6 +277,27 @@ export async function getNotificationsForUserAction() {
         if (connection) await connection.end();
     }
 }
+
+export async function markNotificationAsReadAction(id: number) {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Usuário não autenticado.');
+
+    let connection;
+    try {
+        connection = await getDbConnection();
+        await connection.execute(
+            'UPDATE notifications SET is_read = true WHERE id = ? AND user_id = ?',
+            [id, user.uid]
+        );
+        return { success: true };
+    } catch (error: any) {
+        console.error('Falha ao marcar notificação como lida:', error);
+        throw new Error('Não foi possível dispensar a notificação.');
+    } finally {
+        if (connection) await connection.end();
+    }
+}
+
 
 export async function getCloakerSettingsAction(projectId: string) {
     const user = await getCurrentUser();
