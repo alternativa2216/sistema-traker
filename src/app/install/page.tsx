@@ -30,6 +30,7 @@ export default function InstallPage() {
     // Result states
     const [testResult, setTestResult] = React.useState<{ success: boolean; message: string } | null>(null);
     const [connectionOk, setConnectionOk] = React.useState(false);
+    const [credentialsSaved, setCredentialsSaved] = React.useState(false);
     
     const { toast } = useToast();
 
@@ -65,9 +66,15 @@ export default function InstallPage() {
     
     const handleSaveCredentials = async () => {
         setIsSaving(true);
+        setCredentialsSaved(false);
         try {
             const res = await saveDbCredentialsAction(getCredentials());
-            toast({ title: "Sucesso!", description: res.message });
+            if (res.success) {
+                setCredentialsSaved(true);
+                toast({ title: "Sucesso!", description: res.message });
+            } else {
+                toast({ title: "Erro ao Salvar", description: res.message, variant: "destructive" });
+            }
         } catch (error: any) {
             toast({ title: "Erro ao Salvar", description: error.message, variant: "destructive" });
         } finally {
@@ -188,11 +195,11 @@ export default function InstallPage() {
                     <CardTitle className="font-headline">Instalar Tabelas</CardTitle>
                 </div>
                 <CardDescription className="pl-11">
-                    Após uma conexão bem-sucedida, clique aqui para criar as tabelas do sistema. Este processo é seguro e não substituirá tabelas existentes.
+                    Após salvar as credenciais, clique aqui para criar as tabelas do sistema. Este processo é seguro e não substituirá tabelas existentes.
                 </CardDescription>
             </CardHeader>
             <CardContent className="pl-11">
-                <Button onClick={handleInstall} disabled={isInstalling || !connectionOk}>
+                <Button onClick={handleInstall} disabled={isInstalling || !credentialsSaved}>
                     {isInstalling ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
