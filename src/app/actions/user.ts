@@ -4,7 +4,7 @@ import 'server-only';
 import { getDbConnection } from '@/lib/db';
 import { z } from 'zod';
 import { getCurrentUser } from './auth';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export async function getCurrentUserAction() {
     const user = await getCurrentUser();

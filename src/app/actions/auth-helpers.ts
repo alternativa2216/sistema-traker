@@ -2,7 +2,7 @@
 import 'server-only';
 
 import { getDbConnection } from '@/lib/db';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import type { MockUser } from './auth';
 import { z } from 'zod';
 

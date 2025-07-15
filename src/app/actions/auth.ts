@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 import { z } from 'zod';
 import { getDbConnection } from '@/lib/db';
 import { randomUUID } from 'crypto';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { verifyPasswordAndCreateSession } from './auth-helpers';
 
 const signUpSchema = z.object({
