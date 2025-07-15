@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS users (
   plan VARCHAR(50) DEFAULT 'free',
   role VARCHAR(50) DEFAULT 'user',
   custom_alert TEXT,
+  notification_settings JSON,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 `;

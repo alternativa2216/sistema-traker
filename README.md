@@ -2,9 +2,13 @@
 
 Este é o seu projeto de sistema de analytics, pronto para ser personalizado e implantado.
 
-## Primeiros Passos
+## Documentação
 
-Todo o código-fonte da sua aplicação está na pasta `src/`.
+Para entender a estrutura do projeto, as tecnologias usadas e como configurá-lo, consulte a documentação técnica detalhada:
+
+- **[Documentação Técnica](./src/README.md)**
+
+## Primeiros Passos
 
 ### Como Enviar para o GitHub
 
