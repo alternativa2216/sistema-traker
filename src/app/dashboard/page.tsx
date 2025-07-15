@@ -3,8 +3,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { PlusCircle, Loader2, Megaphone, X, AlertTriangle, Sparkles } from "lucide-react";
+import { Loader2, Megaphone, X, AlertTriangle, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { OverviewChart } from "@/components/dashboard/overview-chart";
@@ -12,10 +11,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getProjectsAction, markNotificationAsReadAction } from "@/app/actions/projects";
 import { cn } from "@/lib/utils";
 import { getCurrentUserAction } from "@/app/actions/user";
+import { Button } from "@/components/ui/button";
+import { AddProjectDialog } from "@/components/dashboard/add-project-dialog";
 
 
 const UserAlert = ({ alert, onDismiss }: { alert: any, onDismiss: (id: number) => void }) => {
-    // Determine which alert config to use based on alert type or default to info
     const alertConfig = {
         info: {
             icon: Megaphone,
@@ -112,7 +112,6 @@ export default function DashboardPage() {
         fetchInitialData();
     }, [fetchInitialData]);
     
-
     const handleDismissAlert = async (id: number) => {
         setAlerts(prevAlerts => prevAlerts.filter(alert => alert.id !== id));
         try {
@@ -146,24 +145,13 @@ export default function DashboardPage() {
                         {sites.length === 0 ? 'Adicione um site para começar a ver seus dados.' : 'Desempenho consolidado de todos os seus projetos.'}
                     </p>
                 </div>
-                 <Button asChild>
-                   <Link href="/dashboard/projects">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Adicionar ou Gerenciar Sites
-                  </Link>
-                </Button>
             </div>
 
             {sites.length === 0 ? (
-                <Card className="flex flex-col items-center justify-center text-center p-12">
+                 <Card className="flex flex-col items-center justify-center text-center p-12">
                     <CardTitle className="font-headline">Bem-vindo ao Tracklytics!</CardTitle>
                     <CardDescription className="mt-2 mb-6">Parece que você ainda não tem nenhum site. Adicione seu primeiro site para começar.</CardDescription>
-                    <Button asChild>
-                       <Link href="/dashboard/projects">
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Adicionar seu Primeiro Site
-                      </Link>
-                    </Button>
+                    <AddProjectDialog onProjectAdded={fetchInitialData} />
                 </Card>
             ) : (
                 <>

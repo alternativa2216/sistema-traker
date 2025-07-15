@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { PlusCircle, Globe, BarChart, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getProjectsAction } from "@/app/actions/projects";
+import { AddProjectDialog } from "@/components/dashboard/add-project-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 type Project = {
   id: string;
@@ -16,16 +18,27 @@ type Project = {
 export default function MySitesPage() {
   const [sites, setSites] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    async function fetchSites() {
-      setIsLoading(true);
+  const fetchSites = useCallback(async () => {
+    setIsLoading(true);
+    try {
       const fetchedSites = await getProjectsAction();
       setSites(fetchedSites);
-      setIsLoading(false);
+    } catch (error: any) {
+        toast({
+            title: "Erro ao Carregar Sites",
+            description: error.message || "Não foi possível buscar seus projetos.",
+            variant: "destructive"
+        })
+    } finally {
+        setIsLoading(false);
     }
+  }, [toast]);
+
+  useEffect(() => {
     fetchSites();
-  }, []);
+  }, [fetchSites]);
 
   return (
     <div className="space-y-8">
@@ -34,12 +47,7 @@ export default function MySitesPage() {
           <h1 className="text-3xl font-bold font-headline">Meus Sites</h1>
           <p className="text-muted-foreground">Gerencie todos os seus sites cadastrados.</p>
         </div>
-        <Button asChild>
-           <Link href="/dashboard">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Adicionar Novo Site
-          </Link>
-        </Button>
+        <AddProjectDialog onProjectAdded={fetchSites} />
       </div>
 
       {isLoading ? (
@@ -50,14 +58,9 @@ export default function MySitesPage() {
         <Card className="text-center p-12">
           <CardTitle className="font-headline">Nenhum site encontrado</CardTitle>
           <CardDescription className="mt-2 mb-6">
-            Adicione seu primeiro site no painel principal para começar.
+            Adicione seu primeiro site para começar a coletar dados.
           </CardDescription>
-          <Button asChild>
-            <Link href="/dashboard">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Adicionar Primeiro Site
-            </Link>
-          </Button>
+          <AddProjectDialog onProjectAdded={fetchSites} />
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
