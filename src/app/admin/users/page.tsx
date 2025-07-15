@@ -204,7 +204,7 @@ export default function AdminUsersPage() {
                             id="alert"
                             placeholder="Deixe em branco para não exibir nenhum alerta."
                             className="col-span-3"
-                            value={editingUser.custom_alert}
+                            value={editingUser.custom_alert || ''}
                             onChange={(e) => setEditingUser(prev => prev ? {...prev, custom_alert: e.target.value} : null)}
                         />
                     </div>
@@ -222,3 +222,4 @@ export default function AdminUsersPage() {
     </div>
   );
 }
+

@@ -15,7 +15,7 @@ export async function getCurrentUserAction() {
     let connection;
     try {
         connection = await getDbConnection();
-        const [rows] = await connection.execute('SELECT name, email, notification_settings FROM users WHERE id = ?', [user.uid]);
+        const [rows] = await connection.execute('SELECT name, email, notification_settings, custom_alert FROM users WHERE id = ?', [user.uid]);
         
         const userFromDb = (rows as any[])[0];
         if (!userFromDb) {
@@ -25,7 +25,8 @@ export async function getCurrentUserAction() {
         return {
             name: userFromDb.name,
             email: userFromDb.email,
-            notificationSettings: userFromDb.notification_settings ? JSON.parse(userFromDb.notification_settings) : {}
+            notificationSettings: userFromDb.notification_settings ? JSON.parse(userFromDb.notification_settings) : {},
+            customAlert: userFromDb.custom_alert || null
         };
 
     } catch (error: any) {
@@ -150,3 +151,4 @@ export async function saveNotificationSettingsAction(data: unknown) {
         if (connection) await connection.end();
     }
 }
+

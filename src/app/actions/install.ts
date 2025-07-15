@@ -363,3 +363,4 @@ export async function installDatabaseAction(data: unknown) {
         return { success: false, message: error.message };
     }
 }
+
