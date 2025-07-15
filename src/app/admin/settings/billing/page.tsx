@@ -9,45 +9,85 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { getSettingsAction, saveSettingsAction } from '@/app/actions/settings';
 
-export default function BillingSettingsPage() {
-    const { toast } = useToast();
-    const [isSaving, setIsSaving] = React.useState(false);
-
-    // Gateway State
-    const [gatewayEnabled, setGatewayEnabled] = React.useState(true);
-    const [publicKey, setPublicKey] = React.useState('pk_live_...');
-    const [secretKey, setSecretKey] = React.useState('sk_live_...');
-    
-    // Plans State
-    const [freePlanFeatures, setFreePlanFeatures] = React.useState([
+const defaultSettings = {
+    billingEnabled: true,
+    paymentGatewayPublicKey: '',
+    paymentGatewaySecretKey: '',
+    freePlanFeatures: [
         "1 Projeto",
         "10.000 visualizações de página/mês",
         "Análises Básicas",
         "Retenção de dados por 7 dias",
-    ].join('\n'));
-
-    const [proPlanPrice, setProPlanPrice] = React.useState('29');
-    const [proPlanFeatures, setProPlanFeatures] = React.useState([
+    ].join('\n'),
+    proPlanPrice: '29',
+    proPlanFeatures: [
         "10 Projetos",
         "200.000 visualizações de página/mês",
         "Suíte de Segurança e Cloaker",
         "Todas as Ferramentas de IA",
         "Análise de Funil e Tempo Real",
         "Retenção de dados por 1 ano",
-    ].join('\n'));
+    ].join('\n'),
+};
 
-    const handleSave = () => {
+type SettingsKeys = keyof typeof defaultSettings;
+
+export default function BillingSettingsPage() {
+    const { toast } = useToast();
+    const [settings, setSettings] = React.useState(defaultSettings);
+    const [isLoading, setIsLoading] = React.useState(true);
+    const [isSaving, setIsSaving] = React.useState(false);
+
+    React.useEffect(() => {
+        const fetchSettings = async () => {
+            setIsLoading(true);
+            try {
+                const settingsKeys = Object.keys(defaultSettings);
+                const fetchedSettings = await getSettingsAction(settingsKeys);
+                
+                const newSettings: Record<string, any> = {};
+                for (const key of settingsKeys) {
+                    newSettings[key] = fetchedSettings[key] ?? defaultSettings[key as SettingsKeys];
+                }
+                setSettings(newSettings as typeof defaultSettings);
+
+            } catch (error: any) {
+                toast({ title: "Erro ao carregar configurações", description: error.message, variant: "destructive" });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchSettings();
+    }, [toast]);
+    
+    const handleInputChange = (key: SettingsKeys, value: string | boolean) => {
+        setSettings(prev => ({ ...prev, [key]: value }));
+    };
+
+    const handleSave = async () => {
         setIsSaving(true);
-        // In a real app, this would make API calls to securely save the credentials and plan info
-        setTimeout(() => {
+        try {
+            await saveSettingsAction(settings);
             toast({
                 title: "Configurações Salvas",
                 description: "Suas configurações de faturamento e planos foram atualizadas."
             });
+        } catch (error: any) {
+            toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+        } finally {
             setIsSaving(false);
-        }, 1500);
+        }
     };
+    
+    if (isLoading) {
+        return (
+            <div className="flex h-full w-full items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8">
@@ -58,7 +98,7 @@ export default function BillingSettingsPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="font-headline">Gateway de Pagamento (Nova Era)</CardTitle>
+                    <CardTitle className="font-headline">Gateway de Pagamento</CardTitle>
                     <CardDescription>Conecte sua conta do gateway de pagamento para processar as assinaturas.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -67,16 +107,16 @@ export default function BillingSettingsPage() {
                             <Label htmlFor="gateway-enabled" className="text-base">Ativar Gateway de Pagamento</Label>
                             <p className="text-sm text-muted-foreground">Desative para impedir novas assinaturas e pagamentos.</p>
                         </div>
-                        <Switch id="gateway-enabled" checked={gatewayEnabled} onCheckedChange={setGatewayEnabled} />
+                        <Switch id="gateway-enabled" checked={settings.billingEnabled} onCheckedChange={(val) => handleInputChange('billingEnabled', val)} />
                     </div>
                     <div className="grid gap-6 md:grid-cols-2">
                         <div className="space-y-2">
                             <Label htmlFor="public-key">Chave Pública (Public Key)</Label>
-                            <Input id="public-key" value={publicKey} onChange={(e) => setPublicKey(e.target.value)} type="password" />
+                            <Input id="public-key" value={settings.paymentGatewayPublicKey} onChange={(e) => handleInputChange('paymentGatewayPublicKey', e.target.value)} type="password" />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="secret-key">Chave Secreta (Secret Key)</Label>
-                            <Input id="secret-key" value={secretKey} onChange={(e) => setSecretKey(e.target.value)} type="password" />
+                            <Input id="secret-key" value={settings.paymentGatewaySecretKey} onChange={(e) => handleInputChange('paymentGatewaySecretKey', e.target.value)} type="password" />
                         </div>
                     </div>
                 </CardContent>
@@ -93,8 +133,8 @@ export default function BillingSettingsPage() {
                             <Label htmlFor="free-features">Recursos (um por linha)</Label>
                             <Textarea
                                 id="free-features"
-                                value={freePlanFeatures}
-                                onChange={(e) => setFreePlanFeatures(e.target.value)}
+                                value={settings.freePlanFeatures}
+                                onChange={(e) => handleInputChange('freePlanFeatures', e.target.value)}
                                 rows={6}
                             />
                         </div>
@@ -111,8 +151,8 @@ export default function BillingSettingsPage() {
                             <Input 
                                 id="pro-price"
                                 type="number"
-                                value={proPlanPrice}
-                                onChange={(e) => setProPlanPrice(e.target.value)}
+                                value={settings.proPlanPrice}
+                                onChange={(e) => handleInputChange('proPlanPrice', e.target.value)}
                                 placeholder="29"
                             />
                         </div>
@@ -120,8 +160,8 @@ export default function BillingSettingsPage() {
                             <Label htmlFor="pro-features">Recursos (um por linha)</Label>
                             <Textarea
                                 id="pro-features"
-                                value={proPlanFeatures}
-                                onChange={(e) => setProPlanFeatures(e.target.value)}
+                                value={settings.proPlanFeatures}
+                                onChange={(e) => handleInputChange('proPlanFeatures', e.target.value)}
                                 rows={6}
                             />
                         </div>
