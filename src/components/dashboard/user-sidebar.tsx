@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Logo } from "@/components/shared/logo"
 import { usePathname } from 'next/navigation'
-import { BarChart, Bot, CreditCard, Crosshair, FileText, Globe, Home, Settings } from "lucide-react"
+import { Bot, CreditCard, Globe, Home, Settings } from "lucide-react"
 import Link from "next/link"
 
 const menuGroups = [
@@ -57,7 +57,7 @@ export function UserSidebar() {
                   <SidebarMenuItem key={href}>
                       <SidebarMenuButton
                         asChild
-                        isActive={href === '/dashboard' ? pathname === href : pathname.startsWith(href)}
+                        isActive={href === '/dashboard' ? pathname === href : pathname.startsWith(href) && href !== '/dashboard'}
                         tooltip={{ children: label }}
                       >
                         <Link href={href}>

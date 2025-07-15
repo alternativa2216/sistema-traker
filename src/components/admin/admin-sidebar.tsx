@@ -62,7 +62,7 @@ export function AdminSidebar() {
                   <SidebarMenuItem key={href}>
                     <SidebarMenuButton
                       asChild
-                      isActive={href === '/admin' ? pathname === href : pathname.startsWith(href)}
+                      isActive={href === '/admin' ? pathname === href : pathname.startsWith(href) && href !== '/admin'}
                       tooltip={{ children: label }}
                     >
                       <Link href={href}>

@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }),
@@ -20,7 +21,7 @@ const formSchema = z.object({
 export default function ForgotPasswordPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -29,13 +30,12 @@ export default function ForgotPasswordPage() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
-    // Temporarily disable functionality to fix build
-    toast({
-        title: "Funcionalidade Indisponível",
-        description: "A redefinição de senha está temporariamente desativada. Por favor, contate o suporte.",
-        variant: "default",
-    });
-    setIsLoading(false);
+    // In a real app, you would call an action here to send a reset email.
+    // For now, we just show a success message.
+    setTimeout(() => {
+        setIsSubmitted(true);
+        setIsLoading(false);
+    }, 1000);
   };
 
   return (
@@ -50,17 +50,20 @@ export default function ForgotPasswordPage() {
           <CardHeader>
             <CardTitle className="font-headline text-2xl">Redefinir Senha</CardTitle>
             <CardDescription>
-              {isSuccess 
-                ? "Um e-mail com instruções foi enviado para você."
+              {isSubmitted 
+                ? "Verifique seu e-mail para continuar."
                 : "Digite seu e-mail e enviaremos um link para redefinir sua senha."
               }
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {isSuccess ? (
-              <div className="text-center text-green-500">
-                <p>Por favor, verifique sua caixa de entrada e pasta de spam.</p>
-              </div>
+            {isSubmitted ? (
+               <Alert>
+                  <AlertTitle>Funcionalidade em Desenvolvimento</AlertTitle>
+                  <AlertDescription>
+                    O envio de e-mails para redefinição de senha ainda não está ativo. Por favor, contate o suporte para assistência.
+                  </AlertDescription>
+                </Alert>
             ) : (
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <div className="space-y-2">

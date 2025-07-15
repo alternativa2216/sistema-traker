@@ -9,9 +9,9 @@ import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { OverviewChart } from "@/components/dashboard/overview-chart";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { getProjectsAction, markNotificationAsReadAction } from "../actions/projects";
+import { getProjectsAction, markNotificationAsReadAction } from "@/app/actions/projects";
 import { cn } from "@/lib/utils";
-import { getCurrentUserAction } from "../actions/user";
+import { getCurrentUserAction } from "@/app/actions/user";
 
 
 const UserAlert = ({ alert, onDismiss }: { alert: any, onDismiss: (id: number) => void }) => {
@@ -139,7 +139,7 @@ export default function DashboardPage() {
                 ))}
             </div>
             
-            <div className="flex items-center justify-between space-y-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
                 <div>
                     <h1 className="text-3xl font-bold font-headline">Visão Geral</h1>
                     <p className="text-muted-foreground">
@@ -173,5 +173,3 @@ export default function DashboardPage() {
         </div>
     );
 }
-
-    

@@ -51,11 +51,17 @@ export default function SiteAnalyticsPage() {
                 setAnalyticsData(data);
             } catch (error: any) {
                 toast({ title: "Erro ao buscar dados", description: error.message, variant: 'destructive' });
+                setAnalyticsData(null); // Clear data on error
             } finally {
                 setIsLoading(false);
             }
         }
-        fetchData();
+        
+        if (params.siteId) {
+            fetchData();
+        } else {
+            setIsLoading(false);
+        }
     }, [params.siteId, timeRange, toast, router]);
 
     const copyToClipboard = () => {
