@@ -19,7 +19,6 @@ const menuGroups = [
     label: 'Visão Geral',
     items: [
       { href: "/dashboard", label: "Painel Principal", icon: Home },
-      { href: "/dashboard/analytics", label: "Análises", icon: BarChart },
       { href: "/dashboard/projects", label: "Meus Sites", icon: Globe },
     ]
   },
@@ -27,7 +26,6 @@ const menuGroups = [
     label: 'Ferramentas de IA',
     items: [
       { href: "/dashboard/analysis", label: "Análise SWOT", icon: Bot },
-      { href: "/dashboard/reports", label: "Relatórios de IA", icon: FileText },
     ]
   },
   {
@@ -35,7 +33,6 @@ const menuGroups = [
     items: [
       { href: "/dashboard/settings", label: "Configurações", icon: Settings },
       { href: "/dashboard/billing", label: "Faturamento", icon: CreditCard },
-      { href: "/dashboard/diagnostics", label: "Diagnósticos", icon: Crosshair },
     ]
   }
 ];

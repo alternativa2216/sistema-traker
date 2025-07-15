@@ -305,7 +305,7 @@ const CreativeAnalyzer = () => {
                 <div className="space-y-2">
                     <Label htmlFor="creative-upload">Imagem do Anúncio</Label>
                     <Input id="creative-upload" type="file" accept="image/*" onChange={handleFileChange} ref={fileInputRef} className="hidden" />
-                    <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                    <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isLoading}>
                         <Upload className="mr-2 h-4 w-4"/>
                         Selecionar Imagem
                     </Button>

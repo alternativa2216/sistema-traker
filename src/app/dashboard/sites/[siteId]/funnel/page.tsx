@@ -166,31 +166,6 @@ export default function FunnelPage() {
 
         <Card>
             <CardHeader>
-                <CardTitle className="font-headline">Páginas Rastreadas Fora do Funil</CardTitle>
-                <CardDescription>
-                    Detectamos visitas em páginas com seu código de rastreamento que ainda não fazem parte do funil. Adicione-as com um clique.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Página</TableHead>
-                            <TableHead>Visitas (Exemplo)</TableHead>
-                            <TableHead className="text-right">Ação</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow>
-                            <TableCell colSpan={3} className="h-24 text-center">Nenhuma página não utilizada detectada.</TableCell>
-                        </TableRow> 
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
-
-        <Card>
-            <CardHeader>
                 <CardTitle className="font-headline">Pré-visualização da Análise do Funil</CardTitle>
                 <CardDescription>Visualize a jornada do seu usuário com base nas etapas que você definiu acima.</CardDescription>
             </CardHeader>
@@ -204,103 +179,6 @@ export default function FunnelPage() {
             </CardContent>
         </Card>
         
-        <div className="space-y-8">
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center gap-3">
-                        <Filter className="h-6 w-6 text-primary" />
-                        <CardTitle className="font-headline">Segmentação de Usuários</CardTitle>
-                    </div>
-                    <CardDescription>Filtre os dados do funil para análises mais profundas. Os dados serão atualizados dinamicamente.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="space-y-2">
-                        <Label>Fonte de Tráfego</Label>
-                        <Select disabled>
-                            <SelectTrigger><SelectValue placeholder="Todas as Fontes" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Todas as Fontes</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                     <div className="space-y-2">
-                        <Label>Dispositivo</Label>
-                        <Select disabled>
-                            <SelectTrigger><SelectValue placeholder="Todos os Dispositivos" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Todos os Dispositivos</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                     <div className="space-y-2">
-                        <Label>País</Label>
-                        <Select disabled>
-                            <SelectTrigger><SelectValue placeholder="Todos os Países" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Todos os Países</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                     <div className="flex items-end">
-                        <Button className="w-full" disabled>Aplicar Filtros</Button>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <div className="grid lg:grid-cols-2 gap-8">
-                <Card>
-                    <CardHeader>
-                         <div className="flex items-center gap-3">
-                            <TrendingUp className="h-6 w-6 text-primary" />
-                            <CardTitle className="font-headline">Análise de Tendência</CardTitle>
-                        </div>
-                        <CardDescription>Evolução da taxa de conversão geral ao longo do tempo.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="text-center text-muted-foreground h-[250px] flex items-center justify-center">
-                        <p>Nenhum dado de tendência disponível.</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                         <div className="flex items-center gap-3">
-                            <UserX className="h-6 w-6 text-primary" />
-                            <CardTitle className="font-headline">Análise de Abandono</CardTitle>
-                        </div>
-                        <CardDescription>Sessões que saíram do funil antes de completar a compra.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Sessão</TableHead>
-                                    <TableHead>Última Etapa</TableHead>
-                                    <TableHead>Última Página</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                               <TableRow>
-                                   <TableCell colSpan={3} className="h-24 text-center">Nenhum abandono registrado.</TableCell>
-                               </TableRow>
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
-            </div>
-             <Card>
-                <CardHeader>
-                    <div className="flex items-center gap-3">
-                        <Route className="h-6 w-6 text-primary" />
-                        <CardTitle className="font-headline">Análise de Caminho</CardTitle>
-                    </div>
-                    <CardDescription>Em breve: visualize o caminho completo que os usuários percorreram antes de abandonar o funil.</CardDescription>
-                </CardHeader>
-                <CardContent className="text-center text-muted-foreground p-8">
-                   <p>Gráficos e visualizações de caminho aparecerão aqui.</p>
-                </CardContent>
-            </Card>
-
-        </div>
     </div>
   )
 }
