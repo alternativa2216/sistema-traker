@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
@@ -5,89 +6,34 @@ import { Logo } from "@/components/shared/logo";
 import Image from "next/image";
 import {
   ArrowRight,
-  BarChart,
-  Bot,
   Check,
-  Filter,
-  Shield,
-  Facebook,
-  Activity,
   ChevronRight,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getSettingsAction } from "./actions/settings";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 
 const features = [
   {
-    icon: Filter,
     title: "Análise de Funil Visual",
     description: "Construa funis de conversão para entender a jornada do seu cliente e identificar com precisão os pontos de abandono.",
-    image: "https://placehold.co/1024x768.png",
+    image: "https://i.postimg.cc/mD8c5gGj/funnel-feature.png",
     imageHint: "funnel chart"
   },
   {
-    icon: Shield,
     title: "Suíte de Segurança Completa",
     description: "Proteja suas páginas com filtros anti-bot, anti-spy e geográficos. Garanta que apenas seu público certo veja suas ofertas.",
-    image: "https://placehold.co/1024x768.png",
+    image: "https://i.postimg.cc/d1c3vXGz/cloaker-feature.png",
     imageHint: "security dashboard"
   },
   {
-    icon: Bot,
     title: "Insights com Inteligência Artificial",
     description: "Receba alertas e oportunidades geradas por IA. Deixe nossa inteligência trabalhar para você, sugerindo melhorias e destacando tendências.",
-    image: "https://placehold.co/1024x768.png",
+    image: "https://i.postimg.cc/t4gHq6k5/ai-feature.png",
     imageHint: "AI chatbot interface"
   },
 ];
-
-const tiers = [
-  {
-    name: "Grátis",
-    price: "R$0",
-    description: "Para projetos pessoais e para começar.",
-    features: [
-      "1 Projeto",
-      "10.000 visualizações de página/mês",
-      "Análises Básicas",
-      "Retenção de dados por 7 dias",
-    ],
-    cta: "Comece de Graça",
-    href: "/register"
-  },
-  {
-    name: "Pro",
-    price: "R$29",
-    description: "Para profissionais e pequenas empresas.",
-    features: [
-      "10 Projetos",
-      "200.000 visualizações de página/mês",
-      "Suíte de Segurança e Cloaker",
-      "Todas as Ferramentas de IA",
-      "Análise de Funil e Tempo Real",
-      "Retenção de dados por 1 ano",
-    ],
-    cta: "Começar com Pro",
-    href: "/register",
-    featured: true,
-  },
-  {
-    name: "Empresarial",
-    price: "Custom",
-    description: "Para aplicações e agências de grande escala.",
-    features: [
-      "Projetos Ilimitados",
-      "Visualizações de página personalizadas",
-      "Acesso à API",
-      "Suporte Dedicado",
-      "Retenção de dados ilimitada",
-    ],
-    cta: "Contatar Vendas",
-    href: "mailto:sales@tracklytics.pro"
-  },
-];
-
 
 const testimonials = [
   {
@@ -130,29 +76,72 @@ const faqs = [
         question: "Posso cancelar meu plano a qualquer momento?",
         answer: "Sim, você pode cancelar ou alterar seu plano a qualquer momento diretamente no seu painel de faturamento. Não há contratos de longo prazo ou taxas de cancelamento."
     }
-]
+];
 
 const defaultContent = {
-    homeHeadline: 'Transforme Dados Brutos em Crescimento Real',
-    homeSubheadline: 'O Tracklytics é a plataforma de web analytics que combina rastreamento completo, insights proativos com IA e uma suíte de segurança avançada para você dominar sua estratégia digital.',
-    dashboardImageUrl: 'https://placehold.co/1200x800.png',
+    homeHeadline: 'Analytics que Transforma Dados em Decisões de Alto Impacto',
+    homeSubheadline: 'O Tracklytics é a única plataforma de web analytics que combina rastreamento completo, insights proativos com IA, uma suíte de segurança avançada e ferramentas visuais para você dominar sua estratégia digital.',
+    dashboardImageUrl: 'https://i.postimg.cc/TY4Jc3Zg/main-dash.png',
+    freePlanFeatures: "1 Projeto\n10.000 visualizações de página/mês\nAnálises Básicas\nRetenção de dados por 7 dias",
+    proPlanPrice: "29",
+    proPlanFeatures: "10 Projetos\n200.000 visualizações de página/mês\nSuíte de Segurança e Cloaker\nTodas as Ferramentas de IA\nAnálise de Funil e Tempo Real\nRetenção de dados por 1 ano",
 };
 
-
 export default async function Home() {
-  let settings = {};
+  let content = defaultContent;
   try {
-    const contentKeys = ['homeHeadline', 'homeSubheadline', 'dashboardImageUrl'];
-    settings = await getSettingsAction(contentKeys);
+    const settingsKeys = ['homeHeadline', 'homeSubheadline', 'dashboardImageUrl', 'freePlanFeatures', 'proPlanPrice', 'proPlanFeatures'];
+    const fetchedSettings = await getSettingsAction(settingsKeys);
+
+    // Merge fetched settings with defaults, ensuring no key is undefined
+    const newContent = { ...defaultContent };
+    for (const key of settingsKeys) {
+        if (fetchedSettings[key]) {
+            (newContent as any)[key] = fetchedSettings[key];
+        }
+    }
+    content = newContent;
   } catch (e) {
-      // No-op. The page will render with default content if the database is not ready.
+      console.log("Database not ready, using default content for homepage.");
   }
-  
-  const content = { ...defaultContent, ...settings };
+
+  const tiers = [
+      {
+        name: "Grátis",
+        price: "R$0",
+        description: "Para projetos pessoais e para começar.",
+        features: content.freePlanFeatures.split('\n'),
+        cta: "Comece de Graça",
+        href: "/register"
+      },
+      {
+        name: "Pro",
+        price: `R$${content.proPlanPrice}`,
+        description: "Para profissionais e pequenas empresas.",
+        features: content.proPlanFeatures.split('\n'),
+        cta: "Começar com Pro",
+        href: "/register",
+        featured: true,
+      },
+      {
+        name: "Empresarial",
+        price: "Custom",
+        description: "Para aplicações e agências de grande escala.",
+        features: [
+          "Projetos Ilimitados",
+          "Visualizações de página personalizadas",
+          "Acesso à API",
+          "Suporte Dedicado",
+          "Retenção de dados ilimitada",
+        ],
+        cta: "Contatar Vendas",
+        href: "mailto:sales@tracklytics.pro"
+      },
+    ];
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 lg:px-6 h-20 flex items-center justify-between">
             <div className="flex items-center gap-8">
                 <Logo />
@@ -201,26 +190,22 @@ export default async function Home() {
         </section>
 
         <section className="container mx-auto px-4 lg:px-6 -mt-12">
-             <div className="text-center mb-8">
-                <p className="text-sm font-semibold text-muted-foreground tracking-wider uppercase">CONFIADO POR EMPRESAS LÍDERES</p>
-                <div className="mt-4 flex justify-center items-center gap-8 opacity-60">
-                    <p className="font-headline text-lg">NexusCorp</p>
-                    <p className="font-headline text-lg">QuantumLeap</p>
-                    <p className="font-headline text-lg">Zenith Solutions</p>
-                    <p className="font-headline text-lg hidden sm:block">Apex Industries</p>
-                    <p className="font-headline text-lg hidden md:block">NovaWave</p>
+            <div className="relative rounded-lg p-2 bg-gradient-to-t from-primary/10 via-card to-card border border-border/30 shadow-2xl shadow-primary/10">
+                {/* Browser Mockup Header */}
+                <div className="flex items-center gap-1.5 p-2.5 border-b border-border/30">
+                    <div className="h-3 w-3 rounded-full bg-red-500/80"></div>
+                    <div className="h-3 w-3 rounded-full bg-yellow-500/80"></div>
+                    <div className="h-3 w-3 rounded-full bg-green-500/80"></div>
                 </div>
-            </div>
-            <Card className="p-2 shadow-2xl shadow-primary/10 border-border/50 bg-card/50 backdrop-blur-sm">
-                <Image
+                 <Image
                     src={content.dashboardImageUrl}
                     width={1200}
                     height={800}
                     alt="Dashboard preview"
-                    className="rounded-md"
+                    className="rounded-b-md"
                     data-ai-hint="dashboard analytics"
                 />
-            </Card>
+            </div>
         </section>
 
         <section id="features" className="container mx-auto px-4 lg:px-6 py-20 md:py-28">
@@ -236,12 +221,9 @@ export default async function Home() {
                 {features.map((feature, index) => (
                     <div key={feature.title} className={`grid grid-cols-1 md:grid-cols-2 gap-12 items-center`}>
                         <div className={`space-y-4 ${index % 2 === 1 ? 'md:order-2' : ''}`}>
-                            <div className="inline-flex items-center gap-3 bg-primary/10 text-primary py-1 px-3 rounded-full">
-                                <feature.icon className="h-5 w-5" />
-                                <h3 className="font-semibold">{feature.title}</h3>
-                            </div>
-                            <p className="text-2xl font-bold font-headline">{feature.description}</p>
-                            <Button variant="link" asChild className="p-0 h-auto">
+                            <h3 className="text-3xl font-bold font-headline">{feature.title}</h3>
+                            <p className="text-lg text-muted-foreground">{feature.description}</p>
+                            <Button variant="link" asChild className="p-0 h-auto text-lg">
                                 <Link href="/register">Saber Mais <ArrowRight className="ml-2 h-4 w-4"/></Link>
                             </Button>
                         </div>
@@ -273,7 +255,10 @@ export default async function Home() {
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start max-w-5xl mx-auto">
               {tiers.map((tier) => (
-                <Card key={tier.name} className={`flex flex-col text-left bg-card ${tier.featured ? 'border-primary ring-2 ring-primary shadow-lg' : ''}`}>
+                <Card key={tier.name} className={`relative flex flex-col text-left bg-card ${tier.featured ? 'border-primary ring-2 ring-primary shadow-lg' : ''}`}>
+                   {tier.featured && (
+                      <Badge className="absolute -top-3 right-4">Mais Popular</Badge>
+                   )}
                   <CardHeader>
                     <CardTitle className="font-headline text-2xl">{tier.name}</CardTitle>
                     <CardDescription>{tier.description}</CardDescription>
