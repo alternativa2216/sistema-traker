@@ -1,8 +1,7 @@
-import 'server-only';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-// We only import getCurrentUser which is safe for the edge
-import { getCurrentUser } from '@/app/actions/auth';
+// We only import the Edge-safe version of getCurrentUser
+import { getEdgeCurrentUser } from '@/app/actions/auth-helpers';
 
 export const runtime = 'edge';
 
@@ -19,7 +18,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const currentUser = await getCurrentUser();
+  const currentUser = await getEdgeCurrentUser();
 
   const isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
   const isAdminRoute = ADMIN_ROUTES.some((route) => pathname.startsWith(route));

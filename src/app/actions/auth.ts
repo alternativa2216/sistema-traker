@@ -52,7 +52,20 @@ export async function signUpUser(formData: unknown) {
       'INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)',
       [userId, name, email, hashedPassword, role]
     );
-    return { success: true, userId, isFirstUser };
+    
+    // Create session automatically after signing up
+    const user: MockUser = {
+        uid: userId,
+        email: email,
+        name: name,
+        role: role as 'user' | 'admin',
+    };
+    const sessionValue = JSON.stringify(user);
+    const expiresIn = 60 * 60 * 24 * 5 * 1000;
+    cookies().set('session', sessionValue, { maxAge: expiresIn, httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+
+
+    return { success: true, userId, isFirstUser, role };
   } catch (error: any) {
     if (error.code === 'ER_DUP_ENTRY') {
       throw new Error("Este e-mail já está em uso.");
@@ -87,7 +100,8 @@ export async function clearSessionCookie() {
   cookies().delete('session');
 }
 
-
+// This is the main version of getCurrentUser for use in Server Components and Server Actions.
+// It is NOT safe for the Edge runtime.
 export async function getCurrentUser(): Promise<MockUser | null> {
   const sessionCookie = cookies().get('session')?.value;
   if (!sessionCookie) {

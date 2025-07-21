@@ -3,6 +3,7 @@
 import 'server-only';
 import { getDbConnection } from '@/lib/db';
 import bcrypt from 'bcryptjs';
+import { cookies } from 'next/headers';
 import type { MockUser } from './auth';
 import { z } from 'zod';
 
@@ -51,4 +52,21 @@ export async function verifyPasswordAndCreateSession(formData: unknown): Promise
     } finally {
         if (connection) await connection.end();
     }
+}
+
+// This is a special, lightweight version of getCurrentUser that is safe to use in Edge Runtime (middleware).
+// It does NOT contain any Node.js-specific APIs like 'bcrypt' or direct DB connections.
+export async function getEdgeCurrentUser(): Promise<MockUser | null> {
+  const sessionCookie = cookies().get('session')?.value;
+  if (!sessionCookie) {
+    return null;
+  }
+  try {
+    // Just parse the cookie, don't verify against the DB or anything else.
+    const user = JSON.parse(sessionCookie) as MockUser;
+    return user;
+  } catch (error) {
+    console.log("Could not parse session cookie in Edge:", error);
+    return null;
+  }
 }

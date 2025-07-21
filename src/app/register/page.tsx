@@ -66,15 +66,17 @@ export default function RegisterPage() {
       if (result.isFirstUser) {
         toast({
           title: "Conta de Administrador Criada!",
-          description: "Você foi o primeiro a se registrar e agora é o administrador. Redirecionando para login.",
+          description: "Você é o primeiro usuário e agora é o admin. Bem-vindo(a)!",
         });
       } else {
          toast({
           title: "Conta Criada com Sucesso!",
-          description: "Você será redirecionado para a página de login.",
+          description: "Bem-vindo(a) ao Tracklytics!",
         });
       }
-      router.push('/login');
+      // Redirect based on role
+      const targetDashboard = result.role === 'admin' ? '/admin' : '/dashboard';
+      router.push(targetDashboard);
     } catch (error: any) {
       toast({
         title: 'Erro ao Criar Conta',
