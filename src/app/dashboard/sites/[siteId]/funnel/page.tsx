@@ -1,10 +1,10 @@
+
 'use client'
 
 import * as React from 'react';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowDown, Filter, Users, Eye, ShoppingCart, CreditCard, TrendingUp, UserX, Route, PlusCircle, Trash2, GripVertical, Loader2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -37,7 +37,6 @@ export default function FunnelPage() {
                 if (steps.length > 0) {
                     setFunnelSteps(steps);
                 } else {
-                    // Set default funnel if none exists
                     setFunnelSteps([
                         { id: 1, name: 'Visitantes da Home', url: '/' },
                         { id: 2, name: 'Visualizaram Produtos', url: '/produtos' },
@@ -66,14 +65,6 @@ export default function FunnelPage() {
         const newSteps = funnelSteps.filter((_, i) => i !== index);
         setFunnelSteps(newSteps);
     };
-    
-    const handleAddUnusedPage = (path: string) => {
-        setFunnelSteps([...funnelSteps, { id: Date.now(), name: 'Nova Etapa', url: path }]);
-        toast({
-            title: "Etapa Adicionada!",
-            description: `A página ${path} foi adicionada ao final do seu funil.`,
-        });
-    };
 
     const saveFunnel = async () => {
         setIsSaving(true);
@@ -90,33 +81,16 @@ export default function FunnelPage() {
         }
     };
 
-    // Generate funnel data for visualization based on the builder
-    const funnelDataForVisualization = {
-        stages: funnelSteps.map((step, index, arr) => {
-            const count = 0; // No real data yet
-            let conversion = 0;
-            if (index > 0) {
-                conversion = 0;
-            }
-            return {
-                name: step.name,
-                count: count.toLocaleString('pt-BR'),
-                conversion: conversion,
-                icon: stepIcons[index] || Route,
-            };
-        }),
-    };
-
   return (
     <div className="space-y-8">
         <Card>
             <CardHeader>
                 <CardTitle className="font-headline">Construtor de Funil</CardTitle>
                 <CardDescription>
-                    Defina as etapas do seu funil de conversão aqui. Dê um nome para cada etapa e especifique a URL correspondente. Os dados serão salvos no seu banco de dados.
+                    Defina as etapas do seu funil de conversão. Dê um nome para cada etapa e especifique a URL correspondente. Os dados serão salvos e a análise aparecerá abaixo assim que os visitantes navegarem por estas páginas.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
                 {isLoading ? <div className='flex justify-center items-center h-24'><Loader2 className='h-6 w-6 animate-spin' /></div> : (
                     <div className="space-y-4">
                         {funnelSteps.map((step, index) => (
@@ -166,19 +140,19 @@ export default function FunnelPage() {
 
         <Card>
             <CardHeader>
-                <CardTitle className="font-headline">Pré-visualização da Análise do Funil</CardTitle>
+                <CardTitle className="font-headline">Análise do Funil de Conversão</CardTitle>
                 <CardDescription>Visualize a jornada do seu usuário com base nas etapas que você definiu acima.</CardDescription>
             </CardHeader>
             <CardContent>
-                {isLoading ? <div className='flex justify-center items-center h-48'><Loader2 className='h-8 w-8 animate-spin' /></div> :
-                (
-                     <div className="text-center text-muted-foreground p-8">
-                        <p>Nenhum dado de funil para exibir. Configure suas etapas e aguarde os visitantes.</p>
+                {isLoading ? (
+                    <div className='flex justify-center items-center h-48'><Loader2 className='h-8 w-8 animate-spin' /></div>
+                 ) : (
+                     <div className="text-center text-muted-foreground p-8 border rounded-lg">
+                        <p>Nenhum dado de funil para exibir. Configure suas etapas e aguarde os visitantes para popular este gráfico.</p>
                     </div>
                 )}
             </CardContent>
         </Card>
-        
     </div>
   )
 }
