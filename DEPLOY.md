@@ -6,10 +6,46 @@ Este guia fornece um passo a passo para implantar sua aplicação Next.js em um 
 
 Antes de começar, certifique-se de que sua VPS tenha:
 1.  **Acesso SSH** com um usuário sudo.
-2.  **Node.js** (versão 18 ou superior).
+2.  **Node.js** (versão 18 ou superior). Se não tiver, siga o **Passo 0**.
 3.  **Nginx** (ou outro servidor web para atuar como reverse proxy).
 4.  Um **domínio** apontado para o IP da sua VPS.
 5.  Seu código já enviado para um **repositório Git** (GitHub, GitLab, etc.).
+
+---
+
+## Passo 0: Instalar/Atualizar o Node.js para a Versão 18+
+
+Se sua versão do Node.js for inferior à 18, execute os seguintes comandos para instalar a versão mais recente usando o `nvm` (Node Version Manager).
+
+1.  **Instale o `nvm`:**
+    ```bash
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+    ```
+
+2.  **Carregue o `nvm` no seu terminal atual:**
+    ```bash
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    ```
+
+3.  **Instale a versão 18 do Node.js:**
+    ```bash
+    nvm install 18
+    ```
+
+4.  **Defina a versão 18 como padrão:**
+    ```bash
+    nvm use 18
+    nvm alias default 18
+    ```
+
+5.  **Verifique a versão instalada:**
+    ```bash
+    node -v
+    ```
+    O resultado deve ser `v18.x.x`. Agora você pode prosseguir com a implantação.
+
+---
 
 ## Passo 1: Preparar o Servidor
 
